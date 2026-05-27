@@ -1,0 +1,5 @@
+# clasp pushes the rootDir (dist). This ignore is relative to rootDir, so by
+# default everything in dist/ is pushed. We only generate the files we want
+# there (index.html, *.js, appsscript.json), so no exclusions are needed.
+# Listed here for clarity / future use:
+**/*.map

@@ -1,0 +1,35 @@
+{
+  "name": "gas-react-webapp",
+  "version": "1.0.0",
+  "description": "Google Apps Script web app with a React (Vite) frontend and Google Sheets backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.client.json && vite build",
+    "copy:server": "node scripts/copy-server.mjs",
+    "push": "clasp push -f",
+    "deploy": "node scripts/deploy.mjs",
+    "deploy:version": "node scripts/deploy.mjs --new-version",
+    "login": "clasp login",
+    "setup": "node scripts/setup.mjs",
+    "open": "clasp open-script",
+    "logs": "clasp tail-logs",
+    "typecheck": "tsc -p tsconfig.client.json --noEmit"
+  },
+  "dependencies": {
+    "gas-client": "^1.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.4.2",
+    "@types/google-apps-script": "^1.0.83",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react-swc": "^3.7.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vite-plugin-singlefile": "^2.0.3"
+  }
+}

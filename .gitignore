@@ -1,0 +1,8 @@
+node_modules/
+dist/
+
+# clasp local state — contains your scriptId; keep out of the repo.
+.clasp.json
+# clasp auth credentials (created by `clasp login`) live in the home dir,
+# but ignore any stray local copy just in case.
+.clasprc.json

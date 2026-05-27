@@ -1,0 +1,74 @@
+:root {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #1f2328;
+  background: #f6f8fa;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+header h1 { font-size: 1.4rem; margin: 0; flex: 1; }
+
+.badge {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.badge.live { background: #dafbe1; color: #1a7f37; }
+.badge.mock { background: #fff1e5; color: #bc4c00; }
+
+.error {
+  background: #ffebe9;
+  border: 1px solid #ffcecb;
+  color: #cf222e;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  font-size: 0.85rem;
+}
+
+.add-form {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+.add-form input[type='text'],
+.add-form input:not([type]) { flex: 1; }
+.add-form input { padding: 8px; border: 1px solid #d0d7de; border-radius: 8px; }
+.add-form input[type='number'] { width: 80px; }
+
+button {
+  cursor: pointer;
+  border: 1px solid #d0d7de;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+.add-form button { background: #1f883d; color: #fff; border-color: #1f883d; }
+
+.muted { color: #656d76; }
+
+.items { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.items li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.item-name { flex: 1; font-weight: 500; }
+.qty { display: flex; align-items: center; gap: 8px; }
+.qty button { width: 32px; padding: 4px 0; }
+.del { color: #cf222e; border-color: #ffcecb; }

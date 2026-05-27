@@ -1,0 +1,117 @@
+var InventoryItemService = (function () {
+
+  // qtyTotal = ground pieces + upstair pieces + (boxes × units-per-box).
+  function computeQtyTotal(item) {
+    var box = Number(item.qtyBox) || 0;
+    var uom = Number(item.uom) || 0;
+    return (Number(item.qtyGround) || 0)
+      + (Number(item.qtyUpstair) || 0)
+      + (box * uom);
+  }
+
+  // Prefer the new cost; fall back to old; default 0.
+  function unitCost(item) {
+    var n = Number(item.costPerPieceNew) || 0;
+    if (n > 0) return n;
+    return Number(item.costPerPieceOld) || 0;
+  }
+
+  // Recompute the derived fields and return a fully-populated item.
+  function withComputed(item) {
+    var qtyTotal  = computeQtyTotal(item);
+    var qtyKyte   = Number(item.qtyKyte) || 0;
+    // Match when there is no Kyte figure, or it equals the on-hand total.
+    var kyteMatch = qtyKyte === 0 ? true : qtyTotal === qtyKyte;
+    item.qtyTotal  = qtyTotal;
+    item.qtyKyte   = qtyKyte;
+    item.kyteMatch = kyteMatch;
+    item.costTotal = unitCost(item) * qtyTotal;
+    return item;
+  }
+
+  function num(v) { return Number(v) || 0; }
+  function str(v) { return String(v == null ? '' : v).trim(); }
+
+  // Prices/costs are read-only reference data. On add they come from the
+  // migration payload; on update we ignore the client and carry `prices`
+  // forward from the stored item.
+  function normalize(input, id, updatedAt, prices) {
+    var src = prices || input;
+    return withComputed({
+      id:                    id,
+      categoryId:            String(input.categoryId),
+      sku:                   str(input.sku),
+      emoji:                 str(input.emoji),
+      uom:                   num(input.uom),
+      costPerBoxNew:         num(src.costPerBoxNew),
+      costPerPieceNew:       num(src.costPerPieceNew),
+      costPerPieceOld:       num(src.costPerPieceOld),
+      sellingPriceWholesale: num(src.sellingPriceWholesale),
+      sellingPriceDealer:    num(src.sellingPriceDealer),
+      sellingPricePiece:     num(src.sellingPricePiece),
+      srp:                   num(src.srp),
+      qtyGround:             num(input.qtyGround),
+      expiryGround:          str(input.expiryGround),
+      qtyUpstair:            num(input.qtyUpstair),
+      expiryUpstair:         str(input.expiryUpstair),
+      qtyBox:                num(input.qtyBox),
+      expiryBox:             str(input.expiryBox),
+      qtyKyte:               num(input.qtyKyte),
+      updatedAt:             updatedAt,
+    });
+  }
+
+  function getInventoryItems(categoryId) {
+    return InventoryItemRepository.findAll(categoryId);
+  }
+
+  function addInventoryItem(input) {
+    if (!CategoryRepository.findById(input.categoryId)) {
+      throw AppError.validation('categoryId does not reference a known category');
+    }
+    var item = normalize(input, Uuid.generate(), DateTime.nowIso());
+    return InventoryItemRepository.insert(item);
+  }
+
+  function updateInventoryItem(input) {
+    var existing = InventoryItemRepository.findById(input.id);
+    if (!existing) throw AppError.notFound('InventoryItem', input.id);
+    if (!CategoryRepository.findById(input.categoryId)) {
+      throw AppError.validation('categoryId does not reference a known category');
+    }
+    // Preserve read-only prices/costs from the stored item.
+    var item = normalize(input, existing.id, DateTime.nowIso(), existing);
+    return InventoryItemRepository.update(item);
+  }
+
+  function deleteInventoryItem(id) {
+    var existing = InventoryItemRepository.findById(id);
+    if (!existing) throw AppError.notFound('InventoryItem', id);
+    return InventoryItemRepository.remove(id);
+  }
+
+  // Apply many stock-level changes at once. Each update carries the three
+  // location quantities; everything else is preserved from the stored item.
+  function bulkUpdateStock(updates) {
+    var now     = DateTime.nowIso();
+    var changed = updates.map(function (u) {
+      var existing = InventoryItemRepository.findById(u.id);
+      if (!existing) throw AppError.notFound('InventoryItem', u.id);
+      existing.qtyGround  = num(u.qtyGround);
+      existing.qtyUpstair = num(u.qtyUpstair);
+      existing.qtyBox     = num(u.qtyBox);
+      existing.updatedAt  = now;
+      return withComputed(existing);
+    });
+    return InventoryItemRepository.updateMany(changed);
+  }
+
+  return {
+    getInventoryItems: getInventoryItems,
+    addInventoryItem: addInventoryItem,
+    updateInventoryItem: updateInventoryItem,
+    deleteInventoryItem: deleteInventoryItem,
+    bulkUpdateStock: bulkUpdateStock,
+  };
+
+})();

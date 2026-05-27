@@ -1,1 +1,2 @@
-export { InventoryView } from './components/InventoryView';
+export { InventoryItemsView } from './components/InventoryItemsView';
+export { useInventoryItems } from './hooks/useInventoryItems';

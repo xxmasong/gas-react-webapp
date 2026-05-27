@@ -7,7 +7,7 @@
 body { margin: 0; }
 
 .app {
-  max-width: 560px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px 16px;
 }
@@ -72,3 +72,96 @@ button {
 .qty { display: flex; align-items: center; gap: 8px; }
 .qty button { width: 32px; padding: 4px 0; }
 .del { color: #cf222e; border-color: #ffcecb; }
+
+/* ─── Tabs ─────────────────────────────────────────────────────────────────── */
+.tabs { display: flex; gap: 4px; margin: 16px 0; border-bottom: 1px solid #d0d7de; }
+.tab {
+  border: none; background: none; border-radius: 0;
+  padding: 8px 16px; color: #656d76; font-weight: 500;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tab.active { color: #1f2328; border-bottom-color: #1f883d; }
+
+/* ─── Toolbar ──────────────────────────────────────────────────────────────── */
+.toolbar { display: flex; gap: 8px; align-items: center; margin: 16px 0; flex-wrap: wrap; }
+.toolbar .search { flex: 1; min-width: 180px; }
+.toolbar input, .toolbar select {
+  padding: 8px; border: 1px solid #d0d7de; border-radius: 8px;
+}
+.toolbar .checkbox { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #656d76; }
+button.primary { background: #1f883d; color: #fff; border-color: #1f883d; }
+button.ghost { background: #fff; color: #656d76; }
+
+/* ─── Grid tables ──────────────────────────────────────────────────────────── */
+.grid { width: 100%; border-collapse: collapse; background: #fff; font-size: 0.85rem; }
+.grid th, .grid td {
+  text-align: left; padding: 8px 10px; border-bottom: 1px solid #eaeef2;
+}
+.grid thead th { color: #656d76; font-weight: 600; font-size: 0.78rem; }
+.grid .num { text-align: right; }
+.grid td.actions { text-align: right; white-space: nowrap; }
+.grid td.actions button { padding: 4px 8px; margin-left: 4px; font-size: 0.8rem; }
+.grid code { background: #f0f3f6; padding: 1px 6px; border-radius: 6px; font-size: 0.8rem; }
+
+/* ─── Category groups ──────────────────────────────────────────────────────── */
+.cat-group { margin: 18px 0; border: 1px solid #d0d7de; border-radius: 10px; overflow: hidden; }
+.cat-header {
+  display: flex; align-items: baseline; gap: 12px;
+  background: #f6f8fa; padding: 8px 12px; border-bottom: 1px solid #d0d7de;
+}
+.cat-header h3 { margin: 0; font-size: 0.95rem; flex: 1; }
+.cat-totals { color: #656d76; font-size: 0.82rem; font-weight: 600; }
+
+.inventory .sku { font-weight: 500; }
+.inventory .total { font-weight: 700; }
+.uom-badge { background: #f0f3f6; border-radius: 6px; padding: 1px 6px; font-size: 0.78rem; }
+.stock-in { width: 56px; padding: 4px 6px; border: 1px solid #d0d7de; border-radius: 6px; text-align: right; }
+.row-mismatch { background: #fff8f6; }
+
+/* ─── Cost display ─────────────────────────────────────────────────────────── */
+.cost { display: inline-flex; gap: 6px; align-items: baseline; }
+.cost-old { color: #8c959f; text-decoration: line-through; font-size: 0.78rem; }
+.cost-new { font-weight: 600; }
+.cost-delta { font-size: 0.72rem; }
+.cost-delta.up { color: #cf222e; }
+.cost-delta.down { color: #1a7f37; }
+
+/* ─── Kyte badge ───────────────────────────────────────────────────────────── */
+.kyte-badge { font-size: 0.75rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+.kyte-badge.ok { background: #dafbe1; color: #1a7f37; }
+.kyte-badge.bad { background: #ffebe9; color: #cf222e; }
+
+/* ─── Category form ────────────────────────────────────────────────────────── */
+.cat-form { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
+.cat-form input { padding: 8px; border: 1px solid #d0d7de; border-radius: 8px; }
+.cat-form input[type='number'] { width: 80px; }
+
+/* ─── Dashboard cards ──────────────────────────────────────────────────────── */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 16px 0; }
+.card { background: #fff; border: 1px solid #d0d7de; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.card.warn { border-color: #ffcecb; background: #fff8f6; }
+.card-label { color: #656d76; font-size: 0.78rem; }
+.card-value { font-size: 1.4rem; }
+.section-title { margin: 20px 0 8px; font-size: 1rem; }
+
+/* ─── Modal ────────────────────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 10;
+}
+.modal { background: #fff; border-radius: 12px; padding: 20px; width: 100%; max-width: 640px; max-height: 90vh; overflow: auto; }
+.modal h2 { margin: 0 0 12px; font-size: 1.1rem; }
+.item-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.item-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: #656d76; }
+.item-form label.wide { grid-column: 1 / -1; }
+.item-form input, .item-form select { padding: 7px 8px; border: 1px solid #d0d7de; border-radius: 8px; font-size: 0.9rem; }
+.modal-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.modal-actions button.ghost { border: 1px solid #d0d7de; }
+.modal-actions button[type='submit'] { background: #1f883d; color: #fff; border-color: #1f883d; }
+
+.readonly-prices { grid-column: 1 / -1; border: 1px solid #eaeef2; border-radius: 8px; padding: 8px 12px; margin: 0; }
+.readonly-prices legend { font-size: 0.75rem; color: #656d76; padding: 0 4px; }
+.readonly-prices dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 12px; margin: 0; }
+.readonly-prices dl div { display: flex; justify-content: space-between; gap: 8px; }
+.readonly-prices dt { color: #656d76; font-size: 0.78rem; }
+.readonly-prices dd { margin: 0; font-weight: 600; font-size: 0.82rem; }

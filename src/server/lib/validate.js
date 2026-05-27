@@ -25,6 +25,54 @@ var validate = (function () {
       throw AppError.validation(name + ' must be a valid UUID');
   }
 
-  return { required: required, string: string, nonNegativeNumber: nonNegativeNumber, uuid: uuid };
+  function positiveNumber(value, name) {
+    var n = Number(value);
+    if (isNaN(n) || n <= 0)
+      throw AppError.validation(name + ' must be a positive number');
+  }
+
+  function array(value, name) {
+    if (!Array.isArray(value))
+      throw AppError.validation(name + ' must be an array');
+  }
+
+  function category(cat) {
+    required(cat, 'category');
+    string(cat.code, 'code');
+    if (cat.code.length > 10)
+      throw AppError.validation('code must be 10 characters or fewer');
+    string(cat.name, 'name');
+    nonNegativeNumber(cat.sortOrder, 'sortOrder');
+  }
+
+  function inventoryItem(item) {
+    required(item, 'item');
+    string(item.categoryId, 'categoryId');
+    string(item.sku, 'sku');
+    positiveNumber(item.uom, 'uom');
+    nonNegativeNumber(item.qtyGround, 'qtyGround');
+    nonNegativeNumber(item.qtyUpstair, 'qtyUpstair');
+    nonNegativeNumber(item.qtyBox, 'qtyBox');
+  }
+
+  function stockUpdate(u) {
+    required(u, 'update');
+    string(u.id, 'id');
+    nonNegativeNumber(u.qtyGround, 'qtyGround');
+    nonNegativeNumber(u.qtyUpstair, 'qtyUpstair');
+    nonNegativeNumber(u.qtyBox, 'qtyBox');
+  }
+
+  return {
+    required: required,
+    string: string,
+    nonNegativeNumber: nonNegativeNumber,
+    positiveNumber: positiveNumber,
+    array: array,
+    uuid: uuid,
+    category: category,
+    inventoryItem: inventoryItem,
+    stockUpdate: stockUpdate,
+  };
 
 })();

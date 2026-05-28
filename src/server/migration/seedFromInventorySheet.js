@@ -75,35 +75,12 @@ function _resolveColumns(headerRow) {
   return cols;
 }
 
-// Derive a stable, unique category code from the GROUP cell (preferred) and
-// the CATEGORY name (fallback / disambiguator).
-//
-//   "Easy r1f"   -> "r1f"      (drop the store-prefix word "easy")
-//   "hg ba"      -> "hgba"     (join remaining tokens)
-//   "hg dpcl"    -> "hgdpcl"
-//   " sparkle"   -> "sparkle"
-//   "sachet"     -> "sachet"
-//   "" (empty)   -> slug of the CATEGORY name, e.g. "ASIAN W" -> "asianw"
-//
-// FRIES POWDER 100g/250g both carry GROUP "Easy pfd"; we suffix the pack size
-// from the CATEGORY name so they resolve to distinct categories.
+// Use the raw GROUP cell as the category code, trimmed.
+// Fall back to the CATEGORY name (trimmed) when GROUP is blank.
+// Strip trailing pipe characters that appear in some GROUP cells (e.g. "Easy r3e |").
 function _deriveCode(groupCell, categoryName) {
-  var g = _norm(groupCell).replace(/[|]/g, ' ').replace(/\s+/g, ' ').trim();
-  var code;
-  if (g) {
-    var tokens = g.split(' ').filter(function (t) { return t && t !== 'easy'; });
-    code = tokens.join('');
-  } else {
-    code = _norm(categoryName).replace(/[^a-z0-9]+/g, '');
-  }
-  // Disambiguate the shared "pfd" group by pack size in the name.
-  var sizeMatch = _norm(categoryName).match(/(\d+)\s*g\b/);
-  if (code === 'pfd' && sizeMatch) code = 'pfd' + sizeMatch[1];
-  return code || 'uncategorized';
-}
-
-function _titleCase(s) {
-  return String(s).toLowerCase().replace(/\b\w/g, function (m) { return m.toUpperCase(); });
+  var g = String(groupCell == null ? '' : groupCell).replace(/\|/g, '').trim();
+  return g || String(categoryName == null ? '' : categoryName).trim() || 'uncategorized';
 }
 
 function _leadingEmoji(name) {
@@ -148,8 +125,8 @@ function seedInventoryFromSheet() {
     var code    = _deriveCode(pick(values[r], 'group'), catName);
     if (codeToId[code]) continue;
     var created = CategoryService.addCategory({
-      code:           code.slice(0, 10),
-      name:           _titleCase(catName) || code,
+      code:           code,
+      name:           catName || code,
       packConstraint: String(pick(values[r], 'stockeeping') || '').trim(),
       sortOrder:      ++sortOrder,
     });
@@ -247,7 +224,7 @@ function dryRunInventorySeed() {
     var cName = String(pick(values[r], 'category') || '').trim();
     var code  = _deriveCode(pick(values[r], 'group'), cName);
     if (!cats[code]) {
-      cats[code] = { name: _titleCase(cName) || code, count: 0, easy: 0, gruton: 0 };
+      cats[code] = { name: cName || code, count: 0, easy: 0, gruton: 0 };
       order.push(code);
     }
     cats[code].count++;

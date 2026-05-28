@@ -31,6 +31,9 @@ var InventoryItemService = (function () {
 
   function num(v) { return Number(v) || 0; }
   function str(v) { return String(v == null ? '' : v).trim(); }
+  function store(v) {
+    return str(v).toUpperCase() === 'GRUTON' ? 'GRUTON' : 'EASY';
+  }
 
   // Prices/costs are read-only reference data. On add they come from the
   // migration payload; on update we ignore the client and carry `prices`
@@ -40,6 +43,7 @@ var InventoryItemService = (function () {
     return withComputed({
       id:                    id,
       categoryId:            String(input.categoryId),
+      store:                 store(input.store),
       sku:                   str(input.sku),
       emoji:                 str(input.emoji),
       uom:                   num(input.uom),

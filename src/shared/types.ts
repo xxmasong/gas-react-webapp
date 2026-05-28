@@ -37,11 +37,16 @@ export type NewSkuCategory = Omit<SkuCategory, 'id' | 'updatedAt'>;
 
 // ─── InventoryItem (SKU) ─────────────────────────────────────────────────────────
 
+/** The two physical stores/warehouses tracked in the Product Info sheet. */
+export type Store = 'EASY' | 'GRUTON';
+
 export interface InventoryItem {
   /** Stable row id (uuid). */
   id: string;
   /** FK → SkuCategory.id. */
   categoryId: string;
+  /** Which store/warehouse this SKU belongs to (EASY or GRUTON). */
+  store: Store;
   /** Full display name, e.g. "🫐 Blueberry". */
   sku: string;
   /** Optional emoji prefix extracted from the name. */

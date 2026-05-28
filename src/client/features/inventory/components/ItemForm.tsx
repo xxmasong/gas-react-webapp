@@ -5,7 +5,7 @@ import { formatCurrency } from '../../../lib/format';
 type Editable = NewInventoryItem & { id?: string };
 
 const BLANK: Editable = {
-  categoryId: '', sku: '', emoji: '', uom: 1,
+  categoryId: '', store: 'EASY', sku: '', emoji: '', uom: 1,
   costPerBoxNew: 0, costPerPieceNew: 0, costPerPieceOld: 0,
   sellingPriceWholesale: 0, sellingPriceDealer: 0, sellingPricePiece: 0, srp: 0,
   qtyGround: 0, expiryGround: '', qtyUpstair: 0, expiryUpstair: '', qtyBox: 0, expiryBox: '',
@@ -83,6 +83,13 @@ export function ItemForm({
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
+            </select>
+          </label>
+          <label>
+            <span>Store</span>
+            <select value={form.store} onChange={(e) => set('store', e.target.value as Editable['store'])}>
+              <option value="EASY">EASY</option>
+              <option value="GRUTON">GRUTON</option>
             </select>
           </label>
 

@@ -7,8 +7,25 @@ var Cache = (function () {
     return raw ? JSON.parse(raw) : null;
   }
 
+  // CacheService rejects values over 100KB per key with
+  // "Argument too large: value". Caching is only an optimization, so if a
+  // payload is too big we skip it (and clear any stale entry) instead of
+  // letting the write blow up the whole request.
+  var MAX_VALUE_BYTES = 100 * 1024;
+
   function set(key, value, ttl) {
-    CacheService.getScriptCache().put(key, JSON.stringify(value), ttl || TTL_SECONDS);
+    var json = JSON.stringify(value);
+    if (json.length > MAX_VALUE_BYTES) {
+      CacheService.getScriptCache().remove(key);
+      return;
+    }
+    try {
+      CacheService.getScriptCache().put(key, json, ttl || TTL_SECONDS);
+    } catch (e) {
+      // Size estimate can differ from CacheService's own (UTF-8 bytes vs.
+      // string length); never let a cache write fail the operation.
+      CacheService.getScriptCache().remove(key);
+    }
   }
 
   function remove(key) {

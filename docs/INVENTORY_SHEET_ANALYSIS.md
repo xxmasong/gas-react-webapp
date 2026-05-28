@@ -1,32 +1,35 @@
-# Inventory Google Sheet → GAS Web App: Full Analysis & Implementation Plan
+# Product Info Google Sheet → GAS Web App: Full Analysis & Implementation Plan
 
-**Document scope:** Analysis of the `Inventory` Google Sheets workbook, data model extraction,
-gap analysis against the current GAS app, and a complete development plan to migrate the
-spreadsheet into the React + GAS architecture.
+**Document scope:** Analysis of the `Product Info` Google Sheets workbook (gid=1625801440),
+data model extraction, gap analysis against the current GAS app, and the development plan to
+migrate the spreadsheet into the React + GAS architecture.
+
+> **History:** This app was first built against an older `Inventory` sheet (gid=1945163577) with
+> interleaved category-header rows. The source was replaced by a cleaner, fully tabular
+> `Product Info` sheet that adds a **STORE** dimension (EASY / GRUTON). This document and the
+> backend/migration were updated to the new sheet on **2026-05-28**.
 
 ---
 
-## Implementation Status (updated 2026-05-27)
+## Implementation Status (updated 2026-05-28)
 
-Sprints 1–5 are **implemented and passing typecheck + build**. Remaining: run the migration
-against the live sheet, manual UI testing in the deployed GAS iframe, and doc updates.
+Backend + UI are **implemented**; the migration was rewritten for the new tabular `Product Info`
+layout and a `store` field was threaded through the whole stack (types → mapper → repo → service
+→ validator → migration → mock → UI).
 
 | Sprint | Status | Notes |
 |---|---|---|
 | 1 — Backend foundation | ✅ Done | types, mappers, repositories, services, validators, api.js, mock all in place |
-| 2 — Data migration | ✅ Script written | `src/server/migration/seedFromInventorySheet.js` — run manually from the editor |
+| 2 — Data migration | ✅ Rewritten | `src/server/migration/seedFromInventorySheet.js` now parses the tabular `Product Info` sheet; categories are derived from the data, not hardcoded |
 | 3 — Categories UI | ✅ Done | `features/categories/` (CategoriesView + useCategories) |
-| 4 — Inventory table UI | ✅ Done | `features/inventory/` grouped table, inline stock editing, cost/Kyte display, add/edit modal |
+| 4 — Inventory table UI | ✅ Done | `features/inventory/` grouped table, inline stock editing, cost/Kyte display, store badge + store filter, add/edit modal |
 | 5 — Dashboard | ✅ Done | `features/dashboard/` summary cards + category breakdown |
 | Mismatch view | ⏳ Folded into inventory | "Mismatches only" filter on the inventory table covers this; standalone view deferred |
-| 6 — Hardening + deploy | ⏳ Pending | needs live migration run + manual smoke test (`npm run deploy`) |
-
-**Verification done:** `tsc -p tsconfig.client.json`, `tsc -p tsconfig.server.json`, and
-`npm run build` all pass; the migration file bundles into `dist/migration/`.
+| 6 — Hardening + deploy | ⏳ Pending | needs live migration run (`dryRunInventorySeed` → `seedInventoryFromSheet`) + manual smoke test |
 
 **Not yet verified:** behavior inside the live GAS iframe (mock backend exercised locally only),
-and the migration against the real source workbook (column-resolution hints may need tuning —
-see `HEADER_HINTS` in the migration script).
+and the migration against the real `Product Info` workbook. Run `dryRunInventorySeed` from the
+editor first — it logs the derived categories + per-store SKU counts without writing anything.
 
 ---
 
@@ -34,39 +37,64 @@ see `HEADER_HINTS` in the migration script).
 
 ### 1.1 Sheet Identified
 
-Single sheet (`gid=1945163577`) functions as a full **warehouse inventory ledger** for a
-beverage / ingredient supply business (likely a milk-tea / café supplier).
+Single sheet (`gid=1625801440`, tab "Product Info") functions as a **multi-store product +
+inventory catalog** for a beverage / ingredient supply business. Unlike the old ledger, **every
+row is a SKU** — there are no interleaved category-header or subtotal rows. Two stores are
+tracked: **EASY** (milk-tea supply lines) and **GRUTON** (groceries / frozen / packaging).
 
 ### 1.2 Column Schema (left → right)
 
-| # | Column Header | Type | Notes |
-|---|---|---|---|
-| 1 | COST PER BOX (NEW) | number | Current box cost (supplier cost) |
-| 2 | COST PER PIECE (NEW) | number | Current unit cost derived from box |
-| 3 | COST PER PIECE (OLD) | number | Previous unit cost (for comparison) |
-| 4 | UOM | number | Units per box (pack size: 1, 6, 10, 12, 18, 20, 30, 50, 70, 100…) |
-| 5 | Piece Ground | number | Qty on ground floor (pieces) |
-| 6 | Expiry (Ground) | number | Ground stock expiry days/marker |
-| 7 | Piece Upstair | number | Qty upstairs (pieces) |
-| 8 | Expiry (Upstair) | number | Upstairs expiry marker |
-| 9 | Box | number | Qty in full boxes |
-| 10 | Expiry (Box) | number | Box expiry marker |
-| 11 | Σ / Store | number | Total cost value for this SKU (Σ Cost per SKU) |
-| 12 | Σ Cost per CAT | number | Running subtotal per category (header rows only) |
-| 13 | Σ Cost per SKU | number | Individual SKU cost total |
-| 14 | Σ QTY per CAT | number | Quantity subtotal per category |
-| 15 | QTY | number | Total quantity on hand (all locations combined) |
-| 16 | SKU / Items | string | Display name with emoji prefix |
-| 17 | Kyte QTY | number | Quantity from Kyte POS system |
-| 18 | QTY-Kyte Mismatch | computed | Discrepancy indicator (highlighted red when ≠) |
+| # | Column Header | Type | Maps to | Notes |
+|---|---|---|---|---|
+| 1 | STORE | string | `store` | `EASY` or `GRUTON` |
+| 2 | CATEGORY | string | category `name` | e.g. "SYRUPS", "MILK", "FROZEN GOODS" |
+| 3 | GROUP | string | category `code` (derived) | e.g. "Easy r1f", "hg ba", "sparkle" |
+| 4 | PRODUCT | string | `sku` | Display name, usually emoji-prefixed |
+| 5 | STOCKEEPING | string | category `packConstraint` | e.g. "Syrup 2.5kg - 6pc max" |
+| 6 | UOM | number | `uom` | Units per box (1, 6, 10, 12, 18, 20, 30, 50, 70, 100…) |
+| 7 | COST PER BOX (New) | number | `costPerBoxNew` | Supplier box cost |
+| 8 | COST PER PIECE (New) | number | `costPerPieceNew` | Current unit cost |
+| 9 | COST PER PIECE (Old) | number | `costPerPieceOld` | Previous unit cost |
+| 10 | SELLING PRICE (WholeSale) | number | `sellingPriceWholesale` | EASY only; blank for GRUTON |
+| 11 | SELLING PRICE (Dealer) | number | `sellingPriceDealer` | EASY only; blank for GRUTON |
+| 12 | SELLING PRICE (SRP) | number | `srp` + `sellingPricePiece` | Retail price |
+| 13 | QTY GROUND (Pieces) | number | `qtyGround` | On ground floor |
+| 14 | EXPIRY (Ground) | date/blank | `expiryGround` | Often blank |
+| 15 | QTY UPSTAIRS (Pieces) | number | `qtyUpstair` | Upstairs |
+| 16 | EXPIRY (Upstairs) | date/blank | `expiryUpstair` | |
+| 17 | QTY BOXES | number | `qtyBox` | Full boxes |
+| 18 | EXPIRY (Boxes) | date/blank | `expiryBox` | |
+| 19 | TOTAL COST | number | (recomputed) | `Σ / Store` in the sheet |
+| 20 | TOTAL QTY | number | (recomputed `qtyTotal`) | All locations combined |
+| 21 | POS COUNT | number | `qtyKyte` | Quantity from the POS (was "Kyte QTY") |
+| 22 | DISCREPANCY | computed | (recomputed `kyteMatch`) | `-` when matched |
 
 ### 1.3 Row Types
 
-There are **three distinct row types** in the sheet:
+**Every data row is a SKU.** There are no category-header rows and no grand-total row — category
+grouping is expressed by the per-row `CATEGORY` + `GROUP` columns. This makes parsing far simpler
+than the old sheet (no style/pipe-marker detection needed).
 
-1. **Category header rows** — bold/colored, no cost data, hold `Σ Cost per CAT` and `Σ QTY per CAT`
-2. **SKU rows** — individual product lines with full cost + quantity data
-3. **Grand total row** — bottom summary (Σ all stores = ₱767,883.47, QTY = 3,210)
+### 1.4 Categories present in the data
+
+Categories are **derived at migration time** from the distinct `(CATEGORY, GROUP)` pairs, so the
+list below is descriptive, not a hardcoded contract. Codes are derived from `GROUP` by dropping
+the store-prefix word (`Easy` / `hg`) and joining the rest (`hg ba` → `hgba`, `Easy r1f` → `r1f`).
+
+- **EASY:** SYRUPS (r1f), DRIZZLE (r1d), POWDER BASE (r2pb), SOFT SERVE BASE (r2ss), ESSENTIAL (r3e),
+  TOPPINGS (r3et), SINKERS (r3ets), SYRUP PUMP (r3p), SIG. SYRUP (sy), SIG. SAUCES (sa),
+  SIG. POWDER BASE (sp), CHEESE SAUCE DIP (pcd), FRIES POWDER 100g (pfd100), FRIES POWDER 250g (pfd250),
+  POWDER MIX (ppm), PREMIUM SAUCES (pps), SPARKLE & SHIMMER (sparkle)
+- **GRUTON:** ANCHOR (hgba), BERYLS (hgbb), SPECULOOS (hgbs), MILK (hgcm), COFFEE BEANS (hgccb),
+  CONES (hgcc), DAIRY (hgcd), FROZEN GOODS (hgcf), TOPPERS and SINKERS (hgct), PAPER PRODUCTS (hgdpa),
+  STRAW (hgdsw), PLASTIC CUPS & LIDS (hgdpcl), ORGANIZERS (hgdpo), Micro (hgdpl), STYRO PRODUCTS (hgdso),
+  SUPPLIES (hges), JAM (hgoj), OTHERS (hgo), TORANI (hgto), ARMANDO (hgar), SACHET (sachet),
+  BELCRIS (hgbc), INGREDIENTS (hgdcc), ASIAN W (asianw)
+
+> **Parsing note — FRIES POWDER:** both the 100g and 250g categories share `GROUP = "Easy pfd"`.
+> The migration appends the pack size parsed from the CATEGORY name so they become distinct
+> `pfd100` / `pfd250` codes. **ASIAN W** rows have a blank GROUP, so the code is slugged from the
+> category name instead.
 
 ---
 
@@ -184,9 +212,12 @@ export type NewSkuCategory = Omit<SkuCategory, 'id' | 'updatedAt'>;
 
 // ─── Inventory Item (SKU) ─────────────────────────────────────────────────────
 
+export type Store = 'EASY' | 'GRUTON';
+
 export interface InventoryItem {
   id: string;                   // UUID
   categoryId: string;           // FK → SkuCategory.id
+  store: Store;                 // EASY or GRUTON (from the STORE column)
   sku: string;                  // display name, e.g. "🫐 Blueberry"
   emoji?: string;               // extracted emoji prefix
   uom: number;                  // units per box (pack size)
@@ -290,6 +321,7 @@ export interface CategoryTotal {
 |---|---|---|
 | `id` | string | UUID PK |
 | `categoryId` | string | FK → SkuCategories.id |
+| `store` | string | `EASY` or `GRUTON` |
 | `sku` | string | full display name (with emoji) |
 | `emoji` | string | optional emoji prefix |
 | `uom` | number | units per box |
@@ -424,79 +456,54 @@ Update `contract.ts` to assert `ServerFunctions` conformance includes all new fu
 
 ### Phase 1 — Data Migration Script
 
-**Goal:** Seed the GAS Sheets from the existing Google Sheets workbook data.
+**Goal:** Seed the GAS Sheets from the `Product Info` source sheet.
+
+The migration lives in `src/server/migration/seedFromInventorySheet.js` and exposes three
+editor-run functions:
+
+| Function | Purpose |
+|---|---|
+| `dryRunInventorySeed()` | Read-only preview. Logs the resolved column map and the categories it would create with per-store SKU counts. **Run this first.** |
+| `seedInventoryFromSheet()` | The real seed. Refuses to run if `InventoryItems` already has rows. |
+| `resetSeededTabs()` | Deletes the `InventoryItems` + `SkuCategories` tabs and clears caches so the seed can be re-run. |
 
 #### 1.1 Migration approach
 
-Since direct API access to the source sheet is available (same GAS project or via Sheets API),
-write a **one-time migration script** as a standalone GAS function:
+Because `Product Info` is fully tabular (every row is a SKU), the script is much simpler than the
+old header-row parser. **Categories are derived from the data**, not hardcoded — so new categories
+appear automatically without editing a seed list. Columns are resolved by header text
+(`HEADER_HINTS`), not by fixed position, so column reordering in the sheet won't break it.
 
 ```javascript
-// src/server/migration/seedFromInventorySheet.js
-function seedInventoryFromSheet() {
-  const SOURCE_SHEET_ID = '1D_tPksBpflSUD2Hx4I_MYHPQL2yYz_V-c-1uVkkaaIo';
-  const SOURCE_GID = '1945163577';
-  // ... read rows, parse category headers, map to entities, insert
-}
+var SOURCE_SPREADSHEET_ID = '1D_tPksBpflSUD2Hx4I_MYHPQL2yYz_V-c-1uVkkaaIo';
+var SOURCE_SHEET_GID      = 1625801440; // "Product Info"
 ```
 
 #### 1.2 Migration steps
 
-1. Open source sheet by ID
-2. Read all rows into a 2D array
-3. Walk rows top-to-bottom:
-   - If row matches category header pattern (bold style or matches known category codes) → create `SkuCategory`
-   - Else if row has SKU name column populated → create `InventoryItem` under current category
-4. Compute `qtyTotal` = `qtyGround + qtyUpstair + (qtyBox × uom)`
-5. Compute `kyteMatch` = `qtyTotal === qtyKyte`
-6. Compute `costTotal` = `costPerPieceNew × qtyTotal` (or fall back to `costPerPieceOld`)
-7. Write all categories first (build id map), then items with FK
-8. Log summary: categories written, items written, errors
+1. Open the source sheet by gid and read all rows into a 2D array.
+2. Resolve columns by matching the header row against `HEADER_HINTS`.
+3. **Pass 1 (categories):** walk rows; for each new `(CATEGORY, GROUP)` pair, derive a code
+   (`_deriveCode`) and create a `SkuCategory` (name = title-cased CATEGORY, packConstraint =
+   STOCKEEPING, sortOrder = discovery order). Build a `code → id` map.
+4. **Pass 2 (items):** walk rows again; for each SKU, look up its category id and create an
+   `InventoryItem`, carrying `store` from the STORE column and `qtyKyte` from POS COUNT.
+5. `qtyTotal`, `costTotal`, and `kyteMatch` are computed server-side by `InventoryItemService`
+   (`qtyTotal = qtyGround + qtyUpstair + qtyBox × uom`).
 
-#### 1.3 Category code mapping (manual seed list)
+#### 1.3 Code derivation (no hardcoded seed list)
 
-This list should be hardcoded in the migration as ground truth (extracted from sheet headers):
-
-```javascript
-const CATEGORY_SEEDS = [
-  { code: 'r1f',     name: 'Syrups',             packConstraint: 'Syrup 2.5kg - 6pc max', sortOrder: 1 },
-  { code: 'r1d',     name: 'Drizzle',             packConstraint: 'DRIZZLE 2.5kgx6',       sortOrder: 2 },
-  { code: 'r2pb',    name: 'Powder Base',         packConstraint: 'Powder 1kg - 4pc max',  sortOrder: 3 },
-  { code: 'r2ss',    name: 'Soft Serve Base',     packConstraint: null,                    sortOrder: 4 },
-  { code: 'r3e',     name: 'Essential',           packConstraint: null,                    sortOrder: 5 },
-  { code: 'r3et',    name: 'Toppings',            packConstraint: null,                    sortOrder: 6 },
-  { code: 'r3ets',   name: 'Sinkers',             packConstraint: null,                    sortOrder: 7 },
-  { code: 'r3p',     name: 'Syrup Pump',          packConstraint: null,                    sortOrder: 8 },
-  { code: 'sy',      name: 'Sig. Syrup',          packConstraint: 'Syrup 1kg - 8pc max',  sortOrder: 9 },
-  { code: 'sa',      name: 'Sig. Sauces',         packConstraint: 'Sauce - 6pc max',       sortOrder: 10 },
-  { code: 'sp',      name: 'Sig. Powder Base',    packConstraint: null,                    sortOrder: 11 },
-  { code: 'pcd',     name: 'Cheese Sauce Dip',    packConstraint: null,                    sortOrder: 12 },
-  { code: 'pfd100',  name: 'Fries Powder 100g',   packConstraint: null,                    sortOrder: 13 },
-  { code: 'pfd250',  name: 'Fries Powder 250g',   packConstraint: null,                    sortOrder: 14 },
-  { code: 'ppm',     name: 'Powder Mix',          packConstraint: null,                    sortOrder: 15 },
-  { code: 'pps',     name: 'Premium Sauces',      packConstraint: 'Sauce - 6pc max',       sortOrder: 16 },
-  { code: 'sparkle', name: 'Sparkle & Shimmer',   packConstraint: null,                    sortOrder: 17 },
-  { code: 'hgba',    name: 'Anchor',              packConstraint: null,                    sortOrder: 18 },
-  { code: 'hgbb',    name: 'Beryls',              packConstraint: null,                    sortOrder: 19 },
-  { code: 'hgbs',    name: 'Speculoos',           packConstraint: null,                    sortOrder: 20 },
-  { code: 'hgcm',    name: 'Milk',                packConstraint: null,                    sortOrder: 21 },
-  { code: 'hgccb',   name: 'Coffee Beans',        packConstraint: null,                    sortOrder: 22 },
-  { code: 'hgcc',    name: 'Cones',               packConstraint: null,                    sortOrder: 23 },
-  { code: 'hgcd',    name: 'Dairy',               packConstraint: null,                    sortOrder: 24 },
-  { code: 'hgcf',    name: 'Frozen Goods',        packConstraint: null,                    sortOrder: 25 },
-  { code: 'hgct',    name: 'Toppers & Sinkers',   packConstraint: null,                    sortOrder: 26 },
-  { code: 'hgdpa',   name: 'Paper Products',      packConstraint: null,                    sortOrder: 27 },
-  { code: 'hgdsw',   name: 'Straws',              packConstraint: null,                    sortOrder: 28 },
-  { code: 'hgdpcl',  name: 'Plastic Cups & Lids', packConstraint: null,                   sortOrder: 29 },
-  { code: 'hgdpo',   name: 'Organizers',          packConstraint: null,                    sortOrder: 30 },
-  { code: 'hgdpl',   name: 'Micro Containers',    packConstraint: null,                    sortOrder: 31 },
-  { code: 'hgdso',   name: 'Styro Products',      packConstraint: null,                    sortOrder: 32 },
-  { code: 'hges',    name: 'Supplies',            packConstraint: null,                    sortOrder: 33 },
-  { code: 'hgoj',    name: 'Jam',                 packConstraint: null,                    sortOrder: 34 },
-  { code: 'hgo',     name: 'Others',              packConstraint: null,                    sortOrder: 35 },
-  { code: 'hgto',    name: 'Torani',              packConstraint: null,                    sortOrder: 36 },
-];
 ```
+"Easy r1f"  -> "r1f"      (drop store-prefix word "easy", join the rest)
+"hg ba"     -> "hgba"
+"hg dpcl"   -> "hgdpcl"
+" sparkle"  -> "sparkle"
+"sachet"    -> "sachet"
+""          -> slug of CATEGORY name  (e.g. "ASIAN W" -> "asianw")
+```
+
+Special case: FRIES POWDER 100g and 250g share `GROUP = "Easy pfd"`; the pack size parsed from
+the CATEGORY name is appended so they resolve to distinct `pfd100` / `pfd250` codes.
 
 ---
 

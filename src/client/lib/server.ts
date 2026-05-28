@@ -54,21 +54,21 @@ function createMock(): ServerFunctions {
   // ─── Inventory items ───────────────────────────────────────────────────────────
   let inventory: InventoryItem[] = [
     withComputed({
-      id: 'inv-blueberry', categoryId: 'cat-syrups', sku: '🫐 Blueberry', emoji: '🫐', uom: 6,
+      id: 'inv-blueberry', categoryId: 'cat-syrups', store: 'EASY', sku: '🫐 Blueberry', emoji: '🫐', uom: 6,
       costPerBoxNew: 1752, costPerPieceNew: 292, costPerPieceOld: 278.49,
       sellingPriceWholesale: 288.49, sellingPriceDealer: 288.49, sellingPricePiece: 352, srp: 352,
       qtyGround: 6, expiryGround: '', qtyUpstair: 4, expiryUpstair: '', qtyBox: 7, expiryBox: '',
       qtyKyte: 52, updatedAt: now(),
     }),
     withComputed({
-      id: 'inv-caramel', categoryId: 'cat-syrups', sku: '🍬 Caramel', emoji: '🍬', uom: 6,
+      id: 'inv-caramel', categoryId: 'cat-syrups', store: 'EASY', sku: '🍬 Caramel', emoji: '🍬', uom: 6,
       costPerBoxNew: 1752, costPerPieceNew: 292, costPerPieceOld: 278.49,
       sellingPriceWholesale: 288.49, sellingPriceDealer: 288.49, sellingPricePiece: 352, srp: 352,
       qtyGround: 6, expiryGround: '', qtyUpstair: 5, expiryUpstair: '', qtyBox: 3, expiryBox: '',
       qtyKyte: 47, updatedAt: now(),
     }),
     withComputed({
-      id: 'inv-cheesecake', categoryId: 'cat-powder', sku: '🍰 Cheesecake', emoji: '🍰', uom: 10,
+      id: 'inv-cheesecake', categoryId: 'cat-powder', store: 'EASY', sku: '🍰 Cheesecake', emoji: '🍰', uom: 10,
       costPerBoxNew: 2320, costPerPieceNew: 232, costPerPieceOld: 218.8,
       sellingPriceWholesale: 256, sellingPriceDealer: 226.3, sellingPricePiece: 275, srp: 275,
       qtyGround: 4, expiryGround: '', qtyUpstair: 3, expiryUpstair: '', qtyBox: 3, expiryBox: '',

@@ -2,7 +2,7 @@ var InventoryItemRepository = (function () {
 
   var SHEET_NAME = 'InventoryItems';
   var HEADERS    = [
-    'id', 'categoryId', 'sku', 'emoji', 'uom',
+    'id', 'categoryId', 'store', 'sku', 'emoji', 'uom',
     'costPerBoxNew', 'costPerPieceNew', 'costPerPieceOld',
     'sellingPriceWholesale', 'sellingPriceDealer', 'sellingPricePiece', 'srp',
     'qtyGround', 'expiryGround', 'qtyUpstair', 'expiryUpstair', 'qtyBox', 'expiryBox',

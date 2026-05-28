@@ -29,6 +29,7 @@ export function InventoryRow({
   return (
     <tr className={item.kyteMatch ? '' : 'row-mismatch'}>
       <td className="sku">{item.sku}</td>
+      <td><span className={'store-badge store-' + item.store.toLowerCase()}>{item.store}</span></td>
       <td className="num"><span className="uom-badge">{item.uom}</span></td>
       <td><CostDisplay oldCost={item.costPerPieceOld} newCost={item.costPerPieceNew} /></td>
       <td className="num">{item.srp ? formatCurrency(item.srp) : <span className="muted">—</span>}</td>

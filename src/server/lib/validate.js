@@ -45,9 +45,16 @@ var validate = (function () {
     nonNegativeNumber(cat.sortOrder, 'sortOrder');
   }
 
+  function store(value, name) {
+    var s = String(value == null ? '' : value).toUpperCase();
+    if (s !== 'EASY' && s !== 'GRUTON')
+      throw AppError.validation(name + " must be 'EASY' or 'GRUTON'");
+  }
+
   function inventoryItem(item) {
     required(item, 'item');
     string(item.categoryId, 'categoryId');
+    store(item.store, 'store');
     string(item.sku, 'sku');
     positiveNumber(item.uom, 'uom');
     nonNegativeNumber(item.qtyGround, 'qtyGround');
@@ -70,6 +77,7 @@ var validate = (function () {
     positiveNumber: positiveNumber,
     array: array,
     uuid: uuid,
+    store: store,
     category: category,
     inventoryItem: inventoryItem,
     stockUpdate: stockUpdate,

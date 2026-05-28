@@ -12,6 +12,7 @@ export function InventoryItemsView() {
     useInventoryItems();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [storeFilter, setStoreFilter] = useState('');
   const [mismatchOnly, setMismatchOnly] = useState(false);
   const [form, setForm] = useState<FormState>(null);
 
@@ -24,11 +25,12 @@ export function InventoryItemsView() {
     const q = search.trim().toLowerCase();
     return items.filter((i) => {
       if (categoryFilter && i.categoryId !== categoryFilter) return false;
+      if (storeFilter && i.store !== storeFilter) return false;
       if (mismatchOnly && i.kyteMatch) return false;
       if (q && !i.sku.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [items, search, categoryFilter, mismatchOnly]);
+  }, [items, search, categoryFilter, storeFilter, mismatchOnly]);
 
   const grouped = useMemo(() => {
     const byCat = new Map<string, InventoryItem[]>();
@@ -86,6 +88,11 @@ export function InventoryItemsView() {
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
+        <select value={storeFilter} onChange={(e) => setStoreFilter(e.target.value)}>
+          <option value="">All stores</option>
+          <option value="EASY">EASY</option>
+          <option value="GRUTON">GRUTON</option>
+        </select>
         <label className="checkbox">
           <input
             type="checkbox"
@@ -123,6 +130,7 @@ export function InventoryItemsView() {
                 <thead>
                   <tr>
                     <th>SKU</th>
+                    <th>Store</th>
                     <th className="num">UOM</th>
                     <th>Cost / pc</th>
                     <th className="num">SRP</th>

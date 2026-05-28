@@ -53,10 +53,19 @@ function createMock(): ServerFunctions {
   // ─── Mock auth state ─────────────────────────────────────────────────────────
   type MockUser = User & { password: string };
   let users: MockUser[] = [
-    { id: 'u-admin', username: 'admin', role: 'admin', active: true, password: 'admin123!' },
-    { id: 'u-sup', username: 'supervisor', role: 'supervisor', active: true, password: 'super123!' },
-    { id: 'u-staff', username: 'staff', role: 'inventory_staff', active: true, password: 'staff123!' },
+    { id: 'u-admin', username: 'admin', role: 'admin', active: true, password: 'Admin-2026!' },
+    { id: 'u-sup', username: 'supervisor', role: 'supervisor', active: true, password: 'Super-2026!' },
+    { id: 'u-staff', username: 'staff', role: 'inventory_staff', active: true, password: 'Staff-2026!' },
   ];
+  const strongPw = (p: string) => {
+    if (p.length < 10) return false;
+    let classes = 0;
+    if (/[a-z]/.test(p)) classes++;
+    if (/[A-Z]/.test(p)) classes++;
+    if (/[0-9]/.test(p)) classes++;
+    if (/[^A-Za-z0-9]/.test(p)) classes++;
+    return classes >= 3;
+  };
   const sessions = new Map<string, string>(); // token -> userId
   const RANK: Record<Role, number> = { inventory_staff: 1, supervisor: 2, admin: 3 };
   const pub = (u: MockUser): User => ({ id: u.id, username: u.username, role: u.role, active: u.active });
@@ -139,7 +148,8 @@ function createMock(): ServerFunctions {
     changeOwnPassword: (token, currentPassword, newPassword) => {
       const u = userFor(token);
       if (u.password !== currentPassword) throw new Error('Current password is incorrect');
-      if (newPassword.length < 8) throw new Error('Password must be at least 8 characters');
+      if (!strongPw(newPassword))
+        throw new Error('Password must be ≥10 chars and include 3 of: lower, upper, number, symbol');
       u.password = newPassword;
       return { ok: true } as const;
     },
@@ -149,7 +159,8 @@ function createMock(): ServerFunctions {
     registerUser: (token, username, password, role) => {
       requireRole(token, 'admin');
       if (username.trim().length < 3) throw new Error('Username must be at least 3 characters');
-      if (password.length < 8) throw new Error('Password must be at least 8 characters');
+      if (!strongPw(password))
+        throw new Error('Password must be ≥10 chars and include 3 of: lower, upper, number, symbol');
       if (users.some((x) => x.username.toLowerCase() === username.trim().toLowerCase()))
         throw new Error('Username already taken: ' + username);
       const created: MockUser = { id: uuid(), username: username.trim(), role, active: true, password };

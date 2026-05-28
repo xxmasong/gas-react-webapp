@@ -15,7 +15,7 @@ var UserRepository = (function () {
   var USERS_SHEET   = 'Users';
   var SESS_SHEET    = 'Sessions';
   var USER_HEADERS  = ['id', 'username', 'passwordHash', 'role', 'active', 'createdAt', 'updatedAt'];
-  var SESS_HEADERS  = ['token', 'userId', 'createdAt', 'expiresAt'];
+  var SESS_HEADERS  = ['token', 'userId', 'createdAt', 'expiresAt', 'lastUsedAt'];
 
   function props() { return PropertiesService.getScriptProperties(); }
 
@@ -120,7 +120,10 @@ var UserRepository = (function () {
 
   // ─── Sessions ───────────────────────────────────────────────────────────────
   function insertSession(session) {
-    sessSheet().appendRow([session.token, session.userId, session.createdAt, session.expiresAt]);
+    sessSheet().appendRow([
+      session.token, session.userId, session.createdAt, session.expiresAt,
+      session.lastUsedAt || session.createdAt,
+    ]);
     return session;
   }
 
@@ -132,15 +135,22 @@ var UserRepository = (function () {
     for (var i = 0; i < rows.length; i++) {
       if (String(rows[i][0]) === String(token)) {
         return {
-          token:     String(rows[i][0]),
-          userId:    String(rows[i][1]),
-          createdAt: String(rows[i][2]),
-          expiresAt: String(rows[i][3]),
-          _row:      i + 2,
+          token:      String(rows[i][0]),
+          userId:     String(rows[i][1]),
+          createdAt:  String(rows[i][2]),
+          expiresAt:  String(rows[i][3]),
+          lastUsedAt: String(rows[i][4] || rows[i][2]),
+          _row:       i + 2,
         };
       }
     }
     return null;
+  }
+
+  // Update the sliding "last used" timestamp for a session (idle-timeout reset).
+  function touchSession(token, isoNow) {
+    var s = findSession(token);
+    if (s) sessSheet().getRange(s._row, 5, 1, 1).setValues([[isoNow]]);
   }
 
   function deleteSession(token) {
@@ -174,6 +184,7 @@ var UserRepository = (function () {
     countUsers: countUsers,
     insertSession: insertSession,
     findSession: findSession,
+    touchSession: touchSession,
     deleteSession: deleteSession,
     purgeSessions: purgeSessions,
   };

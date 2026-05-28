@@ -33,7 +33,8 @@ function include(filename) {
  * the in-app user management screen.
  */
 function bootstrapFirstAdmin() {
-  var result = AuthService.seedFirstAdmin('admin', 'change-me-now-8+');
+  // Password must be ≥10 chars and include ≥3 of: lower, upper, number, symbol.
+  var result = AuthService.seedFirstAdmin('admin', 'ChangeMe-2026!');
   console.log(JSON.stringify(result));
   console.log('Auth workbook ID: ' + UserRepository.getWorkbookId());
   return result;

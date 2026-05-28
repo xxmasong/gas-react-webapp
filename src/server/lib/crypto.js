@@ -13,7 +13,7 @@
 
 var Crypto = (function () {
 
-  var ITERATIONS = 100000;   // ~tens of ms per hash on GAS; tune if too slow
+  var ITERATIONS = 150000;   // ~hundreds of ms per hash on GAS; tune if too slow
   var SALT_BYTES = 16;
   var ALGO_TAG   = 'pbkdf2-sha256';
 
@@ -39,18 +39,20 @@ var Crypto = (function () {
     return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, byteArray);
   }
 
+  // Derive randomness from multiple UUIDs (RFC-4122 v4 — backed by a secure
+  // RNG on the platform) hashed together. This avoids relying on Math.random,
+  // which is NOT cryptographically secure.
+  function randomBytesHex(n) {
+    var out = '';
+    while (out.length < n * 2) {
+      var seed = Utilities.getUuid() + Utilities.getUuid() + Utilities.getUuid();
+      out += toHex(sha256(Utilities.newBlob(seed).getBytes()));
+    }
+    return out.substr(0, n * 2);
+  }
+
   function randomSaltHex() {
-    var bytes = [];
-    for (var i = 0; i < SALT_BYTES; i++) {
-      bytes.push(Math.floor(Math.random() * 256));
-    }
-    // Mix in a UUID + time so we don't rely on Math.random alone.
-    var seed = Utilities.getUuid() + ':' + new Date().getTime();
-    var digest = sha256(Utilities.newBlob(seed).getBytes());
-    for (var j = 0; j < SALT_BYTES; j++) {
-      bytes[j] = (bytes[j] ^ ((digest[j] + 256) % 256)) % 256;
-    }
-    return toHex(bytes);
+    return randomBytesHex(SALT_BYTES);
   }
 
   // Iterated SHA-256 over (salt || password), feeding the previous digest back.
@@ -94,11 +96,9 @@ var Crypto = (function () {
     return safeEqual(actual, expected);
   }
 
-  // Opaque session token (256 bits of entropy, hex).
+  // Opaque session token (256 bits of entropy, hex) from secure UUID entropy.
   function randomToken() {
-    var seed = Utilities.getUuid() + ':' + Utilities.getUuid() + ':' + new Date().getTime() +
-               ':' + Math.random();
-    return toHex(sha256(Utilities.newBlob(seed).getBytes()));
+    return randomBytesHex(32);
   }
 
   return {

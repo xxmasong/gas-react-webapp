@@ -411,27 +411,7 @@ tbody + tbody .cat-group-row td { border-top: 2px solid var(--color-border); }
 }
 .theme-toggle:hover { color: var(--color-text); }
 
-/* ─── Toasts ───────────────────────────────────────────────────────────────── */
-.toast-stack {
-  position: fixed; top: 16px; right: 16px; z-index: 200;
-  display: flex; flex-direction: column; gap: 8px; max-width: 360px;
-}
-.toast {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border); background: var(--color-surface);
-  box-shadow: var(--shadow-menu); font-size: 0.85rem; cursor: pointer;
-  animation: toast-in 0.2s ease-out;
-}
-.toast-msg { flex: 1; }
-.toast-x {
-  border: none; background: none; padding: 0 2px; font-size: 1.1rem; line-height: 1;
-  color: inherit; opacity: 0.7;
-}
-.toast-error   { border-color: var(--color-danger-border); background: var(--color-danger-bg); color: var(--color-danger); }
-.toast-success { border-color: var(--color-success); background: var(--color-success-bg); color: var(--color-success); }
-.toast-info    { color: var(--color-text); }
-@keyframes toast-in { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+/* Toasts are rendered by notistack; no custom stack styles needed. */
 
 /* ════════════════════════════════════════════════════════════════════════════
    RESPONSIVE — tablet (640–1023px) and mobile (<640px)
@@ -526,8 +506,6 @@ tbody + tbody .cat-group-row td { border-top: 2px solid var(--color-border); }
   .bottom-tab svg { stroke: currentColor; }
   .bottom-tab.active { color: var(--color-accent); }
 
-  /* Toasts span the width near the top, clear of the header */
-  .toast-stack { top: 12px; left: 12px; right: 12px; max-width: none; }
 }
 
 /* Very small phones: single-column dashboard + stock inputs */

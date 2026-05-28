@@ -14,8 +14,18 @@
 var AuthService = (function () {
 
   var ROLES = { STAFF: 'inventory_staff', SUPERVISOR: 'supervisor', ADMIN: 'admin' };
-  var SESSION_TTL_MS = 12 * 60 * 60 * 1000;   // 12 hours
-  var MIN_PASSWORD   = 8;
+
+  // Session lifetime: a session is valid until BOTH limits hold —
+  //  - idle:     no use for IDLE_TTL_MS invalidates it (sliding window)
+  //  - absolute: it can never live longer than ABSOLUTE_TTL_MS from creation
+  var IDLE_TTL_MS     = 2 * 60 * 60 * 1000;    // 2 hours of inactivity
+  var ABSOLUTE_TTL_MS = 12 * 60 * 60 * 1000;   // 12 hours hard cap
+  var MIN_PASSWORD    = 10;
+
+  // Brute-force throttle: after MAX_FAILS within the window, lock for LOCKOUT_MS.
+  var MAX_FAILS   = 5;
+  var WINDOW_MS   = 15 * 60 * 1000;   // failures counted within 15 min
+  var LOCKOUT_MS  = 15 * 60 * 1000;   // lock duration after threshold
 
   // Privilege ordering for "at least this role" checks.
   var RANK = {};
@@ -24,6 +34,35 @@ var AuthService = (function () {
   RANK[ROLES.ADMIN] = 3;
 
   function isValidRole(role) { return RANK[role] != null; }
+
+  // ─── Login throttling (per-username, stored in Script Properties) ─────────────
+  function attemptKey(username) {
+    return 'login_fail:' + String(username).toLowerCase();
+  }
+  function readAttempts(username) {
+    var raw = PropertiesService.getScriptProperties().getProperty(attemptKey(username));
+    if (!raw) return { count: 0, first: 0, lockedUntil: 0 };
+    try { return JSON.parse(raw); } catch (e) { return { count: 0, first: 0, lockedUntil: 0 }; }
+  }
+  function writeAttempts(username, data) {
+    PropertiesService.getScriptProperties().setProperty(attemptKey(username), JSON.stringify(data));
+  }
+  function clearAttempts(username) {
+    PropertiesService.getScriptProperties().deleteProperty(attemptKey(username));
+  }
+  function isLockedOut(username) {
+    var a = readAttempts(username);
+    return a.lockedUntil && a.lockedUntil > new Date().getTime();
+  }
+  function recordFailure(username) {
+    var now = new Date().getTime();
+    var a = readAttempts(username);
+    // Reset the counter if the window has elapsed.
+    if (!a.first || now - a.first > WINDOW_MS) { a = { count: 0, first: now, lockedUntil: 0 }; }
+    a.count += 1;
+    if (a.count >= MAX_FAILS) { a.lockedUntil = now + LOCKOUT_MS; }
+    writeAttempts(username, a);
+  }
 
   function publicUser(u) {
     // Never leak the password hash to the client.
@@ -45,11 +84,33 @@ var AuthService = (function () {
     return { created: true, user: publicUser(user) };
   }
 
+  // Require length + a mix of character classes so accounts aren't protected
+  // by trivially guessable passwords.
+  function assertStrongPassword(password) {
+    var p = String(password == null ? '' : password);
+    if (p.length < MIN_PASSWORD)
+      throw AppError.validation('Password must be at least ' + MIN_PASSWORD + ' characters');
+    var classes = 0;
+    if (/[a-z]/.test(p)) classes++;
+    if (/[A-Z]/.test(p)) classes++;
+    if (/[0-9]/.test(p)) classes++;
+    if (/[^A-Za-z0-9]/.test(p)) classes++;
+    if (classes < 3)
+      throw AppError.validation('Password must include at least 3 of: lowercase, uppercase, number, symbol');
+  }
+
+  // Usernames: letters, numbers, dot, underscore, hyphen only (3–32 chars).
+  function assertValidUsername(clean) {
+    if (clean.length < 3 || clean.length > 32)
+      throw AppError.validation('Username must be 3–32 characters');
+    if (!/^[A-Za-z0-9._-]+$/.test(clean))
+      throw AppError.validation('Username may only contain letters, numbers, dot, underscore, hyphen');
+  }
+
   function _createUser(username, password, role) {
     var clean = normalizeUsername(username);
-    if (clean.length < 3) throw AppError.validation('Username must be at least 3 characters');
-    if (String(password).length < MIN_PASSWORD)
-      throw AppError.validation('Password must be at least ' + MIN_PASSWORD + ' characters');
+    assertValidUsername(clean);
+    assertStrongPassword(password);
     if (!isValidRole(role)) throw AppError.validation('Invalid role: ' + role);
     if (UserRepository.findByUsername(clean))
       throw AppError.conflict('Username already taken: ' + clean);
@@ -68,22 +129,39 @@ var AuthService = (function () {
   }
 
   // ─── Login / logout ────────────────────────────────────────────────────────
+  // A single generic message for all auth failures avoids leaking whether a
+  // username exists, is locked, or is deactivated.
+  var GENERIC_AUTH_FAIL = 'Invalid username or password';
+
   function login(username, password) {
-    var user = UserRepository.findByUsername(normalizeUsername(username));
+    var clean = normalizeUsername(username);
+
+    // Reject early if locked out — but still use the generic message.
+    if (isLockedOut(clean)) {
+      throw AppError.unauthorized('Too many attempts. Try again in a few minutes.');
+    }
+
+    var user = UserRepository.findByUsername(clean);
     // Verify even when the user is missing, to keep timing roughly uniform.
     var ok = user
       ? Crypto.verifyPassword(password, user.passwordHash)
       : Crypto.verifyPassword(password, 'pbkdf2-sha256:1:00:00');
-    if (!user || !ok) throw AppError.unauthorized('Invalid username or password');
-    if (!user.active) throw AppError.unauthorized('Account is deactivated');
 
-    UserRepository.purgeSessions(null); // opportunistic cleanup of expired rows
+    if (!user || !ok || !user.active) {
+      recordFailure(clean);
+      throw AppError.unauthorized(GENERIC_AUTH_FAIL);
+    }
+
+    clearAttempts(clean);                // successful login resets the counter
+    UserRepository.purgeSessions(null);  // opportunistic cleanup of expired rows
     var now     = new Date();
     var session = {
-      token:     Crypto.randomToken(),
-      userId:    user.id,
-      createdAt: now.toISOString(),
-      expiresAt: new Date(now.getTime() + SESSION_TTL_MS).toISOString(),
+      token:      Crypto.randomToken(),
+      userId:     user.id,
+      createdAt:  now.toISOString(),
+      // expiresAt is the ABSOLUTE cap; idle timeout is enforced via lastUsedAt.
+      expiresAt:  new Date(now.getTime() + ABSOLUTE_TTL_MS).toISOString(),
+      lastUsedAt: now.toISOString(),
     };
     UserRepository.insertSession(session);
     return { token: session.token, user: publicUser(user), expiresAt: session.expiresAt };
@@ -95,17 +173,29 @@ var AuthService = (function () {
   }
 
   // ─── Session validation ──────────────────────────────────────────────────────
-  // Returns the full (private) user for a valid, unexpired session, else null.
+  // Valid only if BOTH (a) within the absolute lifetime and (b) used within the
+  // idle window. On success the sliding lastUsedAt is refreshed.
   function userFromToken(token) {
     if (!token) return null;
     var session = UserRepository.findSession(token);
     if (!session) return null;
-    if (new Date(session.expiresAt).getTime() < new Date().getTime()) {
+
+    var now      = new Date().getTime();
+    var absExp   = new Date(session.expiresAt).getTime();
+    var idleExp  = new Date(session.lastUsedAt).getTime() + IDLE_TTL_MS;
+    if (now > absExp || now > idleExp) {
       UserRepository.deleteSession(token);
       return null;
     }
+
     var user = UserRepository.findById(session.userId);
-    if (!user || !user.active) return null;
+    if (!user || !user.active) {
+      UserRepository.deleteSession(token);
+      return null;
+    }
+
+    // Slide the idle window forward (best-effort; ignore write contention).
+    try { UserRepository.touchSession(token, new Date(now).toISOString()); } catch (e) {}
     return user;
   }
 
@@ -178,8 +268,7 @@ var AuthService = (function () {
     var user = requireUser(token);
     if (!Crypto.verifyPassword(currentPassword, user.passwordHash))
       throw AppError.unauthorized('Current password is incorrect');
-    if (String(newPassword).length < MIN_PASSWORD)
-      throw AppError.validation('Password must be at least ' + MIN_PASSWORD + ' characters');
+    assertStrongPassword(newPassword);
     user.passwordHash = Crypto.hashPassword(newPassword);
     user.updatedAt    = DateTime.nowIso();
     UserRepository.updateUser(user);

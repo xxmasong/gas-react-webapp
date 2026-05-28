@@ -23,8 +23,8 @@ export function UsersView() {
 
   async function onRegister(e: React.FormEvent) {
     e.preventDefault();
-    if (username.trim().length < 3 || password.length < 8) {
-      toast.error('Username ≥ 3 chars and password ≥ 8 chars required.');
+    if (username.trim().length < 3 || password.length < 10) {
+      toast.error('Username ≥ 3 chars and password ≥ 10 chars required.');
       return;
     }
     setBusy(true);
@@ -64,7 +64,7 @@ export function UsersView() {
           spellCheck={false}
         />
         <input
-          placeholder="Password (min 8)"
+          placeholder="Password (min 10, mixed)"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

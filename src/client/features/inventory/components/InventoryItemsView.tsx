@@ -127,48 +127,60 @@ export function InventoryItemsView() {
       ) : grouped.length === 0 ? (
         <p className="muted">No SKUs match.</p>
       ) : (
-        grouped.map(([catId, rows]) => {
-          const cost = rows.reduce((s, i) => s + i.costTotal, 0);
-          const qty = rows.reduce((s, i) => s + i.qtyTotal, 0);
-          return (
-            <section key={catId} className="cat-group">
-              <header className="cat-header">
-                <h3>{catName(catId)}</h3>
-                <span className="cat-totals">
-                  {formatCurrency(cost)} · {formatQty(qty)} pcs
-                </span>
-              </header>
-              <table className="grid inventory">
-                <thead>
-                  <tr>
-                    <th>SKU</th>
-                    <th>Store</th>
-                    <th className="num">UOM</th>
-                    <th>Cost / pc</th>
-                    <th className="num">SRP</th>
-                    <th className="num">Ground</th>
-                    <th className="num">Upstairs</th>
-                    <th className="num">Box</th>
-                    <th className="num">Total</th>
-                    <th className="num">Kyte</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((item) => (
-                    <InventoryRow
-                      key={item.id}
-                      item={item}
-                      onSaveStock={onSaveStock}
-                      onEdit={(it) => setForm({ mode: 'edit', item: it })}
-                      onDelete={onDelete}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </section>
-          );
-        })
+        <table className="grid inventory">
+          <colgroup>
+            <col className="col-sku" />
+            <col className="col-store" />
+            <col className="col-uom" />
+            <col className="col-cost" />
+            <col className="col-srp" />
+            <col className="col-qty" />
+            <col className="col-qty" />
+            <col className="col-qty" />
+            <col className="col-qty" />
+            <col className="col-kyte" />
+            <col className="col-actions" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Store</th>
+              <th className="num">UOM</th>
+              <th>Cost / pc</th>
+              <th className="num">SRP</th>
+              <th className="num">Ground</th>
+              <th className="num">Upstairs</th>
+              <th className="num">Box</th>
+              <th className="num">Total</th>
+              <th className="num">Kyte</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          {grouped.map(([catId, rows]) => {
+            const cost = rows.reduce((s, i) => s + i.costTotal, 0);
+            const qty  = rows.reduce((s, i) => s + i.qtyTotal, 0);
+            return (
+              <tbody key={catId} className="cat-tbody">
+                <tr className="cat-group-row">
+                  <td colSpan={5} className="cat-group-name">{catName(catId)}</td>
+                  <td colSpan={6} className="cat-group-totals">
+                    {formatCurrency(cost)} · {formatQty(qty)} pcs
+                  </td>
+                </tr>
+                {rows.map((item) => (
+                  <InventoryRow
+                    key={item.id}
+                    item={item}
+                    onSaveStock={onSaveStock}
+                    onEdit={(it) => setForm({ mode: 'edit', item: it })}
+                    onDelete={onDelete}
+                  />
+                ))}
+              </tbody>
+            );
+          })}
+        </table>
       )}
 
       {form && (

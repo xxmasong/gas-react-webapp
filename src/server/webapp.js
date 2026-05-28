@@ -39,3 +39,20 @@ function bootstrapFirstAdmin() {
   console.log('Auth workbook ID: ' + UserRepository.getWorkbookId());
   return result;
 }
+
+/**
+ * DANGER — wipes ALL accounts and sessions from the auth workbook so the
+ * bootstrap can re-create the admin from scratch. Use only to recover from a
+ * bad seed (e.g. an admin hashed with the old, far-too-slow iteration count).
+ * After running this, run bootstrapFirstAdmin() again.
+ */
+function resetAuthData() {
+  var id = UserRepository.getWorkbookId();
+  if (!id) { console.log('No auth workbook exists yet.'); return; }
+  var ss = SpreadsheetApp.openById(id);
+  ['Users', 'Sessions'].forEach(function (name) {
+    var sheet = ss.getSheetByName(name);
+    if (sheet) ss.deleteSheet(sheet);
+  });
+  console.log('Auth data cleared. Now run bootstrapFirstAdmin().');
+}

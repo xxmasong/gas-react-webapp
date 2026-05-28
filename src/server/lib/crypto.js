@@ -13,7 +13,12 @@
 
 var Crypto = (function () {
 
-  var ITERATIONS = 150000;   // ~hundreds of ms per hash on GAS; tune if too slow
+  // CRITICAL GAS CONSTRAINT: each iteration is a separate Utilities.computeDigest
+  // native call (~0.1–0.5ms each), so high counts make login take tens of
+  // seconds and the request appears to hang. Keep this low enough that a single
+  // hash stays well under ~1s. Defense leans on strong-password policy + login
+  // lockout, not on a huge stretch factor (GAS has no bcrypt/argon2).
+  var ITERATIONS = 600;
   var SALT_BYTES = 16;
   var ALGO_TAG   = 'pbkdf2-sha256';
 

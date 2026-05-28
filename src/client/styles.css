@@ -290,6 +290,27 @@ tbody + tbody .cat-group-row td { border-top: 2px solid var(--color-border); }
 .cat-form input { padding: 8px; border: 1px solid var(--color-border); border-radius: 8px; }
 .cat-form input[type='number'] { width: 80px; }
 
+/* ─── Analytics ────────────────────────────────────────────────────────────── */
+.chart-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 16px 0;
+}
+.chart-card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+}
+.chart-wide { grid-column: 1 / -1; }
+.chart-title { margin: 0 0 10px; font-size: 0.95rem; }
+.chart-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.chart-head .chart-title { margin: 0; }
+.chart-note { font-size: 0.78rem; margin: 8px 0 0; }
+.abc-pills { display: flex; gap: 6px; }
+.abc-pill { font-size: 0.72rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+.abc-a { background: var(--color-success-bg); color: var(--color-success); }
+.abc-b { background: var(--color-store-easy-bg); color: var(--color-store-easy-text); }
+.abc-c { background: var(--color-surface-sunken); color: var(--color-text-muted); }
+/* Recharts emits focus outlines on surfaces; keep them tidy. */
+.chart-card .recharts-surface:focus { outline: none; }
+
 /* ─── Dashboard cards ──────────────────────────────────────────────────────── */
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 16px 0; }
 .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
@@ -463,6 +484,10 @@ tbody + tbody .cat-group-row td { border-top: 2px solid var(--color-border); }
   /* Dashboard cards: two-up grid */
   .cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .card-value { font-size: 1.2rem; }
+
+  /* Charts stack to a single column on phones */
+  .chart-grid { grid-template-columns: 1fr; gap: 12px; }
+  .chart-card { padding: 12px; }
 
   /* Generic data grids (dashboard breakdown, categories) scroll horizontally
      inside a rounded container rather than breaking the layout */

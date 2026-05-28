@@ -2,6 +2,7 @@ import { Layout } from './components/layout';
 import { useView, useAuth } from './providers';
 import { LoginScreen, UsersView } from './features/auth';
 import { DashboardView } from './features/dashboard';
+import { AnalyticsView } from './features/analytics';
 import { InventoryItemsView } from './features/inventory';
 import { CategoriesView } from './features/categories';
 import './styles.css';
@@ -12,6 +13,8 @@ function ActiveView() {
   switch (view) {
     case 'dashboard':
       return <DashboardView />;
+    case 'analytics':
+      return <AnalyticsView />;
     case 'inventory':
       return <InventoryItemsView />;
     case 'categories':

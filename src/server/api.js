@@ -126,6 +126,21 @@ function bulkUpdateStock(updates) {
   return InventoryItemService.bulkUpdateStock(updates);
 }
 
+// ─── Reseed ───────────────────────────────────────────────────────────────────────
+
+/**
+ * Wipes SkuCategories + InventoryItems tabs and re-seeds from Product Info.
+ * Long-running (~30–60 s on large sheets); call from the UI reload button only.
+ * @returns {{ categories: number, items: number }}
+ */
+function reseedInventory() {
+  resetSeededTabs();
+  seedInventoryFromSheet();
+  var cats  = CategoryService.getCategories();
+  var items = InventoryItemService.getInventoryItems();
+  return { categories: cats.length, items: items.length };
+}
+
 // ─── Summary / reporting ─────────────────────────────────────────────────────────
 
 /** @returns {Object} aggregate inventory summary. */

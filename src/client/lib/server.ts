@@ -152,6 +152,13 @@ function createMock(): ServerFunctions {
       return changed;
     },
 
+    // Data management
+    reseedInventory: () => {
+      inventory = [];
+      categories = [];
+      return { categories: 0, items: 0 };
+    },
+
     // Summary / reporting
     getInventorySummary: (): InventorySummary => ({
       totalCost: inventory.reduce((s, i) => s + i.costTotal, 0),
@@ -221,6 +228,9 @@ export const server = {
   // Summary / reporting
   getInventorySummary: () => call('getInventorySummary'),
   getCategoryTotals: () => call('getCategoryTotals'),
+
+  // Data management
+  reseedInventory: () => call('reseedInventory'),
 };
 
 export const runningInGas = isGasHost;

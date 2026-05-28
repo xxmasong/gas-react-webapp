@@ -151,4 +151,7 @@ export interface ServerFunctions {
   // Summary / reporting
   getInventorySummary(): InventorySummary;
   getCategoryTotals(): CategoryTotal[];
+
+  // Data management
+  reseedInventory(): { categories: number; items: number };
 }

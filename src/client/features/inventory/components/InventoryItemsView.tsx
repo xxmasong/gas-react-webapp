@@ -5,7 +5,12 @@ import {
   getCoreRowModel,
   getGroupedRowModel,
   getExpandedRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
   flexRender,
+  type SortingState,
+  type ColumnFiltersState,
+  type VisibilityState,
 } from '@tanstack/react-table';
 import type { InventoryItem } from '@shared/types';
 import { formatCurrency, formatQty } from '../../../lib/format';
@@ -13,6 +18,7 @@ import { queryKeys } from '../../../lib/queryKeys';
 import { useInventoryItems } from '../hooks/useInventoryItems';
 import { inventoryColumns } from './inventoryColumns';
 import { InventoryRow } from './InventoryRow';
+import { ColumnVisibilityMenu } from './ColumnVisibilityMenu';
 import { ItemForm } from './ItemForm';
 
 type FormState = { mode: 'add' } | { mode: 'edit'; item: InventoryItem } | null;
@@ -21,9 +27,10 @@ export function InventoryItemsView() {
   const { items, categories, loading, error, add, update, remove, bulkUpdateStock } =
     useInventoryItems();
   const [localError, setLocalError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [storeFilter, setStoreFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [mismatchOnly, setMismatchOnly] = useState(false);
   const [form, setForm] = useState<FormState>(null);
 
@@ -35,22 +42,13 @@ export function InventoryItemsView() {
     return (id: string) => map.get(id) ?? 'Uncategorized';
   }, [categories]);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return items.filter((i) => {
-      if (categoryFilter && i.categoryId !== categoryFilter) return false;
-      if (storeFilter && i.store !== storeFilter) return false;
-      if (mismatchOnly && i.kyteMatch) return false;
-      if (q && !i.sku.toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }, [items, search, categoryFilter, storeFilter, mismatchOnly]);
-
-  // Sort by category name so groups appear alphabetically
-  const sorted = useMemo(
-    () => [...filtered].sort((a, b) => catName(a.categoryId).localeCompare(catName(b.categoryId))),
-    [filtered, catName],
-  );
+  // The "mismatches only" toggle is a cross-cutting predicate, so it stays as a
+  // pre-filter. We also pre-sort by category name so the grouped rows appear
+  // in alphabetical category order (the group row model preserves input order).
+  const data = useMemo(() => {
+    const base = mismatchOnly ? items.filter((i) => !i.kyteMatch) : items;
+    return [...base].sort((a, b) => catName(a.categoryId).localeCompare(catName(b.categoryId)));
+  }, [items, mismatchOnly, catName]);
 
   async function onSaveStock(id: string, qtyGround: number, qtyUpstair: number, qtyBox: number) {
     try {
@@ -76,15 +74,30 @@ export function InventoryItemsView() {
   }
 
   const table = useReactTable({
-    data: sorted,
+    data,
     columns: inventoryColumns,
-    state: { grouping: ['categoryId'], expanded: true },
+    state: { grouping: ['categoryId'], expanded: true, sorting, columnFilters, columnVisibility, globalFilter },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onGlobalFilterChange: setGlobalFilter,
+    // Global search matches the SKU name only.
+    globalFilterFn: (row, _id, value) =>
+      row.original.sku.toLowerCase().includes(String(value).toLowerCase()),
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    // Keep all groups expanded by default
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     autoResetExpanded: false,
   });
+
+  const visibleLeafCount = table.getVisibleLeafColumns().filter(
+    (c) => !c.columnDef.meta?.hidden,
+  ).length;
+
+  const storeFilter = (table.getColumn('store')?.getFilterValue() as string) ?? '';
+  const categoryFilter = (table.getColumn('categoryId')?.getFilterValue() as string) ?? '';
 
   return (
     <>
@@ -94,16 +107,24 @@ export function InventoryItemsView() {
         <input
           className="search"
           placeholder="Search SKU…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={globalFilter}
+          onChange={(e) => setGlobalFilter(e.target.value)}
         />
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+        <select
+          value={categoryFilter}
+          onChange={(e) =>
+            table.getColumn('categoryId')?.setFilterValue(e.target.value || undefined)
+          }
+        >
           <option value="">All categories</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
-        <select value={storeFilter} onChange={(e) => setStoreFilter(e.target.value)}>
+        <select
+          value={storeFilter}
+          onChange={(e) => table.getColumn('store')?.setFilterValue(e.target.value || undefined)}
+        >
           <option value="">All stores</option>
           <option value="EASY">EASY</option>
           <option value="GRUTON">GRUTON</option>
@@ -116,6 +137,7 @@ export function InventoryItemsView() {
           />
           Mismatches only
         </label>
+        <ColumnVisibilityMenu table={table} />
         <button
           className="primary"
           disabled={categories.length === 0}
@@ -130,24 +152,15 @@ export function InventoryItemsView() {
         <div className="skeleton-table">
           {Array.from({ length: 8 }).map((_, i) => <div key={i} className="skeleton-row" />)}
         </div>
-      ) : sorted.length === 0 ? (
+      ) : table.getRowModel().rows.length === 0 ? (
         <p className="muted">No SKUs match.</p>
       ) : (
         <table className="grid inventory">
           <colgroup>
-            {table.getFlatHeaders().map((header) => {
-              const hidden = (header.column.columnDef.meta as any)?.hidden;
-              if (hidden) return null;
-              return (
-                <col
-                  key={header.id}
-                  style={{
-                    width: header.column.columnDef.size === 999
-                      ? undefined
-                      : header.column.columnDef.size,
-                  }}
-                />
-              );
+            {table.getVisibleLeafColumns().map((column) => {
+              if (column.columnDef.meta?.hidden) return null;
+              const size = column.columnDef.size;
+              return <col key={column.id} style={{ width: size === 999 ? undefined : size }} />;
             })}
           </colgroup>
 
@@ -155,15 +168,22 @@ export function InventoryItemsView() {
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
                 {hg.headers.map((header) => {
-                  const hidden = (header.column.columnDef.meta as any)?.hidden;
-                  if (hidden) return null;
-                  const align = (header.column.columnDef.meta as any)?.align;
+                  if (header.column.columnDef.meta?.hidden) return null;
+                  const align = header.column.columnDef.meta?.align;
+                  const canSort = header.column.getCanSort();
+                  const sortDir = header.column.getIsSorted();
                   return (
                     <th
                       key={header.id}
-                      className={align === 'right' ? 'num' : undefined}
+                      className={`${align === 'right' ? 'num' : ''} ${canSort ? 'sortable' : ''}`.trim() || undefined}
+                      onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
+                      {canSort && (
+                        <span className="sort-ind">
+                          {sortDir === 'asc' ? ' ▲' : sortDir === 'desc' ? ' ▼' : ''}
+                        </span>
+                      )}
                     </th>
                   );
                 })}
@@ -177,23 +197,17 @@ export function InventoryItemsView() {
                 const catId = row.getValue<string>('categoryId');
                 const leafRows = row.getLeafRows();
                 const cost = leafRows.reduce((s, r) => s + r.original.costTotal, 0);
-                const qty  = leafRows.reduce((s, r) => s + r.original.qtyTotal, 0);
-                // Count visible columns (excluding hidden)
-                const visibleCols = table.getFlatHeaders().filter(
-                  (h) => !(h.column.columnDef.meta as any)?.hidden,
-                ).length;
+                const qty = leafRows.reduce((s, r) => s + r.original.qtyTotal, 0);
+                const nameCols = Math.ceil(visibleLeafCount / 2);
                 return (
                   <tr key={row.id} className="cat-group-row">
-                    <td colSpan={Math.ceil(visibleCols / 2)} className="cat-group-name">
-                      {catName(catId)}
-                    </td>
-                    <td colSpan={visibleCols - Math.ceil(visibleCols / 2)} className="cat-group-totals">
+                    <td colSpan={nameCols} className="cat-group-name">{catName(catId)}</td>
+                    <td colSpan={visibleLeafCount - nameCols} className="cat-group-totals">
                       {formatCurrency(cost)} · {formatQty(qty)} pcs
                     </td>
                   </tr>
                 );
               }
-
               return (
                 <InventoryRow
                   key={row.id}

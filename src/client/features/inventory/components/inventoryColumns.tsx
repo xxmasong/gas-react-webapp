@@ -4,42 +4,49 @@ import { formatCurrency, formatQty } from '../../../lib/format';
 import { CostDisplay } from './CostDisplay';
 import { MismatchBadge } from './MismatchBadge';
 
-export type InventoryRowMeta = {
-  onSaveStock: (id: string, g: number, u: number, b: number) => void;
-  onEdit: (item: InventoryItem) => void;
-  onDelete: (id: string) => void;
-  catName: (id: string) => string;
-};
+declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends unknown, TValue> {
+    align?: 'right';
+    hidden?: boolean;
+    label?: string;
+  }
+}
 
 const col = createColumnHelper<InventoryItem>();
 
 export const inventoryColumns = [
-  // Hidden grouping column — TanStack uses this to build group rows
+  // Hidden grouping column — drives the group row model and the category filter.
   col.accessor('categoryId', {
     id: 'categoryId',
     header: '',
     enableGrouping: true,
-    // Suppress rendering in data rows (only used for group headers)
+    enableHiding: false,
+    filterFn: 'equals',
     cell: () => null,
-    meta: { hidden: true },
+    meta: { hidden: true, label: 'Category' },
   }),
 
   col.accessor('sku', {
     id: 'sku',
     header: 'SKU',
-    size: 999, // flex-grow via CSS
+    size: 999,
+    enableHiding: false,
     cell: (info) => <span className="sku">{info.getValue()}</span>,
+    meta: { label: 'SKU' },
   }),
 
   col.accessor('store', {
     id: 'store',
     header: 'Store',
     size: 80,
+    filterFn: 'equals',
     cell: (info) => (
       <span className={`store-badge store-${info.getValue().toLowerCase()}`}>
         {info.getValue()}
       </span>
     ),
+    meta: { label: 'Store' },
   }),
 
   col.accessor('uom', {
@@ -47,10 +54,10 @@ export const inventoryColumns = [
     header: 'UOM',
     size: 60,
     cell: (info) => <span className="uom-badge">{info.getValue()}</span>,
-    meta: { align: 'right' },
+    meta: { align: 'right', label: 'UOM' },
   }),
 
-  col.display({
+  col.accessor('costPerPieceNew', {
     id: 'cost',
     header: 'Cost / pc',
     size: 120,
@@ -60,6 +67,7 @@ export const inventoryColumns = [
         newCost={info.row.original.costPerPieceNew}
       />
     ),
+    meta: { label: 'Cost / pc' },
   }),
 
   col.accessor('srp', {
@@ -68,46 +76,45 @@ export const inventoryColumns = [
     size: 100,
     cell: (info) =>
       info.getValue() ? formatCurrency(info.getValue()) : <span className="muted">—</span>,
-    meta: { align: 'right' },
+    meta: { align: 'right', label: 'SRP' },
   }),
 
-  col.display({
+  col.accessor('qtyGround', {
     id: 'qtyGround',
     header: 'Ground',
     size: 80,
-    meta: { align: 'right', isStockInput: true, stockField: 'qtyGround' },
-    cell: () => null, // rendered by InventoryRow directly (needs local state)
+    cell: () => null, // rendered by InventoryRow (needs local input state)
+    meta: { align: 'right', label: 'Ground' },
   }),
 
-  col.display({
+  col.accessor('qtyUpstair', {
     id: 'qtyUpstair',
     header: 'Upstairs',
     size: 80,
-    meta: { align: 'right', isStockInput: true, stockField: 'qtyUpstair' },
     cell: () => null,
+    meta: { align: 'right', label: 'Upstairs' },
   }),
 
-  col.display({
+  col.accessor('qtyBox', {
     id: 'qtyBox',
     header: 'Box',
     size: 80,
-    meta: { align: 'right', isStockInput: true, stockField: 'qtyBox' },
     cell: () => null,
+    meta: { align: 'right', label: 'Box' },
   }),
 
-  col.display({
+  col.accessor('qtyTotal', {
     id: 'qtyTotal',
     header: 'Total',
     size: 70,
-    meta: { align: 'right' },
-    cell: (info) => <strong>{formatQty(info.row.original.qtyTotal)}</strong>,
+    cell: (info) => <strong>{formatQty(info.getValue())}</strong>,
+    meta: { align: 'right', label: 'Total' },
   }),
 
-  col.display({
+  col.accessor((r) => r.qtyTotal - r.qtyKyte, {
     id: 'kyte',
     header: 'Kyte',
     size: 70,
-    meta: { align: 'right' },
     cell: (info) => (
       <MismatchBadge
         qtyTotal={info.row.original.qtyTotal}
@@ -115,13 +122,16 @@ export const inventoryColumns = [
         match={info.row.original.kyteMatch}
       />
     ),
+    meta: { align: 'right', label: 'Kyte' },
   }),
 
   col.display({
     id: 'actions',
     header: '',
     size: 90,
-    meta: { align: 'right' },
+    enableSorting: false,
+    enableHiding: false,
     cell: () => null, // rendered by InventoryRow directly
+    meta: { align: 'right', label: 'Actions' },
   }),
 ];

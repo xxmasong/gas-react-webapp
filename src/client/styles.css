@@ -92,12 +92,29 @@ button {
 button.primary { background: #1f883d; color: #fff; border-color: #1f883d; }
 button.ghost { background: #fff; color: #656d76; }
 
+/* ─── Column visibility menu ───────────────────────────────────────────────── */
+.colvis { position: relative; }
+.colvis-menu {
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 20;
+  background: #fff; border: 1px solid #d0d7de; border-radius: 8px;
+  padding: 6px; min-width: 160px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.colvis-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: 6px; font-size: 0.85rem; cursor: pointer;
+}
+.colvis-item:hover { background: #f6f8fa; }
+
 /* ─── Grid tables ──────────────────────────────────────────────────────────── */
 .grid { width: 100%; border-collapse: collapse; background: #fff; font-size: 0.85rem; }
 .grid th, .grid td {
   text-align: left; padding: 8px 10px; border-bottom: 1px solid #eaeef2;
 }
 .grid thead th { color: #656d76; font-weight: 600; font-size: 0.78rem; }
+.grid thead th.sortable { cursor: pointer; user-select: none; }
+.grid thead th.sortable:hover { color: #1f2328; }
+.sort-ind { font-size: 0.7rem; color: #1f883d; }
 .grid .num { text-align: right; }
 .grid td.actions { text-align: right; white-space: nowrap; }
 .grid td.actions button { padding: 4px 8px; margin-left: 4px; font-size: 0.8rem; }

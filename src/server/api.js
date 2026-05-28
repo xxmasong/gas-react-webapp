@@ -126,6 +126,17 @@ function bulkUpdateStock(updates) {
   return InventoryItemService.bulkUpdateStock(updates);
 }
 
+/**
+ * Save one stock row and return it re-read straight from the sheet, so the
+ * client can verify the persisted value matches what was sent.
+ * @param {{ id, qtyGround, qtyUpstair, qtyBox }} update
+ * @returns {Object} the freshly-read inventory item.
+ */
+function saveAndVerifyStock(update) {
+  validate.stockUpdate(update);
+  return InventoryItemService.saveAndVerifyStock(update);
+}
+
 // ─── Reseed ───────────────────────────────────────────────────────────────────────
 
 /**

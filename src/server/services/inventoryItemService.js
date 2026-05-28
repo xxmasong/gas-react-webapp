@@ -110,12 +110,31 @@ var InventoryItemService = (function () {
     return InventoryItemRepository.updateMany(changed);
   }
 
+  // Save one stock row and read it back DIRECTLY from the sheet (cache
+  // bypassed) so the client can verify the persisted value matches what it
+  // sent. Returns the freshly-read item.
+  function saveAndVerifyStock(update) {
+    var existing = InventoryItemRepository.findById(update.id);
+    if (!existing) throw AppError.notFound('InventoryItem', update.id);
+    existing.qtyGround  = num(update.qtyGround);
+    existing.qtyUpstair = num(update.qtyUpstair);
+    existing.qtyBox     = num(update.qtyBox);
+    existing.updatedAt  = DateTime.nowIso();
+    InventoryItemRepository.update(withComputed(existing));
+    // Re-read straight from the sheet (not the just-written object) so we
+    // confirm the row on disk reflects the change.
+    var fresh = InventoryItemRepository.findByIdFresh(update.id);
+    if (!fresh) throw AppError.notFound('InventoryItem', update.id);
+    return fresh;
+  }
+
   return {
     getInventoryItems: getInventoryItems,
     addInventoryItem: addInventoryItem,
     updateInventoryItem: updateInventoryItem,
     deleteInventoryItem: deleteInventoryItem,
     bulkUpdateStock: bulkUpdateStock,
+    saveAndVerifyStock: saveAndVerifyStock,
   };
 
 })();

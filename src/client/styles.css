@@ -253,8 +253,23 @@ tbody + tbody .cat-group-row td { border-top: 2px solid var(--color-border); }
 .store-badge { font-size: 0.7rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; letter-spacing: 0.02em; }
 .store-badge.store-easy { background: var(--color-store-easy-bg); color: var(--color-store-easy-text); }
 .store-badge.store-gruton { background: var(--color-store-gruton-bg); color: var(--color-store-gruton-text); }
-.stock-in { width: 56px; padding: 4px 6px; border: 1px solid var(--color-border); border-radius: 6px; text-align: right; }
+.stock-in { width: 56px; padding: 4px 6px; border: 1px solid var(--color-border); border-radius: 6px; text-align: right; background: var(--color-surface); color: var(--color-text); }
+.stock-in.dirty, .inv-card-stock input.dirty {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
 .row-mismatch { background: var(--color-danger-soft); }
+
+/* ─── Save button + status ─────────────────────────────────────────────────── */
+.grid td.actions button.save { color: var(--color-accent); border-color: var(--color-accent); font-weight: 600; }
+.grid td.actions button.save:disabled { color: var(--color-text-subtle); border-color: var(--color-border); font-weight: 400; cursor: default; opacity: 0.6; }
+.save-status { display: inline-block; margin-left: 6px; font-size: 0.68rem; font-weight: 600; }
+.save-status-saving   { color: var(--color-text-muted); }
+.save-status-saved    { color: var(--color-success); }
+.save-status-error    { color: var(--color-danger); }
+.save-status-mismatch { color: var(--color-warn-text); }
+.inv-card-statusline { min-height: 14px; }
+.inv-card-statusline .save-status { margin-left: 0; }
 
 /* ─── Cost display ─────────────────────────────────────────────────────────── */
 .cost { display: flex; flex-direction: column; gap: 1px; }

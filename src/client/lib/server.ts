@@ -151,6 +151,22 @@ function createMock(): ServerFunctions {
       });
       return changed;
     },
+    saveAndVerifyStock: (update: StockUpdate) => {
+      let saved: InventoryItem | undefined;
+      inventory = inventory.map((i) => {
+        if (i.id !== update.id) return i;
+        saved = withComputed({
+          ...i,
+          qtyGround: update.qtyGround,
+          qtyUpstair: update.qtyUpstair,
+          qtyBox: update.qtyBox,
+          updatedAt: now(),
+        });
+        return saved;
+      });
+      if (!saved) throw new Error('InventoryItem not found: ' + update.id);
+      return saved;
+    },
 
     // Data management
     reseedInventory: () => {
@@ -224,6 +240,7 @@ export const server = {
   updateInventoryItem: (item: InventoryItem) => call('updateInventoryItem', item),
   deleteInventoryItem: (id: string) => call('deleteInventoryItem', id),
   bulkUpdateStock: (updates: StockUpdate[]) => call('bulkUpdateStock', updates),
+  saveAndVerifyStock: (update: StockUpdate) => call('saveAndVerifyStock', update),
 
   // Summary / reporting
   getInventorySummary: () => call('getInventorySummary'),

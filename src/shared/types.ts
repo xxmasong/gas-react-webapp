@@ -147,6 +147,7 @@ export interface ServerFunctions {
   updateInventoryItem(item: InventoryItem): InventoryItem;
   deleteInventoryItem(id: string): { id: string };
   bulkUpdateStock(updates: StockUpdate[]): InventoryItem[];
+  saveAndVerifyStock(update: StockUpdate): InventoryItem;
 
   // Summary / reporting
   getInventorySummary(): InventorySummary;

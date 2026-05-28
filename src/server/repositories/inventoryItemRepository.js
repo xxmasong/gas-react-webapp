@@ -42,6 +42,19 @@ var InventoryItemRepository = (function () {
     return findAll().find(function (i) { return i.id === String(id); }) || null;
   }
 
+  // Read a single row straight from the sheet, bypassing the cache. Used by
+  // saveAndVerifyStock so the returned value reflects what is actually on disk.
+  function findByIdFresh(id) {
+    var sheet   = getSheet();
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) return null;
+    var rows = sheet.getRange(2, 1, lastRow - 1, HEADERS.length).getValues();
+    for (var i = 0; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(id)) return InventoryItemMapper.fromRow(rows[i]);
+    }
+    return null;
+  }
+
   function findByCategoryId(categoryId) {
     return findAll().filter(function (i) { return i.categoryId === String(categoryId); });
   }
@@ -129,6 +142,7 @@ var InventoryItemRepository = (function () {
   return {
     findAll: findAll,
     findById: findById,
+    findByIdFresh: findByIdFresh,
     findByCategoryId: findByCategoryId,
     insert: insert,
     insertMany: insertMany,

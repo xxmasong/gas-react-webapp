@@ -1,6 +1,8 @@
-import { useState } from 'react';
 import { flexRender, type Row, type Cell } from '@tanstack/react-table';
 import type { InventoryItem } from '@shared/types';
+import { formatQty } from '../../../lib/format';
+import { useStockRow } from '../hooks/useStockRow';
+import { SaveStatusBadge } from './SaveStatusBadge';
 
 const STOCK_FIELDS = {
   qtyGround: 'qtyGround',
@@ -10,32 +12,26 @@ const STOCK_FIELDS = {
 
 export function InventoryRow({
   row,
-  onSaveStock,
   onEdit,
   onDelete,
 }: {
   row: Row<InventoryItem>;
-  onSaveStock: (id: string, qtyGround: number, qtyUpstair: number, qtyBox: number) => void;
   onEdit: (item: InventoryItem) => void;
   onDelete: (id: string) => void;
 }) {
   const item = row.original;
-  const [ground, setGround] = useState(item.qtyGround);
-  const [upstair, setUpstair] = useState(item.qtyUpstair);
-  const [box, setBox] = useState(item.qtyBox);
+  const s = useStockRow(item);
 
-  const dirty = ground !== item.qtyGround || upstair !== item.qtyUpstair || box !== item.qtyBox;
-
-  function commit() {
-    if (dirty) onSaveStock(item.id, ground, upstair, box);
-  }
-
-  const stockValue: Record<string, number> = { qtyGround: ground, qtyUpstair: upstair, qtyBox: box };
+  const stockValue: Record<string, number> = { qtyGround: s.ground, qtyUpstair: s.upstair, qtyBox: s.box };
   const stockSetter: Record<string, (n: number) => void> = {
-    qtyGround: setGround,
-    qtyUpstair: setUpstair,
-    qtyBox: setBox,
+    qtyGround: s.setGround,
+    qtyUpstair: s.setUpstair,
+    qtyBox: s.setBox,
   };
+
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') s.save();
+  }
 
   function renderCell(cell: Cell<InventoryItem, unknown>) {
     if (cell.column.columnDef.meta?.hidden) return null;
@@ -43,17 +39,17 @@ export function InventoryRow({
     const align = cell.column.columnDef.meta?.align;
     const numClass = align === 'right' ? 'num' : '';
 
-    // Stock inputs keep local state for the blur-to-save UX.
     if (id in STOCK_FIELDS) {
       return (
         <td key={cell.id} className="num">
           <input
-            className="stock-in"
+            className={`stock-in ${s.dirty ? 'dirty' : ''}`.trim()}
             type="number"
+            inputMode="numeric"
             min={0}
             value={stockValue[id]}
             onChange={(e) => stockSetter[id](Number(e.target.value))}
-            onBlur={commit}
+            onKeyDown={onKeyDown}
           />
         </td>
       );
@@ -62,13 +58,30 @@ export function InventoryRow({
     if (id === 'actions') {
       return (
         <td key={cell.id} className="actions">
+          <button
+            className="save"
+            disabled={!s.dirty || s.status === 'saving'}
+            onClick={s.save}
+            title={s.dirty ? 'Save stock changes' : 'No changes to save'}
+          >
+            {s.status === 'saving' ? '…' : 'Save'}
+          </button>
           <button onClick={() => onEdit(item)}>Edit</button>
           <button className="del" onClick={() => onDelete(item.id)}>×</button>
         </td>
       );
     }
 
-    const extra = id === 'sku' ? 'sku' : id === 'qtyTotal' ? 'total' : '';
+    if (id === 'qtyTotal') {
+      return (
+        <td key={cell.id} className="num total">
+          {formatQty(s.liveTotal)}
+          <SaveStatusBadge status={s.status} />
+        </td>
+      );
+    }
+
+    const extra = id === 'sku' ? 'sku' : '';
     return (
       <td key={cell.id} className={`${numClass} ${extra}`.trim() || undefined}>
         {flexRender(cell.column.columnDef.cell, cell.getContext())}

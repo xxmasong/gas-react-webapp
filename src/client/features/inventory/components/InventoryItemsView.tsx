@@ -26,8 +26,7 @@ import { ItemForm } from './ItemForm';
 type FormState = { mode: 'add' } | { mode: 'edit'; item: InventoryItem } | null;
 
 export function InventoryItemsView() {
-  const { items, categories, loading, error, add, update, remove, bulkUpdateStock } =
-    useInventoryItems();
+  const { items, categories, loading, error, add, update, remove } = useInventoryItems();
   const [localError, setLocalError] = useState<string | null>(null);
   const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -52,13 +51,6 @@ export function InventoryItemsView() {
     const base = mismatchOnly ? items.filter((i) => !i.kyteMatch) : items;
     return [...base].sort((a, b) => catName(a.categoryId).localeCompare(catName(b.categoryId)));
   }, [items, mismatchOnly, catName]);
-
-  async function onSaveStock(id: string, qtyGround: number, qtyUpstair: number, qtyBox: number) {
-    try {
-      setLocalError(null);
-      await bulkUpdateStock([{ id, qtyGround, qtyUpstair, qtyBox }]);
-    } catch (e) { setLocalError(String(e)); }
-  }
 
   async function onDelete(id: string) {
     try {
@@ -183,7 +175,6 @@ export function InventoryItemsView() {
               <InventoryCard
                 key={row.id}
                 item={row.original}
-                onSaveStock={onSaveStock}
                 onEdit={(it) => setForm({ mode: 'edit', item: it })}
                 onDelete={onDelete}
               />
@@ -248,7 +239,6 @@ export function InventoryItemsView() {
                 <InventoryRow
                   key={row.id}
                   row={row}
-                  onSaveStock={onSaveStock}
                   onEdit={(it) => setForm({ mode: 'edit', item: it })}
                   onDelete={onDelete}
                 />

@@ -15,9 +15,11 @@ import {
 import type { InventoryItem } from '@shared/types';
 import { formatCurrency, formatQty } from '../../../lib/format';
 import { queryKeys } from '../../../lib/queryKeys';
+import { useBreakpoint } from '../../../hooks/useMediaQuery';
 import { useInventoryItems } from '../hooks/useInventoryItems';
 import { inventoryColumns } from './inventoryColumns';
 import { InventoryRow } from './InventoryRow';
+import { InventoryCard } from './InventoryCard';
 import { ColumnVisibilityMenu } from './ColumnVisibilityMenu';
 import { ItemForm } from './ItemForm';
 
@@ -36,6 +38,8 @@ export function InventoryItemsView() {
 
   const isFetching = useIsFetching({ queryKey: queryKeys.inventoryItems() });
   const displayError = localError ?? error;
+  const breakpoint = useBreakpoint();
+  const isMobile = breakpoint === 'mobile';
 
   const catName = useMemo(() => {
     const map = new Map(categories.map((c) => [c.id, c.name]));
@@ -159,6 +163,34 @@ export function InventoryItemsView() {
         </div>
       ) : table.getRowModel().rows.length === 0 ? (
         <p className="muted">No SKUs match.</p>
+      ) : isMobile ? (
+        <div className="inv-cards">
+          {table.getRowModel().rows.map((row) => {
+            if (row.getIsGrouped()) {
+              const catId = row.getValue<string>('categoryId');
+              const leafRows = row.getLeafRows();
+              const cost = leafRows.reduce((s, r) => s + r.original.costTotal, 0);
+              const qty = leafRows.reduce((s, r) => s + r.original.qtyTotal, 0);
+              return (
+                <div key={row.id} className="inv-cards-group-header">
+                  <span className="inv-cards-group-name">{catName(catId)}</span>
+                  <span className="inv-cards-group-totals">
+                    {formatCurrency(cost)} · {formatQty(qty)} pcs
+                  </span>
+                </div>
+              );
+            }
+            return (
+              <InventoryCard
+                key={row.id}
+                item={row.original}
+                onSaveStock={onSaveStock}
+                onEdit={(it) => setForm({ mode: 'edit', item: it })}
+                onDelete={onDelete}
+              />
+            );
+          })}
+        </div>
       ) : (
         <table className="grid inventory">
           <colgroup>

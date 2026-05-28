@@ -82,6 +82,41 @@ button {
 }
 .tab.active { color: #1f2328; border-bottom-color: #1f883d; }
 
+/* ─── Bottom tab bar (mobile only — hidden on tablet/laptop) ──────────────── */
+.bottom-nav { display: none; }
+
+/* ─── Mobile inventory cards (hidden until mobile breakpoint) ─────────────── */
+.inv-cards { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+.inv-cards-group-header {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 6px 2px; margin-top: 6px;
+}
+.inv-cards-group-name { font-size: 1rem; font-weight: 700; color: #1f2328; }
+.inv-cards-group-totals { font-size: 0.8rem; font-weight: 600; color: #656d76; }
+
+.inv-card {
+  background: #fff; border: 1px solid #d0d7de; border-radius: 14px;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.inv-card-mismatch { border-color: #ffcecb; background: #fff8f6; }
+.inv-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.inv-card-name { font-weight: 600; font-size: 0.98rem; line-height: 1.25; }
+.inv-card-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 0.82rem; }
+.inv-card-srp { color: #656d76; }
+.inv-card-stock { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stock-field { display: flex; flex-direction: column; gap: 3px; }
+.stock-field > span { font-size: 0.68rem; color: #656d76; text-transform: uppercase; letter-spacing: 0.02em; }
+.stock-field input {
+  width: 100%; padding: 10px 6px; border: 1px solid #d0d7de; border-radius: 8px;
+  text-align: center; font-size: 1rem;
+}
+.total-field { justify-content: flex-end; }
+.total-field strong { font-size: 1.05rem; padding: 6px 0; display: block; text-align: center; }
+.inv-card-actions { display: flex; gap: 8px; }
+.inv-card-actions button { flex: 1; padding: 10px; font-size: 0.9rem; }
+.inv-card-actions .del { color: #cf222e; border-color: #ffcecb; }
+
 /* ─── Toolbar ──────────────────────────────────────────────────────────────── */
 .toolbar { display: flex; gap: 8px; align-items: center; margin: 16px 0; flex-wrap: wrap; }
 .toolbar .search { flex: 1; min-width: 180px; }
@@ -229,3 +264,95 @@ tbody + tbody .cat-group-row td { border-top: 2px solid #d0d7de; }
 .readonly-prices dl div { display: flex; justify-content: space-between; gap: 8px; }
 .readonly-prices dt { color: #656d76; font-size: 0.78rem; }
 .readonly-prices dd { margin: 0; font-weight: 600; font-size: 0.82rem; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — tablet (640–1023px) and mobile (<640px)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Tablet: roomier touch targets, narrower content padding ──────────────── */
+@media (max-width: 1023px) {
+  .app { padding: 18px 14px; }
+  .toolbar input, .toolbar select, button { padding: 10px 12px; }
+  .grid { font-size: 0.82rem; }
+  .grid th, .grid td { padding: 7px 8px; }
+}
+
+/* ─── Mobile (<640px): card layout, bottom nav, full-width controls ────────── */
+@media (max-width: 639px) {
+  .app {
+    padding: 14px 12px 76px; /* bottom padding clears the fixed bottom nav */
+    max-width: 100%;
+  }
+
+  /* Header collapses; hide the badge & reload label text, keep it compact */
+  header { flex-wrap: wrap; gap: 8px; }
+  header h1 { font-size: 1.25rem; flex: 1 1 auto; }
+  .badge { display: none; }
+  .reseed-btn { font-size: 0.8rem; padding: 8px 10px; }
+
+  /* Top tabs hidden — bottom nav takes over */
+  .tabs { display: none; }
+
+  /* Toolbar stacks: search full width, filters share a row */
+  .toolbar { gap: 8px; margin: 12px 0; }
+  .toolbar .search { flex: 1 1 100%; min-width: 0; }
+  .toolbar select { flex: 1 1 calc(50% - 4px); min-width: 0; }
+  .toolbar .checkbox { flex: 1 1 100%; }
+  .toolbar .colvis { display: none; } /* column toggle irrelevant in card mode */
+  .toolbar input, .toolbar select, .toolbar button { font-size: 0.95rem; padding: 11px 12px; }
+  .toolbar button.primary { flex: 1 1 100%; }
+
+  /* The desktop table is replaced by .inv-cards (rendered by JS) */
+  .grid.inventory { display: none; }
+
+  /* Dashboard cards: two-up grid */
+  .cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .card-value { font-size: 1.2rem; }
+
+  /* Generic data grids (dashboard breakdown, categories) scroll horizontally
+     inside a rounded container rather than breaking the layout */
+  .grid:not(.inventory) {
+    display: block; overflow-x: auto; white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Category form stacks */
+  .cat-form { flex-direction: column; }
+  .cat-form input { width: 100%; }
+  .cat-form input[type='number'] { width: 100%; }
+  .cat-form button { width: 100%; }
+
+  /* Modal becomes a full-height sheet sliding from the bottom */
+  .modal-backdrop { padding: 0; align-items: flex-end; }
+  .modal {
+    max-width: 100%; max-height: 92vh; border-radius: 16px 16px 0 0;
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+    animation: sheet-up 0.22s ease-out;
+  }
+  @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .item-form { grid-template-columns: 1fr 1fr; }
+  .item-form input, .item-form select { font-size: 1rem; padding: 10px; }
+  .modal-actions { position: sticky; bottom: 0; background: #fff; padding-top: 10px; }
+  .modal-actions button { flex: 1; padding: 12px; }
+  .readonly-prices dl { grid-template-columns: repeat(2, 1fr); }
+
+  /* Bottom tab bar */
+  .bottom-nav {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    background: #fff; border-top: 1px solid #d0d7de;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -1px 8px rgba(0,0,0,0.05);
+  }
+  .bottom-tab {
+    flex: 1; border: none; background: none; border-radius: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 8px 0 7px; color: #656d76; font-size: 0.68rem; font-weight: 500;
+  }
+  .bottom-tab svg { stroke: currentColor; }
+  .bottom-tab.active { color: #1f883d; }
+}
+
+/* Very small phones: single-column dashboard + stock inputs */
+@media (max-width: 380px) {
+  .cards { grid-template-columns: 1fr; }
+}

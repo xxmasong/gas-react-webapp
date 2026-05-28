@@ -15,7 +15,7 @@ import {
 import type { InventoryItem } from '@shared/types';
 import { formatCurrency, formatQty } from '../../../lib/format';
 import { queryKeys } from '../../../lib/queryKeys';
-import { useLayout } from '../../../providers';
+import { useLayout, useAuth } from '../../../providers';
 import { useInventoryItems } from '../hooks/useInventoryItems';
 import { inventoryColumns } from './inventoryColumns';
 import { InventoryRow } from './InventoryRow';
@@ -38,6 +38,7 @@ export function InventoryItemsView() {
   const isFetching = useIsFetching({ queryKey: queryKeys.inventoryItems() });
   const displayError = localError ?? error;
   const { isMobile } = useLayout();
+  const { canEditSku } = useAuth();
 
   const catName = useMemo(() => {
     const map = new Map(categories.map((c) => [c.id, c.name]));
@@ -138,13 +139,15 @@ export function InventoryItemsView() {
           Mismatches only
         </label>
         <ColumnVisibilityMenu table={table} />
-        <button
-          className="primary"
-          disabled={categories.length === 0}
-          onClick={() => setForm({ mode: 'add' })}
-        >
-          + Add SKU
-        </button>
+        {canEditSku && (
+          <button
+            className="primary"
+            disabled={categories.length === 0}
+            onClick={() => setForm({ mode: 'add' })}
+          >
+            + Add SKU
+          </button>
+        )}
         {isFetching > 0 && <span className="fetching-badge">Refreshing…</span>}
       </div>
 
@@ -175,6 +178,7 @@ export function InventoryItemsView() {
               <InventoryCard
                 key={row.id}
                 item={row.original}
+                canEdit={canEditSku}
                 onEdit={(it) => setForm({ mode: 'edit', item: it })}
                 onDelete={onDelete}
               />
@@ -239,6 +243,7 @@ export function InventoryItemsView() {
                 <InventoryRow
                   key={row.id}
                   row={row}
+                  canEdit={canEditSku}
                   onEdit={(it) => setForm({ mode: 'edit', item: it })}
                   onDelete={onDelete}
                 />

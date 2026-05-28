@@ -1,14 +1,24 @@
 import type { ReactNode } from 'react';
 import { runningInGas } from '../../lib/server';
 import { useReseed } from '../../hooks/useReseed';
-import { useView, useToast } from '../../providers';
+import { useView, useToast, useAuth } from '../../providers';
 import { TABS } from './tabs';
 import { ThemeToggle } from './ThemeToggle';
 
+const ROLE_LABEL: Record<string, string> = {
+  admin: 'Admin',
+  supervisor: 'Supervisor',
+  inventory_staff: 'Staff',
+};
+
 export function Layout({ children }: { children: ReactNode }) {
   const { view, setView } = useView();
+  const { user, logout, hasRole, canEditSku } = useAuth();
   const reseed = useReseed();
   const toast = useToast();
+
+  // Only show tabs the current role is allowed to open.
+  const visibleTabs = TABS.filter((t) => !t.minRole || hasRole(t.minRole));
 
   async function handleReseed() {
     if (!confirm('This will wipe all categories and inventory items, then re-seed from the Product Info sheet. Continue?')) return;
@@ -36,19 +46,28 @@ export function Layout({ children }: { children: ReactNode }) {
           {runningInGas ? 'Sheets backend' : 'local mock'}
         </span>
         <ThemeToggle />
-        <button
-          className="ghost reseed-btn"
-          onClick={handleReseed}
-          disabled={reseed.isPending}
-          title="Wipe and re-seed all data from the Product Info sheet"
-        >
-          ↺ Reload data
-        </button>
+        {canEditSku && (
+          <button
+            className="ghost reseed-btn"
+            onClick={handleReseed}
+            disabled={reseed.isPending}
+            title="Wipe and re-seed all data from the Product Info sheet"
+          >
+            ↺ Reload data
+          </button>
+        )}
+        {user && (
+          <div className="user-chip">
+            <span className="user-name">{user.username}</span>
+            <span className="user-role">{ROLE_LABEL[user.role] ?? user.role}</span>
+            <button className="ghost logout-btn" onClick={logout} title="Sign out">Sign out</button>
+          </div>
+        )}
       </header>
 
       {/* Top tabs — tablet & laptop */}
       <nav className="tabs">
-        {TABS.map((t) => (
+        {visibleTabs.map((t) => (
           <button
             key={t.key}
             className={view === t.key ? 'tab active' : 'tab'}
@@ -63,7 +82,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
       {/* Bottom tab bar — mobile only (CSS controlled) */}
       <nav className="bottom-nav">
-        {TABS.map((t) => (
+        {visibleTabs.map((t) => (
           <button
             key={t.key}
             className={view === t.key ? 'bottom-tab active' : 'bottom-tab'}

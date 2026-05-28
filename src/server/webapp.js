@@ -23,3 +23,18 @@ function doGet() {
 function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
+
+/**
+ * ONE-TIME bootstrap — run manually from the Apps Script editor to create the
+ * first admin account. Change the username/password below first, run once,
+ * then clear the password from the source. No-ops if any user already exists.
+ *
+ * After this, log in as the admin and create supervisor/staff accounts from
+ * the in-app user management screen.
+ */
+function bootstrapFirstAdmin() {
+  var result = AuthService.seedFirstAdmin('admin', 'change-me-now-8+');
+  console.log(JSON.stringify(result));
+  console.log('Auth workbook ID: ' + UserRepository.getWorkbookId());
+  return result;
+}

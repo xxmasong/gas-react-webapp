@@ -7,10 +7,12 @@ import { useStockRow } from '../hooks/useStockRow';
 
 export function InventoryCard({
   item,
+  canEdit,
   onEdit,
   onDelete,
 }: {
   item: InventoryItem;
+  canEdit: boolean;
   onEdit: (item: InventoryItem) => void;
   onDelete: (id: string) => void;
 }) {
@@ -70,8 +72,8 @@ export function InventoryCard({
         >
           {s.status === 'saving' ? 'Saving…' : 'Save'}
         </button>
-        <button className="ghost" onClick={() => onEdit(item)}>Edit</button>
-        <button className="del" onClick={() => onDelete(item.id)}>Delete</button>
+        {canEdit && <button className="ghost" onClick={() => onEdit(item)}>Edit</button>}
+        {canEdit && <button className="del" onClick={() => onDelete(item.id)}>Delete</button>}
       </div>
     </article>
   );

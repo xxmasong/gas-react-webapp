@@ -357,6 +357,53 @@ tbody + tbody .cat-group-row td { border-top: 2px solid var(--color-border); }
 .readonly-prices dt { color: var(--color-text-muted); font-size: 0.78rem; }
 .readonly-prices dd { margin: 0; font-weight: 600; font-size: 0.82rem; }
 
+/* ─── Boot / loading screen ────────────────────────────────────────────────── */
+.boot-screen {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: var(--color-bg);
+}
+
+/* ─── Login screen ─────────────────────────────────────────────────────────── */
+.login-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 24px 16px; background: var(--color-bg); position: relative;
+}
+.login-theme {
+  position: absolute; top: 16px; right: 16px;
+  width: 40px; height: 40px; padding: 0; font-size: 1.1rem;
+}
+.login-card {
+  width: 100%; max-width: 380px; background: var(--color-surface);
+  border: 1px solid var(--color-border); border-radius: var(--radius-xl);
+  padding: 28px 24px; box-shadow: var(--shadow-menu);
+}
+.login-brand { text-align: center; margin-bottom: 20px; }
+.login-logo { font-size: 2.4rem; line-height: 1; }
+.login-brand h1 { font-size: 1.5rem; margin: 8px 0 2px; }
+.login-form { display: flex; flex-direction: column; gap: 14px; }
+.login-form label { display: flex; flex-direction: column; gap: 5px; font-size: 0.82rem; color: var(--color-text-muted); }
+.login-form input {
+  padding: 11px 12px; border: 1px solid var(--color-border); border-radius: var(--radius);
+  font-size: 1rem; background: var(--color-surface); color: var(--color-text); width: 100%;
+}
+.pw-field { position: relative; display: flex; }
+.pw-field input { flex: 1; padding-right: 60px; }
+.pw-toggle {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  border: none; background: none; color: var(--color-text-muted); font-size: 0.8rem; padding: 4px 8px;
+}
+.login-submit { padding: 12px; font-size: 1rem; margin-top: 4px; }
+.login-footnote { text-align: center; font-size: 0.78rem; margin: 16px 0 0; }
+
+/* ─── User chip (header) ───────────────────────────────────────────────────── */
+.user-chip { display: flex; align-items: center; gap: 8px; }
+.user-name { font-weight: 600; font-size: 0.85rem; }
+.user-role {
+  font-size: 0.68rem; font-weight: 700; padding: 1px 8px; border-radius: 999px;
+  background: var(--color-surface-sunken); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.03em;
+}
+.logout-btn { font-size: 0.8rem; padding: 6px 10px; }
+
 /* ─── Theme toggle ─────────────────────────────────────────────────────────── */
 .theme-toggle {
   display: inline-flex; align-items: center; justify-content: center;
@@ -410,6 +457,13 @@ tbody + tbody .cat-group-row td { border-top: 2px solid var(--color-border); }
   header h1 { font-size: 1.25rem; flex: 1 1 auto; }
   .badge { display: none; }
   .reseed-btn { font-size: 0.8rem; padding: 8px 10px; }
+
+  /* Compact user chip: keep role badge + sign-out, drop the long name */
+  .user-chip { margin-left: auto; gap: 6px; }
+  .user-name { display: none; }
+  .logout-btn { font-size: 0.75rem; padding: 6px 9px; }
+
+  .login-card { padding: 24px 18px; }
 
   /* Top tabs hidden — bottom nav takes over */
   .tabs { display: none; }

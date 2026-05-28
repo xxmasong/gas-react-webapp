@@ -1,32 +1,84 @@
 /**
  * Public RPC API — top-level named functions called from the React client via
- * gas-client (google.script.run). Each function is a thin shim: validate args,
- * delegate to InventoryService, return the result.
+ * gas-client (google.script.run). Each function is a thin shim that:
+ *   1. validates the session token + role (server-side authorization),
+ *   2. validates arguments,
+ *   3. delegates to a service, and returns the result.
+ *
+ * AUTHORIZATION MODEL — every data function takes the session `token` as its
+ * first argument. Read endpoints require any signed-in user; stock-count
+ * updates require inventory_staff+; SKU/category/price edits and reseed require
+ * supervisor+; user management requires admin. Hiding controls in the UI is a
+ * convenience only — these server checks are the real enforcement.
  *
  * Keep signatures in sync with ServerFunctions in src/shared/types.ts.
  */
 
-/** @returns {Array<Object>} all items. */
-function getItems() {
+var ROLE = { STAFF: 'inventory_staff', SUPERVISOR: 'supervisor', ADMIN: 'admin' };
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
+/** @returns {{token, user, expiresAt}} */
+function login(username, password) {
+  validate.string(username, 'username');
+  validate.string(password, 'password');
+  return AuthService.login(username, password);
+}
+
+/** @returns {{ok:true}} */
+function logout(token) {
+  return AuthService.logout(token);
+}
+
+/** @returns {Object|null} the current public user, or null if not signed in. */
+function me(token) {
+  return AuthService.me(token);
+}
+
+/** @returns {{ok:true}} */
+function changeOwnPassword(token, currentPassword, newPassword) {
+  return AuthService.changeOwnPassword(token, currentPassword, newPassword);
+}
+
+// ─── Admin: user management ────────────────────────────────────────────────────
+
+function listUsers(token) {
+  return AuthService.listUsers(token);
+}
+
+function registerUser(token, username, password, role) {
+  return AuthService.registerUser(token, username, password, role);
+}
+
+function setUserActive(token, userId, active) {
+  return AuthService.setUserActive(token, userId, active);
+}
+
+function setUserRole(token, userId, role) {
+  return AuthService.setUserRole(token, userId, role);
+}
+
+function deleteUserAccount(token, userId) {
+  return AuthService.deleteUser(token, userId);
+}
+
+// ─── Legacy demo entity (kept; writes require supervisor+) ──────────────────────
+
+function getItems(token) {
+  AuthService.requireUser(token);
   return InventoryService.getItems();
 }
 
-/**
- * @param {{name: string, quantity: number}} item
- * @returns {Object} created item with id + updatedAt.
- */
-function addItem(item) {
+function addItem(token, item) {
+  AuthService.requireRole(token, ROLE.SUPERVISOR);
   validate.required(item, 'item');
   validate.string(item.name, 'name');
   validate.nonNegativeNumber(item.quantity, 'quantity');
   return InventoryService.addItem(item);
 }
 
-/**
- * @param {Object} item full item to overwrite (matched by id).
- * @returns {Object} updated item.
- */
-function updateItem(item) {
+function updateItem(token, item) {
+  AuthService.requireRole(token, ROLE.SUPERVISOR);
   validate.required(item, 'item');
   validate.string(item.id, 'id');
   validate.string(item.name, 'name');
@@ -34,128 +86,94 @@ function updateItem(item) {
   return InventoryService.updateItem(item);
 }
 
-/**
- * @param {string} id
- * @returns {{id: string}}
- */
-function deleteItem(id) {
+function deleteItem(token, id) {
+  AuthService.requireRole(token, ROLE.SUPERVISOR);
   validate.string(id, 'id');
   return InventoryService.deleteItem(id);
 }
 
-// ─── Categories ────────────────────────────────────────────────────────────────
+// ─── Categories (read: any user · write: supervisor+) ───────────────────────────
 
-/** @returns {Array<Object>} all categories sorted by sortOrder. */
-function getCategories() {
+function getCategories(token) {
+  AuthService.requireUser(token);
   return CategoryService.getCategories();
 }
 
-/**
- * @param {Object} cat new category payload.
- * @returns {Object} created category.
- */
-function addCategory(cat) {
+function addCategory(token, cat) {
+  AuthService.requireRole(token, ROLE.SUPERVISOR);
   validate.category(cat);
   return CategoryService.addCategory(cat);
 }
 
-/**
- * @param {Object} cat full category to overwrite (matched by id).
- * @returns {Object} updated category.
- */
-function updateCategory(cat) {
+function updateCategory(token, cat) {
+  AuthService.requireRole(token, ROLE.SUPERVISOR);
   validate.category(cat);
   validate.string(cat.id, 'id');
   return CategoryService.updateCategory(cat);
 }
 
-/**
- * @param {string} id
- * @returns {{id: string}}
- */
-function deleteCategory(id) {
+function deleteCategory(token, id) {
+  AuthService.requireRole(token, ROLE.SUPERVISOR);
   validate.string(id, 'id');
   return CategoryService.deleteCategory(id);
 }
 
-// ─── Inventory items ─────────────────────────────────────────────────────────────
+// ─── Inventory items (read: any · stock counts: staff+ · SKU edits: supervisor+) ──
 
-/**
- * @param {string} [categoryId] optional category filter.
- * @returns {Array<Object>} inventory items.
- */
-function getInventoryItems(categoryId) {
+function getInventoryItems(token, categoryId) {
+  AuthService.requireUser(token);
   return InventoryItemService.getInventoryItems(categoryId);
 }
 
-/**
- * @param {Object} item new SKU payload.
- * @returns {Object} created item with computed fields.
- */
-function addInventoryItem(item) {
+function addInventoryItem(token, item) {
+  AuthService.requireRole(token, ROLE.SUPERVISOR);
   validate.inventoryItem(item);
   return InventoryItemService.addInventoryItem(item);
 }
 
-/**
- * @param {Object} item full SKU to overwrite (matched by id).
- * @returns {Object} updated item with recomputed fields.
- */
-function updateInventoryItem(item) {
+function updateInventoryItem(token, item) {
+  AuthService.requireRole(token, ROLE.SUPERVISOR);
   validate.inventoryItem(item);
   validate.string(item.id, 'id');
   return InventoryItemService.updateInventoryItem(item);
 }
 
-/**
- * @param {string} id
- * @returns {{id: string}}
- */
-function deleteInventoryItem(id) {
+function deleteInventoryItem(token, id) {
+  AuthService.requireRole(token, ROLE.SUPERVISOR);
   validate.string(id, 'id');
   return InventoryItemService.deleteInventoryItem(id);
 }
 
-/**
- * @param {Array<Object>} updates [{ id, qtyGround, qtyUpstair, qtyBox }]
- * @returns {Array<Object>} updated items.
- */
-function bulkUpdateStock(updates) {
+/** Stock-count updates — inventory_staff and above. */
+function bulkUpdateStock(token, updates) {
+  AuthService.requireRole(token, ROLE.STAFF);
   validate.array(updates, 'updates');
   updates.forEach(function (u) { validate.stockUpdate(u); });
   return InventoryItemService.bulkUpdateStock(updates);
 }
 
-/**
- * Save one stock row and return it re-read straight from the sheet, so the
- * client can verify the persisted value matches what was sent.
- * @param {{ id, qtyGround, qtyUpstair, qtyBox }} update
- * @returns {Object} the freshly-read inventory item.
- */
-function saveAndVerifyStock(update) {
+/** Save one stock row + verify against the sheet — inventory_staff and above. */
+function saveAndVerifyStock(token, update) {
+  AuthService.requireRole(token, ROLE.STAFF);
   validate.stockUpdate(update);
   return InventoryItemService.saveAndVerifyStock(update);
 }
 
-// ─── Reseed ───────────────────────────────────────────────────────────────────────
+// ─── Reseed (supervisor+) ───────────────────────────────────────────────────────
 
-/**
- * Wipes SkuCategories + InventoryItems tabs and re-seeds from Product Info
- * using bulk setValues writes — one call per tab instead of one per row.
- * @returns {{ categories: number, items: number }}
- */
-function reseedInventory() {
+function reseedInventory(token) {
+  AuthService.requireRole(token, ROLE.SUPERVISOR);
   return _reseedBatch();
 }
 
-// ─── Summary / reporting ─────────────────────────────────────────────────────────
+// ─── Summary / reporting (read: any user) ───────────────────────────────────────
 
-/** @returns {Object} aggregate inventory summary. */
-function getInventorySummary() {
+function getInventorySummary(token) {
+  AuthService.requireUser(token);
   return SummaryService.getInventorySummary();
 }
 
-/** @returns {Array<Object>} per-category totals. */
-function getCategoryTotals() {
+function getCategoryTotals(token) {
+  AuthService.requireUser(token);
   return SummaryService.getCategoryTotals();
 }

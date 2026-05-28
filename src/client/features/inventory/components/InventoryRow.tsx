@@ -12,10 +12,12 @@ const STOCK_FIELDS = {
 
 export function InventoryRow({
   row,
+  canEdit,
   onEdit,
   onDelete,
 }: {
   row: Row<InventoryItem>;
+  canEdit: boolean;
   onEdit: (item: InventoryItem) => void;
   onDelete: (id: string) => void;
 }) {
@@ -66,8 +68,8 @@ export function InventoryRow({
           >
             {s.status === 'saving' ? '…' : 'Save'}
           </button>
-          <button onClick={() => onEdit(item)}>Edit</button>
-          <button className="del" onClick={() => onDelete(item.id)}>×</button>
+          {canEdit && <button onClick={() => onEdit(item)}>Edit</button>}
+          {canEdit && <button className="del" onClick={() => onDelete(item.id)}>×</button>}
         </td>
       );
     }

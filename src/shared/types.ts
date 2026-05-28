@@ -125,34 +125,72 @@ export interface CategoryTotal {
   skuCount: number;
 }
 
+// ─── Auth ──────────────────────────────────────────────────────────────────────
+
+/** Roles, least → most privileged. */
+export type Role = 'inventory_staff' | 'supervisor' | 'admin';
+
+/** Public user shape (never includes the password hash). */
+export interface User {
+  id: string;
+  username: string;
+  role: Role;
+  active: boolean;
+}
+
+/** Result of a successful login. */
+export interface AuthSession {
+  token: string;
+  user: User;
+  /** ISO timestamp when the session expires. */
+  expiresAt: string;
+}
+
 // ─── Server contract ───────────────────────────────────────────────────────────
 
-/** Shape of the server functions callable from the client via gas-client. */
+/**
+ * Shape of the raw server functions callable via gas-client. Every data
+ * function takes the session `token` as its first argument; the client `server`
+ * bridge injects it automatically so view code doesn't pass it manually.
+ */
 export interface ServerFunctions {
+  // Auth (login takes no token)
+  login(username: string, password: string): AuthSession;
+  logout(token: string): { ok: true };
+  me(token: string): User | null;
+  changeOwnPassword(token: string, currentPassword: string, newPassword: string): { ok: true };
+
+  // Admin: user management
+  listUsers(token: string): User[];
+  registerUser(token: string, username: string, password: string, role: Role): User;
+  setUserActive(token: string, userId: string, active: boolean): User;
+  setUserRole(token: string, userId: string, role: Role): User;
+  deleteUserAccount(token: string, userId: string): { id: string };
+
   // Legacy demo entity
-  getItems(): Item[];
-  addItem(item: NewItem): Item;
-  updateItem(item: Item): Item;
-  deleteItem(id: string): { id: string };
+  getItems(token: string): Item[];
+  addItem(token: string, item: NewItem): Item;
+  updateItem(token: string, item: Item): Item;
+  deleteItem(token: string, id: string): { id: string };
 
   // Categories
-  getCategories(): SkuCategory[];
-  addCategory(cat: NewSkuCategory): SkuCategory;
-  updateCategory(cat: SkuCategory): SkuCategory;
-  deleteCategory(id: string): { id: string };
+  getCategories(token: string): SkuCategory[];
+  addCategory(token: string, cat: NewSkuCategory): SkuCategory;
+  updateCategory(token: string, cat: SkuCategory): SkuCategory;
+  deleteCategory(token: string, id: string): { id: string };
 
   // Inventory items
-  getInventoryItems(categoryId?: string): InventoryItem[];
-  addInventoryItem(item: NewInventoryItem): InventoryItem;
-  updateInventoryItem(item: InventoryItem): InventoryItem;
-  deleteInventoryItem(id: string): { id: string };
-  bulkUpdateStock(updates: StockUpdate[]): InventoryItem[];
-  saveAndVerifyStock(update: StockUpdate): InventoryItem;
+  getInventoryItems(token: string, categoryId?: string): InventoryItem[];
+  addInventoryItem(token: string, item: NewInventoryItem): InventoryItem;
+  updateInventoryItem(token: string, item: InventoryItem): InventoryItem;
+  deleteInventoryItem(token: string, id: string): { id: string };
+  bulkUpdateStock(token: string, updates: StockUpdate[]): InventoryItem[];
+  saveAndVerifyStock(token: string, update: StockUpdate): InventoryItem;
 
   // Summary / reporting
-  getInventorySummary(): InventorySummary;
-  getCategoryTotals(): CategoryTotal[];
+  getInventorySummary(token: string): InventorySummary;
+  getCategoryTotals(token: string): CategoryTotal[];
 
   // Data management
-  reseedInventory(): { categories: number; items: number };
+  reseedInventory(token: string): { categories: number; items: number };
 }

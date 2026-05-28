@@ -15,7 +15,7 @@ import {
 import type { InventoryItem } from '@shared/types';
 import { formatCurrency, formatQty } from '../../../lib/format';
 import { queryKeys } from '../../../lib/queryKeys';
-import { useBreakpoint } from '../../../hooks/useMediaQuery';
+import { useLayout } from '../../../providers';
 import { useInventoryItems } from '../hooks/useInventoryItems';
 import { inventoryColumns } from './inventoryColumns';
 import { InventoryRow } from './InventoryRow';
@@ -38,8 +38,7 @@ export function InventoryItemsView() {
 
   const isFetching = useIsFetching({ queryKey: queryKeys.inventoryItems() });
   const displayError = localError ?? error;
-  const breakpoint = useBreakpoint();
-  const isMobile = breakpoint === 'mobile';
+  const { isMobile } = useLayout();
 
   const catName = useMemo(() => {
     const map = new Map(categories.map((c) => [c.id, c.name]));

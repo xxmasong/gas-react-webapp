@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
+import { useIsFetching } from '@tanstack/react-query';
 import type { InventoryItem } from '@shared/types';
 import { formatCurrency, formatQty } from '../../../lib/format';
+import { queryKeys } from '../../../lib/queryKeys';
 import { useInventoryItems } from '../hooks/useInventoryItems';
 import { InventoryRow } from './InventoryRow';
 import { ItemForm } from './ItemForm';
@@ -8,13 +10,17 @@ import { ItemForm } from './ItemForm';
 type FormState = { mode: 'add' } | { mode: 'edit'; item: InventoryItem } | null;
 
 export function InventoryItemsView() {
-  const { items, categories, loading, error, setError, add, update, remove, bulkUpdateStock } =
+  const { items, categories, loading, error, add, update, remove, bulkUpdateStock } =
     useInventoryItems();
+  const [localError, setLocalError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [storeFilter, setStoreFilter] = useState('');
   const [mismatchOnly, setMismatchOnly] = useState(false);
   const [form, setForm] = useState<FormState>(null);
+
+  const isFetching = useIsFetching({ queryKey: queryKeys.inventoryItems() });
+  const displayError = localError ?? error;
 
   const catName = useMemo(() => {
     const map = new Map(categories.map((c) => [c.id, c.name]));
@@ -44,22 +50,25 @@ export function InventoryItemsView() {
 
   async function onSaveStock(id: string, qtyGround: number, qtyUpstair: number, qtyBox: number) {
     try {
+      setLocalError(null);
       await bulkUpdateStock([{ id, qtyGround, qtyUpstair, qtyBox }]);
     } catch (e) {
-      setError(String(e));
+      setLocalError(String(e));
     }
   }
 
   async function onDelete(id: string) {
     try {
+      setLocalError(null);
       await remove(id);
     } catch (e) {
-      setError(String(e));
+      setLocalError(String(e));
     }
   }
 
   async function onFormSubmit(value: Parameters<typeof add>[0] & { id?: string }) {
     try {
+      setLocalError(null);
       if (form?.mode === 'edit') {
         await update({ ...form.item, ...value });
       } else {
@@ -67,13 +76,13 @@ export function InventoryItemsView() {
       }
       setForm(null);
     } catch (e) {
-      setError(String(e));
+      setLocalError(String(e));
     }
   }
 
   return (
     <>
-      {error && <div className="error">{error}</div>}
+      {displayError && <div className="error">{displayError}</div>}
 
       <div className="toolbar">
         <input
@@ -108,10 +117,13 @@ export function InventoryItemsView() {
         >
           + Add SKU
         </button>
+        {isFetching > 0 && <span className="fetching-badge">Refreshing…</span>}
       </div>
 
       {loading ? (
-        <p className="muted">Loading…</p>
+        <div className="skeleton-table">
+          {Array.from({ length: 8 }).map((_, i) => <div key={i} className="skeleton-row" />)}
+        </div>
       ) : grouped.length === 0 ? (
         <p className="muted">No SKUs match.</p>
       ) : (

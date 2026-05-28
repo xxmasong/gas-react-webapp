@@ -5,9 +5,12 @@ import { useCategories } from '../hooks/useCategories';
 const EMPTY = { code: '', name: '', packConstraint: '', sortOrder: 0 };
 
 export function CategoriesView() {
-  const { categories, loading, error, setError, add, update, remove } = useCategories();
+  const { categories, loading, error, mutationError, add, update, remove } = useCategories();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const displayError = localError ?? mutationError ?? error;
 
   function startEdit(cat: SkuCategory) {
     setEditingId(cat.id);
@@ -17,12 +20,14 @@ export function CategoriesView() {
   function reset() {
     setEditingId(null);
     setForm(EMPTY);
+    setLocalError(null);
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.code.trim() || !form.name.trim()) return;
     try {
+      setLocalError(null);
       if (editingId) {
         await update({ id: editingId, updatedAt: '', ...form });
       } else {
@@ -30,21 +35,22 @@ export function CategoriesView() {
       }
       reset();
     } catch (e) {
-      setError(String(e));
+      setLocalError(String(e));
     }
   }
 
   async function onDelete(id: string) {
     try {
+      setLocalError(null);
       await remove(id);
     } catch (e) {
-      setError(String(e));
+      setLocalError(String(e));
     }
   }
 
   return (
     <>
-      {error && <div className="error">{error}</div>}
+      {displayError && <div className="error">{displayError}</div>}
 
       <form className="cat-form" onSubmit={onSubmit}>
         <input
@@ -77,7 +83,9 @@ export function CategoriesView() {
       </form>
 
       {loading ? (
-        <p className="muted">Loading…</p>
+        <div className="skeleton-table">
+          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="skeleton-row" />)}
+        </div>
       ) : categories.length === 0 ? (
         <p className="muted">No categories yet.</p>
       ) : (

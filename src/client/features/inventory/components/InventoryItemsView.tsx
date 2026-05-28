@@ -76,7 +76,12 @@ export function InventoryItemsView() {
   const table = useReactTable({
     data,
     columns: inventoryColumns,
-    state: { grouping: ['categoryId'], expanded: true, sorting, columnFilters, columnVisibility, globalFilter },
+    // grouping + expanded are fixed (always grouped, always expanded), so they
+    // live in initialState — NOT controlled state. Passing `expanded: true` as
+    // controlled state with no onExpandedChange handler caused an infinite
+    // render loop / white screen.
+    initialState: { grouping: ['categoryId'], expanded: true },
+    state: { sorting, columnFilters, columnVisibility, globalFilter },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,

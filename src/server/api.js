@@ -129,16 +129,12 @@ function bulkUpdateStock(updates) {
 // ─── Reseed ───────────────────────────────────────────────────────────────────────
 
 /**
- * Wipes SkuCategories + InventoryItems tabs and re-seeds from Product Info.
- * Long-running (~30–60 s on large sheets); call from the UI reload button only.
+ * Wipes SkuCategories + InventoryItems tabs and re-seeds from Product Info
+ * using bulk setValues writes — one call per tab instead of one per row.
  * @returns {{ categories: number, items: number }}
  */
 function reseedInventory() {
-  resetSeededTabs();
-  seedInventoryFromSheet();
-  var cats  = CategoryService.getCategories();
-  var items = InventoryItemService.getInventoryItems();
-  return { categories: cats.length, items: items.length };
+  return _reseedBatch();
 }
 
 // ─── Summary / reporting ─────────────────────────────────────────────────────────

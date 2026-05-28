@@ -65,6 +65,18 @@ var InventoryItemRepository = (function () {
     });
   }
 
+  // Write all items in a single setValues call. Assumes the sheet is empty
+  // (header row already present). Does NOT acquire the lock — caller must
+  // ensure exclusive access (used only from reseedInventory).
+  function insertMany(items) {
+    if (!items.length) return items;
+    var sheet = getSheet();
+    var rows  = items.map(InventoryItemMapper.toRow);
+    sheet.getRange(2, 1, rows.length, HEADERS.length).setValues(rows);
+    Cache.remove(CACHE_KEY);
+    return items;
+  }
+
   function update(item) {
     return Lock.withLock(function () {
       var rowIndex = findRowIndexById(item.id);
@@ -119,6 +131,7 @@ var InventoryItemRepository = (function () {
     findById: findById,
     findByCategoryId: findByCategoryId,
     insert: insert,
+    insertMany: insertMany,
     update: update,
     updateMany: updateMany,
     remove: remove,

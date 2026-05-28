@@ -56,6 +56,18 @@ var CategoryRepository = (function () {
     });
   }
 
+  // Write all cats in a single setValues call. Assumes the sheet is empty
+  // (header row already present). Does NOT acquire the lock — caller must
+  // ensure exclusive access (used only from reseedInventory).
+  function insertMany(cats) {
+    if (!cats.length) return cats;
+    var sheet = getSheet();
+    var rows  = cats.map(CategoryMapper.toRow);
+    sheet.getRange(2, 1, rows.length, HEADERS.length).setValues(rows);
+    Cache.remove(CACHE_KEY);
+    return cats;
+  }
+
   function update(cat) {
     return Lock.withLock(function () {
       var rowIndex = findRowIndexById(cat.id);
@@ -83,6 +95,7 @@ var CategoryRepository = (function () {
     findById: findById,
     findByCode: findByCode,
     insert: insert,
+    insertMany: insertMany,
     update: update,
     remove: remove,
   };

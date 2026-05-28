@@ -92,6 +92,117 @@ function _store(v) {
   return _norm(v) === 'gruton' ? 'GRUTON' : 'EASY';
 }
 
+/**
+ * Fast bulk reseed — builds all rows in memory then writes each tab in a
+ * single setValues() call. Called by reseedInventory() in api.js.
+ * Returns { categories, items } counts.
+ */
+function _reseedBatch() {
+  resetSeededTabs();
+
+  var sheet  = _openSourceSheet();
+  var values = sheet.getDataRange().getValues();
+  if (values.length < 2) throw new Error('Source sheet appears empty.');
+
+  var cols = _resolveColumns(values[0]);
+  if (cols.product == null) throw new Error('Could not locate the PRODUCT column.');
+
+  function pick(row, field) {
+    var idx = cols[field];
+    return idx == null ? '' : row[idx];
+  }
+
+  var now = DateTime.nowIso();
+
+  // Pass 1: collect unique (code, catName) pairs in row order.
+  var codeOrder = [];
+  var codeMeta  = {};   // code -> { name, packConstraint }
+  for (var r = 1; r < values.length; r++) {
+    if (!String(pick(values[r], 'product') || '').trim()) continue;
+    var catName = String(pick(values[r], 'category') || '').trim();
+    var code    = _deriveCode(pick(values[r], 'group'), catName);
+    if (!codeMeta[code]) {
+      codeOrder.push(code);
+      codeMeta[code] = {
+        name:           catName || code,
+        packConstraint: String(pick(values[r], 'stockeeping') || '').trim(),
+      };
+    }
+  }
+
+  // Build category objects in memory and write them in one shot.
+  var codeToId = {};
+  var catRows  = codeOrder.map(function (code, idx) {
+    var id  = Uuid.generate();
+    codeToId[code] = id;
+    return {
+      id:             id,
+      code:           code,
+      name:           codeMeta[code].name,
+      packConstraint: codeMeta[code].packConstraint,
+      sortOrder:      idx + 1,
+      updatedAt:      now,
+    };
+  });
+  CategoryRepository.insertMany(catRows);
+
+  // Pass 2: build all SKU rows in memory.
+  var itemRows = [];
+  for (var i = 1; i < values.length; i++) {
+    var row  = values[i];
+    var prod = String(pick(row, 'product') || '').trim();
+    if (!prod) continue;
+
+    var cName = String(pick(row, 'category') || '').trim();
+    var cCode = _deriveCode(pick(row, 'group'), cName);
+    var catId = codeToId[cCode];
+    if (!catId) continue;
+
+    var srp         = Number(pick(row, 'sellingPriceSrp')) || 0;
+    var qtyGround   = Number(pick(row, 'qtyGround'))   || 0;
+    var qtyUpstair  = Number(pick(row, 'qtyUpstair'))  || 0;
+    var qtyBox      = Number(pick(row, 'qtyBox'))      || 0;
+    var uom         = Number(pick(row, 'uom'))         || 1;
+    var costPcNew   = Number(pick(row, 'costPerPieceNew')) || 0;
+    var costPcOld   = Number(pick(row, 'costPerPieceOld')) || 0;
+    var qtyKyte     = Number(pick(row, 'posCount'))    || 0;
+    var qtyTotal    = qtyGround + qtyUpstair + qtyBox * uom;
+    var kyteMatch   = qtyKyte === 0 ? true : qtyTotal === qtyKyte;
+    var unitCost    = costPcNew > 0 ? costPcNew : costPcOld;
+
+    itemRows.push({
+      id:                    Uuid.generate(),
+      categoryId:            catId,
+      store:                 _store(pick(row, 'store')),
+      sku:                   prod,
+      emoji:                 _leadingEmoji(prod),
+      uom:                   uom,
+      costPerBoxNew:         Number(pick(row, 'costPerBoxNew'))         || 0,
+      costPerPieceNew:       costPcNew,
+      costPerPieceOld:       costPcOld,
+      sellingPriceWholesale: Number(pick(row, 'sellingPriceWholesale')) || 0,
+      sellingPriceDealer:    Number(pick(row, 'sellingPriceDealer'))    || 0,
+      sellingPricePiece:     srp,
+      srp:                   srp,
+      qtyGround:             qtyGround,
+      expiryGround:          _dateCell(pick(row, 'expiryGround')),
+      qtyUpstair:            qtyUpstair,
+      expiryUpstair:         _dateCell(pick(row, 'expiryUpstair')),
+      qtyBox:                qtyBox,
+      expiryBox:             _dateCell(pick(row, 'expiryBox')),
+      qtyTotal:              qtyTotal,
+      qtyKyte:               qtyKyte,
+      kyteMatch:             kyteMatch,
+      costTotal:             unitCost * qtyTotal,
+      updatedAt:             now,
+    });
+  }
+  InventoryItemRepository.insertMany(itemRows);
+
+  console.log('Batch reseed: ' + catRows.length + ' categories, ' + itemRows.length + ' items.');
+  return { categories: catRows.length, items: itemRows.length };
+}
+
 /** Run this once from the editor. */
 function seedInventoryFromSheet() {
   var existing = InventoryItemRepository.findAll();

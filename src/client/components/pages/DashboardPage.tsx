@@ -1,16 +1,18 @@
-import { formatCurrency, formatQty } from '../../../lib/format';
-import { useDashboard } from '../hooks/useDashboard';
+import React from 'react';
+import { formatCurrency, formatQty } from '../../lib/format';
+import { useDashboard } from '../../features/dashboard/hooks/useDashboard';
+import { AppShell } from '../templates';
 
-export function DashboardView() {
+export const DashboardPage: React.FC = () => {
   const { summary, totals, loading, error } = useDashboard();
 
-  if (error) return <div className="error">{error}</div>;
-  if (loading || !summary) return <p className="muted">Loading…</p>;
+  if (error) return <AppShell><div className="error">{error}</div></AppShell>;
+  if (loading || !summary) return <AppShell><p className="muted">Loading…</p></AppShell>;
 
   const sorted = [...totals].sort((a, b) => b.totalCost - a.totalCost);
 
   return (
-    <>
+    <AppShell>
       <div className="cards">
         <div className="card">
           <span className="card-label">Total value</span>
@@ -53,6 +55,6 @@ export function DashboardView() {
           ))}
         </tbody>
       </table>
-    </>
+    </AppShell>
   );
-}
+};

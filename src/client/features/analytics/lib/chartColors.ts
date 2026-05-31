@@ -9,7 +9,7 @@ function readVar(name: string, fallback: string): string {
   return v || fallback;
 }
 
-export interface ChartTheme {
+export type ChartTheme = {
   text: string;
   muted: string;
   grid: string;
@@ -20,7 +20,7 @@ export interface ChartTheme {
   warn: string;
   success: string;
   palette: string[];
-}
+};
 
 export function useChartTheme(): ChartTheme {
   const { theme } = useTheme();

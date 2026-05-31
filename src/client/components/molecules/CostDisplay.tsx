@@ -1,10 +1,16 @@
-import { formatCurrency } from '../../../lib/format';
+import React from 'react';
+import { formatCurrency } from '../../lib/format';
 
-export function CostDisplay({ oldCost, newCost }: { oldCost: number; newCost: number }) {
+type Props = {
+  oldCost: number;
+  newCost: number;
+};
+
+export const CostDisplay: React.FC<Props> = ({ oldCost, newCost }) => {
   if (!newCost && !oldCost) return <span className="muted">—</span>;
   const effective = newCost > 0 ? newCost : oldCost;
-  const changed = newCost > 0 && oldCost > 0 && oldCost !== newCost;
-  const delta = changed ? newCost - oldCost : 0;
+  const changed   = newCost > 0 && oldCost > 0 && oldCost !== newCost;
+  const delta     = changed ? newCost - oldCost : 0;
   return (
     <span className="cost">
       <span className="cost-new">{formatCurrency(effective)}</span>
@@ -18,4 +24,4 @@ export function CostDisplay({ oldCost, newCost }: { oldCost: number; newCost: nu
       )}
     </span>
   );
-}
+};

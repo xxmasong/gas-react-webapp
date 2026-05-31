@@ -1,8 +1,8 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import type { InventoryItem } from '@shared/types';
 import { formatCurrency, formatQty } from '../../../lib/format';
-import { CostDisplay } from './CostDisplay';
-import { MismatchBadge } from './MismatchBadge';
+import { StoreBadge } from '../../../components/atoms';
+import { CostDisplay, MismatchBadge } from '../../../components/molecules';
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -41,11 +41,7 @@ export const inventoryColumns = [
     header: 'Store',
     size: 80,
     filterFn: 'equals',
-    cell: (info) => (
-      <span className={`store-badge store-${info.getValue().toLowerCase()}`}>
-        {info.getValue()}
-      </span>
-    ),
+    cell: (info) => <StoreBadge store={info.getValue()} />,
     meta: { label: 'Store' },
   }),
 

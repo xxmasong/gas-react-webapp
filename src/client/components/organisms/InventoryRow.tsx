@@ -1,8 +1,11 @@
+import React from 'react';
 import { flexRender, type Row, type Cell } from '@tanstack/react-table';
 import type { InventoryItem } from '@shared/types';
-import { formatQty } from '../../../lib/format';
-import { useStockRow } from '../hooks/useStockRow';
-import { SaveStatusBadge } from './SaveStatusBadge';
+import { formatQty } from '../../lib/format';
+import { useAuth } from '../../providers';
+import { useStockRow } from '../../features/inventory/hooks/useStockRow';
+import { Spinner } from '../atoms';
+import { SaveStatusBadge } from '../molecules';
 
 const STOCK_FIELDS = {
   qtyGround: 'qtyGround',
@@ -10,19 +13,17 @@ const STOCK_FIELDS = {
   qtyBox: 'qtyBox',
 } as const;
 
-export function InventoryRow({
-  row,
-  canEdit,
-  onEdit,
-  onDelete,
-}: {
+type Props = {
   row: Row<InventoryItem>;
   canEdit: boolean;
   onEdit: (item: InventoryItem) => void;
   onDelete: (id: string) => void;
-}) {
+};
+
+export const InventoryRow: React.FC<Props> = ({ row, canEdit, onEdit, onDelete }) => {
   const item = row.original;
   const s = useStockRow(item);
+  const { isAdmin } = useAuth();
 
   const stockValue: Record<string, number> = { qtyGround: s.ground, qtyUpstair: s.upstair, qtyBox: s.box };
   const stockSetter: Record<string, (n: number) => void> = {
@@ -31,11 +32,11 @@ export function InventoryRow({
     qtyBox: s.setBox,
   };
 
-  function onKeyDown(e: React.KeyboardEvent) {
+  const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') s.save();
-  }
+  };
 
-  function renderCell(cell: Cell<InventoryItem, unknown>) {
+  const renderCell = (cell: Cell<InventoryItem, unknown>) => {
     if (cell.column.columnDef.meta?.hidden) return null;
     const id = cell.column.id;
     const align = cell.column.columnDef.meta?.align;
@@ -60,16 +61,14 @@ export function InventoryRow({
     if (id === 'actions') {
       return (
         <td key={cell.id} className="actions">
-          <button
-            className="save"
-            disabled={!s.dirty || s.status === 'saving'}
-            onClick={s.save}
-            title={s.dirty ? 'Save stock changes' : 'No changes to save'}
-          >
-            {s.status === 'saving' ? '…' : 'Save'}
-          </button>
-          {canEdit && <button onClick={() => onEdit(item)}>Edit</button>}
-          {canEdit && <button className="del" onClick={() => onDelete(item.id)}>×</button>}
+          {s.dirty && (
+            <button className="save" disabled={s.status === 'saving'} onClick={s.save}>
+              {s.status === 'saving' && <Spinner size={12} />}
+              {s.status === 'saving' ? 'Saving' : 'Save'}
+            </button>
+          )}
+          {!s.dirty && canEdit && <button onClick={() => onEdit(item)}>Edit</button>}
+          {isAdmin && <button className="del" onClick={() => onDelete(item.id)}>×</button>}
         </td>
       );
     }
@@ -89,11 +88,11 @@ export function InventoryRow({
         {flexRender(cell.column.columnDef.cell, cell.getContext())}
       </td>
     );
-  }
+  };
 
   return (
     <tr className={item.kyteMatch ? '' : 'row-mismatch'}>
       {row.getVisibleCells().map(renderCell)}
     </tr>
   );
-}
+};

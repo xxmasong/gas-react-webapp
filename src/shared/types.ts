@@ -3,21 +3,21 @@
 
 // ─── Item (legacy demo entity, kept for backward compatibility) ────────────────
 
-export interface Item {
+export type Item = {
   /** Stable row id (uuid). */
   id: string;
   name: string;
   quantity: number;
   /** ISO timestamp of last update. */
   updatedAt: string;
-}
+};
 
 /** Payload to create a new item (id + updatedAt are assigned server-side). */
 export type NewItem = Pick<Item, 'name' | 'quantity'>;
 
 // ─── SkuCategory ───────────────────────────────────────────────────────────────
 
-export interface SkuCategory {
+export type SkuCategory = {
   /** Stable row id (uuid). */
   id: string;
   /** Short code, e.g. "r1f", "hgcm". Unique. */
@@ -30,7 +30,7 @@ export interface SkuCategory {
   sortOrder: number;
   /** ISO timestamp of last update. */
   updatedAt: string;
-}
+};
 
 /** Payload to create a category (id + updatedAt assigned server-side). */
 export type NewSkuCategory = Omit<SkuCategory, 'id' | 'updatedAt'>;
@@ -40,7 +40,7 @@ export type NewSkuCategory = Omit<SkuCategory, 'id' | 'updatedAt'>;
 /** The two physical stores/warehouses tracked in the Product Info sheet. */
 export type Store = 'EASY' | 'GRUTON';
 
-export interface InventoryItem {
+export type InventoryItem = {
   /** Stable row id (uuid). */
   id: string;
   /** FK → SkuCategory.id. */
@@ -89,7 +89,7 @@ export interface InventoryItem {
 
   /** ISO timestamp of last update. */
   updatedAt: string;
-}
+};
 
 /** Payload to create a SKU. Computed fields + id + updatedAt are server-assigned. */
 export type NewInventoryItem = Omit<
@@ -98,53 +98,60 @@ export type NewInventoryItem = Omit<
 >;
 
 /** A single stock-level change applied in bulk. */
-export interface StockUpdate {
+export type StockUpdate = {
   id: string;
   qtyGround: number;
   qtyUpstair: number;
   qtyBox: number;
-}
+};
 
 // ─── Summary / Reporting (computed views) ──────────────────────────────────────
 
-export interface InventorySummary {
+export type InventorySummary = {
   totalCost: number;
   totalQty: number;
   categoryCount: number;
   skuCount: number;
   mismatchCount: number;
   zeroStockCount: number;
-}
+};
 
-export interface CategoryTotal {
+export type CategoryTotal = {
   categoryId: string;
   categoryCode: string;
   categoryName: string;
   totalCost: number;
   totalQty: number;
   skuCount: number;
-}
+};
 
 // ─── Auth ──────────────────────────────────────────────────────────────────────
 
 /** Roles, least → most privileged. */
 export type Role = 'inventory_staff' | 'supervisor' | 'admin';
 
+/** Numeric rank for each role — higher means more privileged. */
+export const ROLE_RANK: Record<Role, number> = {
+  inventory_staff: 1,
+  supervisor:      2,
+  admin:           3,
+};
+
 /** Public user shape (never includes the password hash). */
-export interface User {
+export type User = {
   id: string;
   username: string;
   role: Role;
   active: boolean;
-}
+};
 
 /** Result of a successful login. */
-export interface AuthSession {
+export type AuthSession = {
   token: string;
   user: User;
   /** ISO timestamp when the session expires. */
   expiresAt: string;
-}
+};
 
 // ─── Server contract ───────────────────────────────────────────────────────────
 
@@ -153,7 +160,7 @@ export interface AuthSession {
  * function takes the session `token` as its first argument; the client `server`
  * bridge injects it automatically so view code doesn't pass it manually.
  */
-export interface ServerFunctions {
+export type ServerFunctions = {
   // Auth (login takes no token)
   login(username: string, password: string): AuthSession;
   logout(token: string): { ok: true };
@@ -193,4 +200,4 @@ export interface ServerFunctions {
 
   // Data management
   reseedInventory(token: string): { categories: number; items: number };
-}
+};

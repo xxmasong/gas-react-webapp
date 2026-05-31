@@ -1,2 +1,1 @@
-export { LoginScreen } from './LoginScreen';
-export { UsersView } from './UsersView';
+export { useUsers } from './hooks/useUsers';

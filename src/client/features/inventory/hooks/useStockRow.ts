@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { InventoryItem } from '@shared/types';
 import { server } from '../../../lib/server';
 import { queryKeys } from '../../../lib/queryKeys';
+import { useToast } from '../../../providers';
+import { cleanError } from '../../../lib/errors';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'mismatch';
 
@@ -10,6 +12,7 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'mismatch';
 // (save + read-back verify against the sheet), and a visible status.
 export function useStockRow(item: InventoryItem) {
   const qc = useQueryClient();
+  const toast = useToast();
   const [ground, setGround] = useState(item.qtyGround);
   const [upstair, setUpstair] = useState(item.qtyUpstair);
   const [box, setBox] = useState(item.qtyBox);
@@ -34,19 +37,25 @@ export function useStockRow(item: InventoryItem) {
       server.saveAndVerifyStock({ id: item.id, qtyGround: ground, qtyUpstair: upstair, qtyBox: box }),
     onMutate: () => setStatus('saving'),
     onSuccess: (fresh) => {
-      // Verify the sheet now holds exactly what we sent.
       const ok =
         fresh.qtyGround === ground && fresh.qtyUpstair === upstair && fresh.qtyBox === box;
-      // Write the verified row into the cache so the whole UI reflects the sheet.
       qc.setQueryData<InventoryItem[]>(queryKeys.inventoryItems(), (prev = []) =>
         prev.map((i) => (i.id === fresh.id ? fresh : i)),
       );
       qc.invalidateQueries({ queryKey: queryKeys.inventorySummary });
       qc.invalidateQueries({ queryKey: queryKeys.categoryTotals });
       setStatus(ok ? 'saved' : 'mismatch');
-      if (ok) window.setTimeout(() => setStatus('idle'), 2000);
+      if (ok) {
+        toast.success(`Stock saved for "${item.sku}".`);
+        window.setTimeout(() => setStatus('idle'), 2000);
+      } else {
+        toast.warning(`Stock saved but sheet returned different values for "${item.sku}". Please verify.`);
+      }
     },
-    onError: () => setStatus('error'),
+    onError: (err) => {
+      setStatus('error');
+      toast.error(`Failed to save "${item.sku}": ${cleanError(err)}`);
+    },
   });
 
   function save() {

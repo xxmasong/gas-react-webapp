@@ -1,16 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Table } from '@tanstack/react-table';
 import type { InventoryItem } from '@shared/types';
 
-export function ColumnVisibilityMenu({ table }: { table: Table<InventoryItem> }) {
+type Props = {
+  table: Table<InventoryItem>;
+};
+
+export const ColumnVisibilityMenu: React.FC<Props> = ({ table }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
-    function onClick(e: MouseEvent) {
+    const onClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
+    };
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
   }, [open]);
@@ -40,4 +44,4 @@ export function ColumnVisibilityMenu({ table }: { table: Table<InventoryItem> })
       )}
     </div>
   );
-}
+};

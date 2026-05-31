@@ -1,6 +1,7 @@
+import React from 'react';
 import { useTheme } from '../../providers';
 
-export function ThemeToggle() {
+export const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
   return (
@@ -25,4 +26,4 @@ export function ThemeToggle() {
       )}
     </button>
   );
-}
+};

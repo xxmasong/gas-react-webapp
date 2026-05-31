@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell,
@@ -12,20 +13,17 @@ const HEALTH_COLORS: Record<string, keyof ReturnType<typeof useChartTheme>> = {
   ok: 'success', low: 'warn', out: 'danger',
 };
 
-function tooltipStyle(t: ReturnType<typeof useChartTheme>) {
-  return {
-    background: t.surface,
-    border: `1px solid ${t.border}`,
-    borderRadius: 8,
-    color: t.text,
-    fontSize: 12,
-  };
-}
+const tooltipStyle = (t: ReturnType<typeof useChartTheme>) => ({
+  background: t.surface,
+  border: `1px solid ${t.border}`,
+  borderRadius: 8,
+  color: t.text,
+  fontSize: 12,
+});
 
-// Truncate long SKU labels on axes.
 const short = (s: string, n = 16) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
 
-export function ValueByCategoryChart({ data }: { data: CategoryDatum[] }) {
+export const ValueByCategoryChart: React.FC<{ data: CategoryDatum[] }> = ({ data }) => {
   const t = useChartTheme();
   return (
     <ResponsiveContainer width="100%" height={Math.max(200, data.length * 30 + 40)}>
@@ -50,9 +48,9 @@ export function ValueByCategoryChart({ data }: { data: CategoryDatum[] }) {
       </BarChart>
     </ResponsiveContainer>
   );
-}
+};
 
-export function StoreSplitChart({ data }: { data: StoreDatum[] }) {
+export const StoreSplitChart: React.FC<{ data: StoreDatum[] }> = ({ data }) => {
   const t = useChartTheme();
   const colorFor = (store: string) =>
     store === 'EASY' ? t.palette[1] : store === 'GRUTON' ? t.palette[2] : t.palette[3];
@@ -70,9 +68,9 @@ export function StoreSplitChart({ data }: { data: StoreDatum[] }) {
       </PieChart>
     </ResponsiveContainer>
   );
-}
+};
 
-export function StockHealthChart({ data }: { data: StockHealthDatum[] }) {
+export const StockHealthChart: React.FC<{ data: StockHealthDatum[] }> = ({ data }) => {
   const t = useChartTheme();
   return (
     <ResponsiveContainer width="100%" height={240}>
@@ -85,9 +83,9 @@ export function StockHealthChart({ data }: { data: StockHealthDatum[] }) {
       </PieChart>
     </ResponsiveContainer>
   );
-}
+};
 
-export function TopSkusChart({ data }: { data: TopSkuDatum[] }) {
+export const TopSkusChart: React.FC<{ data: TopSkuDatum[] }> = ({ data }) => {
   const t = useChartTheme();
   return (
     <ResponsiveContainer width="100%" height={Math.max(220, data.length * 32 + 40)}>
@@ -110,9 +108,9 @@ export function TopSkusChart({ data }: { data: TopSkuDatum[] }) {
       </BarChart>
     </ResponsiveContainer>
   );
-}
+};
 
-export function AbcCurveChart({ abc }: { abc: AbcResult }) {
+export const AbcCurveChart: React.FC<{ abc: AbcResult }> = ({ abc }) => {
   const t = useChartTheme();
   return (
     <ResponsiveContainer width="100%" height={260}>
@@ -143,4 +141,4 @@ export function AbcCurveChart({ abc }: { abc: AbcResult }) {
       </AreaChart>
     </ResponsiveContainer>
   );
-}
+};

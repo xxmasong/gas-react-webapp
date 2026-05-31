@@ -1,40 +1,34 @@
-import { useState } from 'react';
-import { useAuth } from '../../providers';
-import { useTheme } from '../../providers';
+import React, { useState } from 'react';
+import { useAuth, useToast } from '../../providers';
+import { cleanError } from '../../lib/errors';
+import { Spinner } from '../atoms';
+import { ThemeToggle } from '../molecules';
 
-export function LoginScreen() {
+export const LoginForm: React.FC = () => {
   const { login } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const toast = useToast();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  async function onSubmit(e: React.FormEvent) {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password) return;
     setBusy(true);
-    setError(null);
     try {
       await login(username.trim(), password);
     } catch (err) {
-      setError(String(err instanceof Error ? err.message : err).replace(/^Error:\s*/, ''));
+      toast.error(cleanError(err));
       setPassword('');
     } finally {
       setBusy(false);
     }
-  }
+  };
 
   return (
     <div className="login-screen">
-      <button
-        className="ghost login-theme"
-        onClick={toggleTheme}
-        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-      >
-        {theme === 'dark' ? '☀' : '☾'}
-      </button>
+      <ThemeToggle />
 
       <div className="login-card">
         <div className="login-brand">
@@ -44,8 +38,6 @@ export function LoginScreen() {
         </div>
 
         <form className="login-form" onSubmit={onSubmit}>
-          {error && <div className="error">{error}</div>}
-
           <label>
             <span>Username</span>
             <input
@@ -79,6 +71,7 @@ export function LoginScreen() {
           </label>
 
           <button type="submit" className="primary login-submit" disabled={busy}>
+            {busy && <Spinner size={16} />}
             {busy ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
@@ -89,4 +82,4 @@ export function LoginScreen() {
       </div>
     </div>
   );
-}
+};

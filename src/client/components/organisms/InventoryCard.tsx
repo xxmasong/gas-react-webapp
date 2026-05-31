@@ -1,28 +1,27 @@
+import React from 'react';
 import type { InventoryItem } from '@shared/types';
-import { formatCurrency, formatQty } from '../../../lib/format';
-import { CostDisplay } from './CostDisplay';
-import { MismatchBadge } from './MismatchBadge';
-import { SaveStatusBadge } from './SaveStatusBadge';
-import { useStockRow } from '../hooks/useStockRow';
+import { formatCurrency, formatQty } from '../../lib/format';
+import { useAuth } from '../../providers';
+import { useStockRow } from '../../features/inventory/hooks/useStockRow';
+import { Spinner, StoreBadge } from '../atoms';
+import { CostDisplay, MismatchBadge, SaveStatusBadge } from '../molecules';
 
-export function InventoryCard({
-  item,
-  canEdit,
-  onEdit,
-  onDelete,
-}: {
+type Props = {
   item: InventoryItem;
   canEdit: boolean;
   onEdit: (item: InventoryItem) => void;
   onDelete: (id: string) => void;
-}) {
+};
+
+export const InventoryCard: React.FC<Props> = ({ item, canEdit, onEdit, onDelete }) => {
   const s = useStockRow(item);
+  const { isAdmin } = useAuth();
 
   return (
     <article className={`inv-card ${item.kyteMatch ? '' : 'inv-card-mismatch'}`}>
       <div className="inv-card-top">
         <span className="inv-card-name">{item.sku}</span>
-        <span className={`store-badge store-${item.store.toLowerCase()}`}>{item.store}</span>
+        <StoreBadge store={item.store} />
       </div>
 
       <div className="inv-card-meta">
@@ -65,16 +64,15 @@ export function InventoryCard({
       </div>
 
       <div className="inv-card-actions">
-        <button
-          className="primary save"
-          disabled={!s.dirty || s.status === 'saving'}
-          onClick={s.save}
-        >
-          {s.status === 'saving' ? 'Saving…' : 'Save'}
-        </button>
-        {canEdit && <button className="ghost" onClick={() => onEdit(item)}>Edit</button>}
-        {canEdit && <button className="del" onClick={() => onDelete(item.id)}>Delete</button>}
+        {s.dirty && (
+          <button className="primary save" disabled={s.status === 'saving'} onClick={s.save}>
+            {s.status === 'saving' && <Spinner size={14} />}
+            {s.status === 'saving' ? 'Saving…' : 'Save'}
+          </button>
+        )}
+        {!s.dirty && canEdit && <button className="ghost" onClick={() => onEdit(item)}>Edit</button>}
+        {isAdmin && <button className="del" onClick={() => onDelete(item.id)}>Delete</button>}
       </div>
     </article>
   );
-}
+};

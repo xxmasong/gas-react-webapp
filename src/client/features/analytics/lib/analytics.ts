@@ -11,7 +11,7 @@ export function stockStatus(item: InventoryItem): StockStatus {
   return 'ok';
 }
 
-export interface Kpis {
+export type Kpis = {
   totalValue: number;
   totalQty: number;
   skuCount: number;
@@ -24,7 +24,7 @@ export interface Kpis {
   deadStock: number;
   /** Kyte reconciliation accuracy as a 0–100 percentage. */
   kyteAccuracy: number;
-}
+};
 
 export function computeKpis(items: InventoryItem[], categoryCount: number): Kpis {
   let totalValue = 0, totalQty = 0, out = 0, low = 0, ok = 0, mismatches = 0, dead = 0;
@@ -53,13 +53,13 @@ export function computeKpis(items: InventoryItem[], categoryCount: number): Kpis
   };
 }
 
-export interface CategoryDatum {
+export type CategoryDatum = {
   id: string;
   name: string;
   value: number;
   qty: number;
   skuCount: number;
-}
+};
 
 export function valueByCategory(items: InventoryItem[], categories: SkuCategory[]): CategoryDatum[] {
   const nameOf = new Map(categories.map((c) => [c.id, c.name]));
@@ -77,12 +77,12 @@ export function valueByCategory(items: InventoryItem[], categories: SkuCategory[
   return [...byCat.values()].sort((a, b) => b.value - a.value);
 }
 
-export interface StoreDatum {
+export type StoreDatum = {
   store: string;
   value: number;
   qty: number;
   skuCount: number;
-}
+};
 
 export function valueByStore(items: InventoryItem[]): StoreDatum[] {
   const byStore = new Map<string, StoreDatum>();
@@ -96,12 +96,12 @@ export function valueByStore(items: InventoryItem[]): StoreDatum[] {
   return [...byStore.values()].sort((a, b) => b.value - a.value);
 }
 
-export interface TopSkuDatum {
+export type TopSkuDatum = {
   id: string;
   sku: string;
   value: number;
   qty: number;
-}
+};
 
 export function topSkusByValue(items: InventoryItem[], n = 10): TopSkuDatum[] {
   return [...items]
@@ -110,7 +110,7 @@ export function topSkusByValue(items: InventoryItem[], n = 10): TopSkuDatum[] {
     .slice(0, n);
 }
 
-export interface AbcDatum {
+export type AbcDatum = {
   /** 1-based rank of the SKU by descending value. */
   rank: number;
   /** Cumulative share of total value at this rank, 0–100. */
@@ -118,12 +118,12 @@ export interface AbcDatum {
   /** Cumulative share of SKU count at this rank, 0–100. */
   skuPct: number;
   class: 'A' | 'B' | 'C';
-}
+};
 
-export interface AbcResult {
+export type AbcResult = {
   curve: AbcDatum[];
   counts: { A: number; B: number; C: number };
-}
+};
 
 // ABC analysis: rank SKUs by value, walk the cumulative curve. Class A = SKUs
 // making up the first 80% of value, B = next 15%, C = last 5%.
@@ -155,11 +155,11 @@ export function abcAnalysis(items: InventoryItem[]): AbcResult {
   return { curve, counts };
 }
 
-export interface StockHealthDatum {
+export type StockHealthDatum = {
   name: string;
   value: number;
   key: StockStatus;
-}
+};
 
 export function stockHealth(kpis: Kpis): StockHealthDatum[] {
   return [
@@ -170,14 +170,14 @@ export function stockHealth(kpis: Kpis): StockHealthDatum[] {
 }
 
 /** SKUs needing attention: out of stock or low, sorted out-first then by value. */
-export interface AttentionRow {
+export type AttentionRow = {
   id: string;
   sku: string;
   store: string;
   qtyTotal: number;
   status: StockStatus;
   value: number;
-}
+};
 
 export function attentionList(items: InventoryItem[]): AttentionRow[] {
   return items

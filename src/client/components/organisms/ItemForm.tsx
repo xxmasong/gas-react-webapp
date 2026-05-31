@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import type { InventoryItem, NewInventoryItem, SkuCategory } from '@shared/types';
-import { formatCurrency } from '../../../lib/format';
+import { formatCurrency } from '../../lib/format';
+import { Spinner } from '../atoms';
 
 type Editable = NewInventoryItem & { id?: string };
 
@@ -12,13 +13,11 @@ const BLANK: Editable = {
   qtyKyte: 0,
 };
 
-function fromItem(item: InventoryItem): Editable {
+const fromItem = (item: InventoryItem): Editable => {
   const { updatedAt: _u, qtyTotal: _q, kyteMatch: _k, costTotal: _c, ...rest } = item;
   return rest;
-}
+};
 
-// Editable numeric (quantity) fields. Costs and prices are read-only reference
-// data, set by migration/sheet only — not edited here.
 const QTY_FIELDS: Array<{ key: keyof Editable; label: string }> = [
   { key: 'uom', label: 'UOM (per box)' },
   { key: 'qtyGround', label: 'Qty ground' },
@@ -33,27 +32,24 @@ const EXPIRY_FIELDS: Array<{ key: keyof Editable; label: string }> = [
   { key: 'expiryBox', label: 'Expiry box' },
 ];
 
-export function ItemForm({
-  categories,
-  initial,
-  onSubmit,
-  onCancel,
-}: {
+type Props = {
   categories: SkuCategory[];
   initial?: InventoryItem;
   onSubmit: (item: Editable) => Promise<void>;
   onCancel: () => void;
-}) {
+};
+
+export const ItemForm: React.FC<Props> = ({ categories, initial, onSubmit, onCancel }) => {
   const [form, setForm] = useState<Editable>(
     initial ? fromItem(initial) : { ...BLANK, categoryId: categories[0]?.id ?? '' },
   );
   const [busy, setBusy] = useState(false);
 
-  function set<K extends keyof Editable>(key: K, value: Editable[K]) {
+  const set = <K extends keyof Editable>(key: K, value: Editable[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
-  }
+  };
 
-  async function submit(e: React.FormEvent) {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.sku.trim() || !form.categoryId || form.uom <= 0) return;
     setBusy(true);
@@ -62,7 +58,7 @@ export function ItemForm({
     } finally {
       setBusy(false);
     }
-  }
+  };
 
   return (
     <div className="modal-backdrop" onClick={onCancel}>
@@ -133,10 +129,13 @@ export function ItemForm({
 
           <div className="modal-actions">
             <button type="button" className="ghost" onClick={onCancel}>Cancel</button>
-            <button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button>
+            <button type="submit" disabled={busy}>
+              {busy && <Spinner size={14} />}
+              {busy ? 'Saving…' : 'Save'}
+            </button>
           </div>
         </form>
       </div>
     </div>
   );
-}
+};

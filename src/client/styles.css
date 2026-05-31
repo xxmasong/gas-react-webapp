@@ -332,6 +332,15 @@ tbody + tbody .cat-group-row td { border-top: 2px solid var(--color-border); }
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Generic circular spinner ─────────────────────────────────────────────── */
+.spinner {
+  display: inline-block; border-radius: 50%; box-sizing: border-box;
+  border-style: solid; border-color: currentColor; border-top-color: transparent;
+  animation: spin 0.65s linear infinite; vertical-align: middle; opacity: 0.75;
+}
+button .spinner { margin-right: 5px; }
+
 .reseed-label { font-size: 1.05rem; font-weight: 600; margin: 0; color: var(--color-text); }
 .reseed-sub   { font-size: 0.85rem; color: var(--color-text-muted); margin: 0; }
 

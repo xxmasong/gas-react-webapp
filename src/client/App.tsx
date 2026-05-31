@@ -1,36 +1,11 @@
-import { Layout } from './components/layout';
-import { useView, useAuth } from './providers';
-import { LoginScreen, UsersView } from './features/auth';
-import { DashboardView } from './features/dashboard';
-import { AnalyticsView } from './features/analytics';
-import { InventoryItemsView } from './features/inventory';
-import { CategoriesView } from './features/categories';
+import React from 'react';
+import { useAuth, useLayout } from './providers';
+import { PublicApp, PrivateApp, MobileApp } from './apps';
 import './styles.css';
 
-function ActiveView() {
-  const { view } = useView();
-  const { hasRole } = useAuth();
-  switch (view) {
-    case 'dashboard':
-      return <DashboardView />;
-    case 'analytics':
-      return <AnalyticsView />;
-    case 'inventory':
-      return <InventoryItemsView />;
-    case 'categories':
-      // Supervisor+ only; staff who somehow land here see a notice.
-      return hasRole('supervisor') ? <CategoriesView /> : <NoAccess />;
-    case 'users':
-      return hasRole('admin') ? <UsersView /> : <NoAccess />;
-  }
-}
-
-function NoAccess() {
-  return <p className="muted">You don't have permission to view this section.</p>;
-}
-
-export default function App() {
+const App: React.FC = () => {
   const { user, loading } = useAuth();
+  const { isMobile } = useLayout();
 
   if (loading) {
     return (
@@ -40,11 +15,8 @@ export default function App() {
     );
   }
 
-  if (!user) return <LoginScreen />;
+  if (!user) return <PublicApp />;
+  return isMobile ? <MobileApp /> : <PrivateApp />;
+};
 
-  return (
-    <Layout>
-      <ActiveView />
-    </Layout>
-  );
-}
+export default App;

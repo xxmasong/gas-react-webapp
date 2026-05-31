@@ -44,7 +44,7 @@ src/server/
     cache.js              # CacheService wrapper
     uuid.js               # ID generation wrapper
     datetime.js           # date/timestamp helpers
-  contract.ts             # compile-time conformance check — NOT pushed
+  contract.ts             # compile-time type-check of the shared contract — NOT pushed
 ```
 
 Every file in `src/server/` is pushed to GAS as-is **except** `contract.ts`.
@@ -96,7 +96,8 @@ via `google.script.run`. It is a thin routing shim — no business logic lives h
 - Call `validate.*` on input.
 - Delegate to the appropriate service.
 - Return the result (JSON-serializable).
-- Catch errors and re-throw as `AppError` (see §9).
+- **Do not** catch errors here — let `AppError`/`Error` propagate so GAS surfaces the
+  message to the client (matches the current `api.js`; see the "No try/catch" rule below).
 
 ### Pattern
 
@@ -724,8 +725,9 @@ console.error(JSON.stringify({
 
 ## 13. TypeScript contract
 
-The server is **plain JavaScript** (GAS V8 runs it without transpilation), but it
-is typechecked out-of-band via `src/server/contract.ts` + `tsconfig.server.json`.
+The server is **plain JavaScript** (GAS V8 runs it without transpilation). It is
+type-checked out-of-band via `tsconfig.server.json`, and `src/server/contract.ts`
+pulls the shared `ServerFunctions` interface into that compile.
 
 ### contract.ts (compile-time only, never pushed)
 
@@ -736,14 +738,24 @@ declare const _api: ServerFunctions;
 export {};
 ```
 
-This file forces `tsc` to verify the hand-written `api.js` globals structurally
-match `ServerFunctions`. It is **never pushed** to GAS — `copy-server.mjs` skips
-`.ts` files.
+What this actually does: it makes `tsc` load and type-check the shared
+`ServerFunctions` interface as part of the server project, so a broken/non-compiling
+contract fails `npm run typecheck`. **It does not import `api.js`** (which is plain JS),
+so it does **not** mechanically prove that the hand-written globals implement
+`ServerFunctions`. Keeping `api.js` aligned with the contract is therefore a **manual
+discipline** (follow the recipe in [CONTRIBUTING.md](CONTRIBUTING.md)). It is **never
+pushed** to GAS — `copy-server.mjs` skips `.ts` files.
+
+> Want a real guarantee? A future enhancement could wrap the API in a typed const
+> (e.g. `const _check: ServerFunctions = { getItems, addItem, updateItem, deleteItem };`)
+> in a `.ts` shim that imports the functions — but that requires the server to be TS,
+> which is out of scope today.
 
 ### Rules
 - **`src/shared/types.ts` is the single source of truth** for entity types and the
   RPC surface. Edit it first; then update the server.
-- Run `npm run typecheck` before every deploy — it catches client/server drift.
+- Run `npm run typecheck` before every deploy — it catches contract/type errors
+  (though api.js↔contract conformance is verified by humans, not the compiler).
 - Use JSDoc `@param` / `@returns` annotations in `.js` files to get IDE
   type-inference without TypeScript compilation.
 

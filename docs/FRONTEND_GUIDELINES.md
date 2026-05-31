@@ -1,8 +1,67 @@
 # Frontend Guidelines
 
-Rules and conventions for the React + TypeScript + Vite + Tailwind frontend.
-Read [ARCHITECTURE.md](ARCHITECTURE.md) first for the system-level context; this
-doc is the implementation standard.
+> [!IMPORTANT]
+> **Two parts, do not confuse them.**
+> - **§0 — Current implementation (AUTHORITATIVE).** This is what the repo actually
+>   contains today. Reproduce *this* when recreating the project.
+> - **§1 onward — Target architecture (ASPIRATIONAL).** A forward-looking design for
+>   when the app grows (shadcn/ui, Tailwind, a router, Atomic Design, Context). **None
+>   of it exists in the code yet.** Do **not** reproduce it as current state, and do
+>   not assume any file/library mentioned below is present unless §0 lists it.
+>
+> For the exact file tree and configs see [PROJECT_LAYOUT.md](PROJECT_LAYOUT.md);
+> for exact component/hook behavior see [BUSINESS_LOGIC.md](BUSINESS_LOGIC.md).
+
+Read [ARCHITECTURE.md](ARCHITECTURE.md) first for system-level context.
+
+---
+
+## 0. Current implementation (authoritative)
+
+The real frontend is intentionally tiny and uses **plain CSS — no Tailwind, no
+shadcn/ui, no router, no state library, no `shared/components` tree.**
+
+### Actual structure
+```
+src/client/
+  main.tsx                         # React mount only (StrictMode → <App/>)
+  App.tsx                          # shell: <header> title + live/mock badge; <InventoryView/>
+  server.ts                        # re-export shim → lib/server.ts
+  styles.css                       # ALL styling (hand-written, GitHub-ish palette)
+  vite-env.d.ts                    # `google` global shim + vite client types
+  lib/
+    server.ts                      # canonical RPC bridge (real gas-client | in-memory mock)
+  features/
+    inventory/
+      index.ts                     # barrel: export { InventoryView }
+      components/InventoryView.tsx  # add form + list with +/- qty and delete
+      hooks/useInventory.ts         # server state: items/loading/error + add/update/remove/reload
+```
+
+### Rules that actually apply today
+- **Never call `google.script.run` from a component.** Go through the `server` object
+  from `lib/server.ts`, wrapped by a feature hook (`useInventory`). Components never
+  import `server` directly either — they use the hook.
+- **One feature folder per domain** (`features/inventory/`); its `index.ts` barrel is
+  the only public surface.
+- **Server state lives in the feature hook**; local UI state (form fields) stays in the
+  component via `useState`.
+- **Types come from `@shared/types`** via the path alias (see PROJECT_LAYOUT §4), never
+  by relative path into `src/shared`.
+- **Styling is plain CSS** in `styles.css` using semantic class names (`.app`, `.badge`,
+  `.items`, `.add-form`, `.qty`, `.del`). The `live`/`mock` badge classes drive the
+  header indicator.
+
+Exact component/hook logic (form rules, optimistic +/- with a floor of 0, error
+handling, the mock seed) is specified in [BUSINESS_LOGIC.md §7–§8](BUSINESS_LOGIC.md).
+
+---
+
+# Target architecture (aspirational — NOT yet implemented)
+
+Everything from here down describes where the frontend *could* go. Treat it as a
+design proposal, not a description of the current code. Do not create any of these
+files/dependencies when reproducing the project.
 
 ---
 

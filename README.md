@@ -39,6 +39,8 @@ Node 18+ and the Apps Script API enabled once at
 | Doc | For |
 |---|---|
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, GAS constraints, decisions (ADRs). |
+| [docs/PROJECT_LAYOUT.md](docs/PROJECT_LAYOUT.md) | Canonical file tree + authoritative configs — the **reproduction spec**. |
+| [docs/BUSINESS_LOGIC.md](docs/BUSINESS_LOGIC.md) | Exact per-layer / per-operation business + modular logic. |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Local dev loop, mock backend, conventions. |
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | Add or change a feature, end to end. |
 | [docs/DATA_MODEL.md](docs/DATA_MODEL.md) | Google Sheets as the database. |
@@ -47,6 +49,11 @@ Node 18+ and the Apps Script API enabled once at
 | [docs/BACKEND_GUIDELINES.md](docs/BACKEND_GUIDELINES.md) | Layer architecture, services, repositories, mappers, lib utilities, locking, caching. |
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | GAS-specific failure modes. |
 | [docs/DEPLOY_URL.md](docs/DEPLOY_URL.md) | Live script/sheet IDs and `/exec` URLs. |
+
+> **Recreating this project from scratch (human or AI)?** Read
+> [docs/PROJECT_LAYOUT.md](docs/PROJECT_LAYOUT.md) (file tree + exact configs) and
+> [docs/BUSINESS_LOGIC.md](docs/BUSINESS_LOGIC.md) (exact per-layer logic) together —
+> they are written to be sufficient to reproduce the tree and behavior exactly.
 
 > `KNOWLEDGE.md` is an internal context cache for the AI assistant, not a
 > developer doc — start with the table above.

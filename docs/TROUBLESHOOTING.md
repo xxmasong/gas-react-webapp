@@ -24,8 +24,8 @@ mock. The header badge should read `local mock`. To test real RPC, `npm run depl
 - It must be a **top-level named function** in a pushed `.js` file (not nested, not
   arrow-assigned, not in `contract.ts` which isn't pushed).
 - Re-deploy after adding it — the running deployment uses pushed code.
-- Add the client wrapper + mock branch in `server.ts`, and the signature in
-  `ServerFunctions`.
+- Add the client wrapper + mock branch in `src/client/lib/server.ts`, and the
+  signature in `ServerFunctions`.
 
 **RPC returns `undefined` or throws "serialization" errors.**
 Arguments/returns must be JSON-serializable. Don't pass Dates, functions, or class
@@ -34,8 +34,9 @@ instances across the boundary — use ISO strings and plain objects.
 ## Sheets / data
 
 **`Item not found` on update/delete.**
-`findRowById_` resolves a row by scanning the id column. The id must match exactly
-(string compare). If a row was deleted concurrently, the lookup fails — see locking.
+`findRowIndexById` (in `repositories/itemRepository.js`) resolves a row by scanning the
+id column. The id must match exactly (string compare). If a row was deleted
+concurrently, the lookup fails — see locking.
 
 **Lost or overwritten writes under multiple users.**
 Read-then-write race: two calls compute row numbers before either writes. Wrap

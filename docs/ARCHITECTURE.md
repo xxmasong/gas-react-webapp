@@ -48,8 +48,8 @@ Design within these limits instead of fighting them.
 │  webapp.js (doGet)                                                 │
 │      └─ serves dist/index.html                                     │
 │                                                                    │
-│  api.js (RPC surface)  →  services/ (business logic)  →  sheets.js │
-│   thin: validate+route      rules, orchestration         (DAL)     │
+│  api.js → services/ → repositories/ → mappers/  (+ lib/ helpers)   │
+│  thin RPC   rules      Sheets DAL     row↔entity                   │
 └──────────────────────────────────────────────│────────────────────┘
                                           SpreadsheetApp
 ┌──────────────────────────────────────────────▼────────────────────┐
@@ -64,13 +64,17 @@ network protocol:
 
 - **`src/shared/types.ts`** is the source of truth. `ServerFunctions` lists every
   callable function with its argument and return types.
-- The **client** imports it so `server.ts` is fully typed.
-- The **server** asserts conformance at compile time via `src/server/contract.ts`
-  (typechecked, never pushed).
-- **`src/client/server.ts`** is the bridge. It is the *only* place that touches
+- The **client** imports it so `lib/server.ts` is fully typed.
+- The **server** type-checks the contract via `src/server/contract.ts` (never pushed).
+  Note: `contract.ts` checks that the shared interface compiles within the server
+  project; it does **not** mechanically prove `api.js` implements `ServerFunctions`
+  (api.js is plain JS). Keeping them in sync is a manual discipline — see
+  [BUSINESS_LOGIC.md §6](BUSINESS_LOGIC.md).
+- **`src/client/lib/server.ts`** is the bridge. It is the *only* place that touches
   `google.script.run`. It runs the real `gas-client` inside the deployed iframe,
   and an **in-memory mock** during local `vite` dev — so the entire UI is
   buildable offline. No component ever calls `google.script.run` directly.
+  (`src/client/server.ts` is just a re-export shim of this file.)
 
 Change the contract → both sides' typechecks tell you what drifted. This is what
 lets the layers evolve independently.
@@ -80,27 +84,31 @@ lets the layers evolve independently.
 ### Frontend (`src/client/`)
 ```
 main.tsx            mount only
-app/App.tsx         shell: layout, error boundary — no business logic
+App.tsx             shell: layout + live/mock badge — no business logic
+server.ts           re-export shim → lib/server.ts
 features/<name>/    one folder per feature: view + useXxx() data hook + components
 lib/server.ts       the RPC bridge (real vs. mock). The hard boundary.
-styles/
+styles.css          hand-written CSS (no Tailwind/shadcn yet)
 ```
 - **Server state** belongs in feature hooks (`useInventory`), which wrap `server.*`
   and own loading/error/optimistic state. Consider TanStack Query as this grows —
   GAS round-trips are slow and uncached.
 - **Local UI state** stays in component `useState`.
+- An app-level error boundary and any `app/`/`shared/components/` structure are
+  **target state**, not present today (see [FRONTEND_GUIDELINES.md](FRONTEND_GUIDELINES.md)).
 
 ### Backend (`src/server/`)
 ```
-webapp.js           transport: doGet() serves the HTML. No logic.
-api.js              RPC surface: thin — validate args, delegate, return.
-services/<name>.js  business logic: rules, orchestration, cross-entity ops.
-sheets.js           data-access layer (DAL): the ONLY file touching SpreadsheetApp.
-lib/                validate.js, sheetRepo.js (generic tab CRUD), lock helpers.
-contract.ts         compile-time conformance check. NOT pushed.
+webapp.js                    transport: doGet() serves the HTML. No logic.
+api.js                       RPC surface: thin — validate args, delegate, return.
+services/<name>.js           business logic: rules, orchestration, cross-entity ops.
+repositories/<name>.js       data-access layer (DAL): the ONLY files touching SpreadsheetApp.
+mappers/<name>.js            pure row[]↔entity transforms (no I/O).
+lib/                         validate.js, errors.js, lock.js, cache.js, uuid.js, datetime.js.
+contract.ts                  compile-time type check (see BUSINESS_LOGIC §6). NOT pushed.
 ```
 Rule of thumb: `api.js` functions are routing shims; real work lives in `services/`;
-all spreadsheet access funnels through `sheets.js`/`sheetRepo`.
+all spreadsheet access funnels through `repositories/` (each repo uses its `mapper`).
 
 ## 6. Non-goals (intentional)
 
@@ -145,9 +153,12 @@ Short, durable rationale for the choices above.
 
 ## 9. Roadmap (within this stack)
 
-1. **Refactor to target shape** — extract `services/`, generalize `sheets.js` into a
-   `sheetRepo(name, headers)`, add `LockService` + `validate.js`.
-2. **Frontend foundation** — feature folders + data hooks, error boundary, optional
-   TanStack Query.
-3. **Second entity** — prove the pattern end-to-end (tab + types + service + view).
-4. **Hardening** — auth decision, caching, structured logging, CI typecheck gate.
+1. ~~**Refactor to target shape** — extract `services/`, repositories/mappers, add
+   `LockService` + `validate.js`.~~ **Done** — the 5-layer backend is in place.
+2. ~~**Frontend foundation** — feature folders + data hooks.~~ **Done**
+   (`features/inventory/` + `useInventory`). Error boundary + optional TanStack Query
+   remain future work (see [FRONTEND_GUIDELINES.md](FRONTEND_GUIDELINES.md) target section).
+3. **Second entity** — prove the pattern end-to-end (tab + types + service + repo + view).
+4. **Hardening** — auth decision, structured logging, tests, CI typecheck gate.
+5. **Real contract enforcement** — make `contract.ts` actually assert `api.js` conforms
+   (today it only type-checks the shared interface; see BUSINESS_LOGIC §6).

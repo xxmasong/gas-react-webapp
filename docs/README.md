@@ -6,6 +6,8 @@ Developer-facing docs for the GAS React Web App. Start at the top.
 |---|---|
 | [../README.md](../README.md) | Get the project running for the first time. |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Understand the system design, constraints, and decisions. |
+| [PROJECT_LAYOUT.md](PROJECT_LAYOUT.md) | Reproduce the exact file tree + configs (the reproduction spec). |
+| [BUSINESS_LOGIC.md](BUSINESS_LOGIC.md) | Reproduce the exact per-layer / per-operation logic. |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Run the local dev loop and learn the mock backend. |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Add or change a feature end-to-end (the recipe). |
 | [DATA_MODEL.md](DATA_MODEL.md) | Work with Google Sheets as the database. |

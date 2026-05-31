@@ -24,7 +24,8 @@ npm run deploy           # build + assemble + push to @HEAD (updates the live UR
 What [../scripts/deploy.mjs](../scripts/deploy.mjs) does:
 
 1. `npm run build` — `tsc` + `vite build` → `dist/index.html` (everything inlined).
-2. `npm run copy:server` — copies server `.js` + `appsscript.json` flat into `dist/`
+2. `npm run copy:server` — copies server `.js` (preserving `lib/ mappers/ repositories/
+   services/` subfolders) + `appsscript.json` into `dist/`
    (see [../scripts/copy-server.mjs](../scripts/copy-server.mjs)). `.ts` contract
    files are skipped.
 3. `clasp push -f` — uploads `dist/` to the Apps Script project.
@@ -43,18 +44,23 @@ front-end changes do **not** need it — `npm run deploy` is enough.
 
 ## How the build is assembled
 
-GAS requires a flat `rootDir` where the served HTML, server scripts, and manifest
-sit together:
+GAS needs the served HTML, server scripts, and manifest under one `rootDir` (`dist/`).
+`copy-server.mjs` **preserves the `src/server/` subfolders** (GAS loads `.js` files
+recursively), so the layout is:
 
 ```
 dist/
-  index.html        ← Vite single-file bundle (the React app doGet() serves)
-  webapp.js         ← doGet()
-  api.js            ← RPC surface
-  sheets.js         ← data access
-  appsscript.json   ← manifest
+  index.html                       ← Vite single-file bundle (the React app doGet() serves)
+  api.js                           ← RPC surface
+  webapp.js                        ← doGet()
+  appsscript.json                  ← manifest
+  lib/{validate,errors,lock,cache,uuid,datetime}.js
+  mappers/itemMapper.js
+  repositories/itemRepository.js
+  services/inventoryService.js
 ```
 
+(There is no `sheets.js`; `contract.ts` is skipped — it's never pushed.)
 `vite.config.ts` sets `emptyOutDir: false` so the build and the server-copy step
 don't wipe each other regardless of order.
 

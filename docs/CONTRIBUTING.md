@@ -20,29 +20,43 @@ export interface ServerFunctions {
 ```
 Arguments and returns must be **JSON-serializable** (RPC crosses a process boundary).
 
-### 2. Implement the server function — `src/server/api.js`
-A top-level named function. Keep it thin: validate, delegate, return.
+### 2. Add the RPC shim — `src/server/api.js`
+A top-level named function. Keep it thin: **validate, delegate, return.** No business
+logic and no `SpreadsheetApp` here.
 
 ```js
 function addItem(item) {
-  if (!item || !item.name) throw new Error('name is required');   // validate
-  var created = {
-    id: Utilities.getUuid(),
-    name: String(item.name),
-    quantity: Number(item.quantity) || 0,
-    updatedAt: new Date().toISOString(),
-  };
-  return insertItem_(created);                                    // delegate to DAL
+  validate.required(item, 'item');
+  validate.string(item.name, 'name');
+  validate.nonNegativeNumber(item.quantity, 'quantity');
+  return InventoryService.addItem(item);                 // delegate to the service
 }
 ```
-Business logic that is more than trivial belongs in `src/server/services/`, not here.
 
-### 3. Persist it — `src/server/sheets.js`
-The data-access layer. If the schema changes, update `HEADERS` and the row mappers.
-See [DATA_MODEL.md](DATA_MODEL.md) for the Sheets conventions and the `LockService`
-requirement on writes.
+### 3. Implement the business logic — `src/server/services/<name>Service.js`
+The service (an IIFE global, e.g. `InventoryService`) owns the rules: reject invalid
+state, assign server-side fields (`id` via `Uuid.generate()`, `updatedAt` via
+`DateTime.nowIso()`), trim/coerce input, then call the repository.
 
-### 4. Wire the client bridge — `src/client/server.ts`
+```js
+function addItem(input) {
+  if (input.quantity < 0) throw AppError.validation('quantity cannot be negative');
+  var item = {
+    id: Uuid.generate(), name: String(input.name).trim(),
+    quantity: Number(input.quantity), updatedAt: DateTime.nowIso(),
+  };
+  return ItemRepository.insert(item);
+}
+```
+
+### 4. Persist it — `src/server/repositories/<name>Repository.js` (+ `mappers/`)
+The data-access layer (an IIFE global, e.g. `ItemRepository`) is the **only** code that
+touches `SpreadsheetApp`. If the schema changes, update `HEADERS` and the matching
+`mappers/<name>Mapper.js` (`fromRow`/`toRow`). Wrap every write in `Lock.withLock` and
+invalidate the cache key. See [DATA_MODEL.md](DATA_MODEL.md) and
+[BUSINESS_LOGIC.md §4](BUSINESS_LOGIC.md).
+
+### 5. Wire the client bridge — `src/client/lib/server.ts`
 Add a typed wrapper **and** a mock branch (mock parity is required):
 
 ```ts
@@ -54,13 +68,14 @@ export const server = {
 // inside createMock():
 addItem: (item) => { /* in-memory mirror of the server behaviour */ },
 ```
+(`src/client/server.ts` is only a re-export shim — edit `lib/server.ts`.)
 
-### 5. Build the UI
+### 6. Build the UI
 Add a feature view + a `useXxx()` hook that wraps `server.*` and owns
 loading/error/optimistic state. Components never call `server.*` directly through
 `google.script.run`; they go through the hook → `server.ts`.
 
-### 6. Verify and ship
+### 7. Verify and ship
 ```bash
 npm run typecheck   # catches client/contract drift
 npm run dev         # exercise the UI against the mock
@@ -70,17 +85,17 @@ npm run deploy      # build + push to the live app
 ## Definition of done
 
 - [ ] `ServerFunctions` updated in `src/shared/types.ts`.
-- [ ] Server function implemented (thin in `api.js`; logic in `services/`).
-- [ ] DAL + `HEADERS` updated; writes wrapped in `LockService`.
-- [ ] Client wrapper **and** mock branch added in `server.ts`.
+- [ ] `api.js` shim added (validate → delegate); logic in `services/`.
+- [ ] Repository + `mappers/` + `HEADERS` updated; writes wrapped in `Lock.withLock`; cache invalidated.
+- [ ] Client wrapper **and** mock branch added in `src/client/lib/server.ts`.
 - [ ] `npm run typecheck` passes.
 - [ ] Verified locally against the mock, then deployed.
 
 ## Code conventions
 
 - TypeScript on the client/shared; plain modern JS on the server (GAS V8).
-- Server DAL helpers are suffixed `_` (e.g. `insertItem_`) by convention — these
-  are internal and not part of the RPC surface.
+- Server modules are **IIFE globals** (`var ItemRepository = (function(){…})();`);
+  only `api.js` uses bare top-level function declarations (so RPC can call them).
 - Keep `api.js` functions as routing shims; push real logic down a layer.
-- Only `sheets.js` imports/uses `SpreadsheetApp`.
+- Only `repositories/*` import/use `SpreadsheetApp`.
 - No new runtime deps that break single-file inlining.

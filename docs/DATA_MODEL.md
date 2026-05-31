@@ -13,19 +13,21 @@ project. Each **entity is one tab (sheet)**; the **header row is the schema**.
 | `quantity` | number | Defaults to 0. |
 | `updatedAt` | string (ISO) | `new Date().toISOString()`, set on every write. |
 
-Defined by `HEADERS` in [../src/server/sheets.js](../src/server/sheets.js). The tab
-auto-creates with a frozen header row on first access.
+Defined by `HEADERS` in
+[../src/server/repositories/itemRepository.js](../src/server/repositories/itemRepository.js).
+The tab auto-creates with a frozen header row on first access.
 
 ## Conventions
 
 - **One tab per entity.** Tab name + `HEADERS` array define it.
 - **Header row = column contract.** Row 1 is frozen and maps positionally to the
-  entity fields via `rowToItem_`-style mappers. Order matters.
+  entity fields via the `mappers/itemMapper.js` `fromRow`/`toRow` functions. Order matters.
 - **UUID primary keys.** Generated server-side, never by the client.
 - **Timestamps in ISO 8601 strings.** Sheets stores them as text; we never rely on
   Sheets date types.
-- **`id` is the lookup key.** `findRowById_` scans the id column to resolve a row
-  number. This is O(n) — fine for hundreds/low-thousands of rows, not millions.
+- **`id` is the lookup key.** `findById` reads from the cached `findAll()`; writes use
+  `findRowIndexById`, which scans the id column to resolve the sheet row number. This is
+  O(n) — fine for hundreds/low-thousands of rows, not millions.
 
 ## Hard limits of Sheets-as-DB (design around these)
 
@@ -40,10 +42,10 @@ auto-creates with a frozen header row on first access.
 ## Adding a new entity
 
 1. Add the type + functions to `src/shared/types.ts` (the contract).
-2. In `sheets.js`, define a new `SHEET_NAME` + `HEADERS` (or use a generalized
-   `sheetRepo(name, headers)` helper if present) and row mappers.
-3. Implement the RPC functions in `api.js` (+ logic in `services/`).
-4. Wire client wrapper + mock in `server.ts`.
+2. Add a `repositories/<name>Repository.js` (IIFE) with its own `SHEET_NAME` + `HEADERS`
+   + `CACHE_KEY`, plus a `mappers/<name>Mapper.js` (`fromRow`/`toRow`).
+3. Implement the RPC shims in `api.js` (+ logic in `services/<name>Service.js`).
+4. Wire client wrapper + mock in `src/client/lib/server.ts`.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full end-to-end recipe.
 

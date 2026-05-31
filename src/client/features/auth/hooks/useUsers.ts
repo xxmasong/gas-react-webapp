@@ -1,10 +1,11 @@
+import { useCallback, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Role, User } from '@shared/types';
 import { server } from '../../../lib/server';
 
 const usersKey = ['users'] as const;
 
-export function useUsers() {
+export const useUsers = () => {
   const qc = useQueryClient();
 
   const { data: users = [], isLoading: loading, error } = useQuery({
@@ -12,7 +13,10 @@ export function useUsers() {
     queryFn: () => server.listUsers(),
   });
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: usersKey });
+  const invalidate = useCallback(
+    () => qc.invalidateQueries({ queryKey: usersKey }),
+    [qc],
+  );
 
   const register = useMutation({
     mutationFn: (p: { username: string; password: string; role: Role }) =>
@@ -35,7 +39,7 @@ export function useUsers() {
     onSuccess: invalidate,
   });
 
-  return {
+  return useMemo(() => ({
     users: users as User[],
     loading,
     error: error ? String(error) : null,
@@ -43,5 +47,5 @@ export function useUsers() {
     setActive: setActive.mutateAsync,
     setRole: setRole.mutateAsync,
     remove: remove.mutateAsync,
-  };
-}
+  }), [users, loading, error, register.mutateAsync, setActive.mutateAsync, setRole.mutateAsync, remove.mutateAsync]);
+};

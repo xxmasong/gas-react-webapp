@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import React, { useMemo, type ReactNode } from 'react';
 import { SnackbarProvider, useSnackbar } from 'notistack';
 
 export type ToastKind = 'error' | 'success' | 'info' | 'warning';
@@ -21,13 +21,15 @@ export const ToastProvider: React.FC<Props> = ({ children }) => (
 
 export const useToast = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const notify = (message: string, kind: ToastKind = 'info') =>
-    enqueueSnackbar(message, { variant: kind });
-  return {
-    notify,
-    error:   (m: string) => notify(m, 'error'),
-    success: (m: string) => notify(m, 'success'),
-    warning: (m: string) => notify(m, 'warning'),
-    info:    (m: string) => notify(m, 'info'),
-  };
+  return useMemo(() => {
+    const notify = (message: string, kind: ToastKind = 'info') =>
+      enqueueSnackbar(message, { variant: kind });
+    return {
+      notify,
+      error:   (m: string) => notify(m, 'error'),
+      success: (m: string) => notify(m, 'success'),
+      warning: (m: string) => notify(m, 'warning'),
+      info:    (m: string) => notify(m, 'info'),
+    };
+  }, [enqueueSnackbar]);
 };

@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { runningInGas } from '../../lib/server';
 import { useReseed } from '../../hooks/useReseed';
 import { useToast, useAuth } from '../../providers';
 import { cleanError } from '../../lib/errors';
+import { ROLE_HEADER_LABEL } from '../../config';
 import { Spinner } from '../atoms';
 import { ThemeToggle } from '../molecules';
 import { TABS } from './tabs';
-
-const ROLE_LABEL: Record<string, string> = {
-  admin: 'Admin',
-  supervisor: 'Supervisor',
-  inventory_staff: 'Staff',
-};
 
 export const Header: React.FC = () => {
   const { user, logout, hasRole, canEditSku } = useAuth();
@@ -20,9 +15,12 @@ export const Header: React.FC = () => {
   const toast = useToast();
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const visibleTabs = TABS.filter((t) => !t.minRole || hasRole(t.minRole));
+  const visibleTabs = useMemo(
+    () => TABS.filter((t) => !t.minRole || hasRole(t.minRole)),
+    [hasRole],
+  );
 
-  const handleReseed = async () => {
+  const handleReseed = useCallback(async () => {
     if (!confirm('This will wipe all categories and inventory items, then re-seed from the Product Info sheet. Continue?')) return;
     try {
       const result = await reseed.mutateAsync();
@@ -30,7 +28,12 @@ export const Header: React.FC = () => {
     } catch (e) {
       toast.error(`Reseed failed: ${cleanError(e)}`);
     }
-  };
+  }, [reseed, toast]);
+
+  const handleLogout = useCallback(async () => {
+    setLoggingOut(true);
+    await logout();
+  }, [logout]);
 
   return (
     <>
@@ -61,15 +64,12 @@ export const Header: React.FC = () => {
         {user && (
           <div className="user-chip">
             <span className="user-name">{user.username}</span>
-            <span className="user-role">{ROLE_LABEL[user.role] ?? user.role}</span>
+            <span className="user-role">{ROLE_HEADER_LABEL[user.role] ?? user.role}</span>
             <button
               className="ghost logout-btn"
               disabled={loggingOut}
               title="Sign out"
-              onClick={async () => {
-                setLoggingOut(true);
-                await logout();
-              }}
+              onClick={handleLogout}
             >
               {loggingOut && <Spinner size={12} />}
               {loggingOut ? 'Signing out…' : 'Sign out'}

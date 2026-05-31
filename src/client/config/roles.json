@@ -1,0 +1,5 @@
+[
+  { "value": "inventory_staff", "label": "Inventory staff", "headerLabel": "Staff" },
+  { "value": "supervisor",      "label": "Supervisor",      "headerLabel": "Supervisor" },
+  { "value": "admin",           "label": "Admin",           "headerLabel": "Admin" }
+]

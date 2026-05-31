@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -31,11 +31,15 @@ export const ThemeProvider: React.FC<Props> = ({ children }) => {
     window.localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
-  const value: ThemeContextValue = {
-    theme,
-    setTheme: setThemeState,
-    toggleTheme: () => setThemeState((t) => (t === 'light' ? 'dark' : 'light')),
-  };
+  const toggleTheme = useCallback(
+    () => setThemeState((t) => (t === 'light' ? 'dark' : 'light')),
+    [],
+  );
+
+  const value = useMemo<ThemeContextValue>(
+    () => ({ theme, setTheme: setThemeState, toggleTheme }),
+    [theme, toggleTheme],
+  );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };

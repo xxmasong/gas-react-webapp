@@ -14,7 +14,7 @@
  * Keep signatures in sync with ServerFunctions in src/shared/types.ts.
  */
 
-var ROLE = { STAFF: 'inventory_staff', SUPERVISOR: 'supervisor', ADMIN: 'admin' };
+var ROLE = Config.ROLES;
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 

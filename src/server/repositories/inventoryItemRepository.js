@@ -1,6 +1,6 @@
 var InventoryItemRepository = (function () {
 
-  var SHEET_NAME = 'InventoryItems';
+  var SHEET_NAME = Config.SHEETS.inventoryItems;
   var HEADERS    = [
     'id', 'categoryId', 'store', 'sku', 'emoji', 'uom',
     'costPerBoxNew', 'costPerPieceNew', 'costPerPieceOld',
@@ -8,9 +8,9 @@ var InventoryItemRepository = (function () {
     'qtyGround', 'expiryGround', 'qtyUpstair', 'expiryUpstair', 'qtyBox', 'expiryBox',
     'qtyTotal', 'qtyKyte', 'kyteMatch', 'costTotal', 'updatedAt',
   ];
-  var CACHE_KEY  = 'inventory_items_all';
+  var CACHE_KEY  = Config.CACHE_KEYS.inventoryItems;
 
-  function getSheet() {
+  var getSheet = () => {
     var ss    = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName(SHEET_NAME);
     if (!sheet) {
@@ -19,32 +19,31 @@ var InventoryItemRepository = (function () {
       sheet.setFrozenRows(1);
     }
     return sheet;
-  }
+  };
 
-  function findAll(categoryId) {
-    var all = Cache.getOrSet(CACHE_KEY, function () {
+  var findAll = (categoryId) => {
+    var all = Cache.getOrSet(CACHE_KEY, () => {
       var sheet   = getSheet();
       var lastRow = sheet.getLastRow();
       if (lastRow < 2) return [];
       return sheet
         .getRange(2, 1, lastRow - 1, HEADERS.length)
         .getValues()
-        .filter(function (row) { return row[0] !== '' && row[0] != null; })
+        .filter((row) => row[0] !== '' && row[0] != null)
         .map(InventoryItemMapper.fromRow);
-    }, 120);
+    }, Config.CACHE_TTL.inventoryItems);
     if (categoryId) {
-      return all.filter(function (i) { return i.categoryId === String(categoryId); });
+      return all.filter((i) => i.categoryId === String(categoryId));
     }
     return all;
-  }
+  };
 
-  function findById(id) {
-    return findAll().find(function (i) { return i.id === String(id); }) || null;
-  }
+  var findById = (id) =>
+    findAll().find((i) => i.id === String(id)) || null;
 
   // Read a single row straight from the sheet, bypassing the cache. Used by
   // saveAndVerifyStock so the returned value reflects what is actually on disk.
-  function findByIdFresh(id) {
+  var findByIdFresh = (id) => {
     var sheet   = getSheet();
     var lastRow = sheet.getLastRow();
     if (lastRow < 2) return null;
@@ -53,13 +52,12 @@ var InventoryItemRepository = (function () {
       if (String(rows[i][0]) === String(id)) return InventoryItemMapper.fromRow(rows[i]);
     }
     return null;
-  }
+  };
 
-  function findByCategoryId(categoryId) {
-    return findAll().filter(function (i) { return i.categoryId === String(categoryId); });
-  }
+  var findByCategoryId = (categoryId) =>
+    findAll().filter((i) => i.categoryId === String(categoryId));
 
-  function findRowIndexById(id) {
+  var findRowIndexById = (id) => {
     var sheet   = getSheet();
     var lastRow = sheet.getLastRow();
     if (lastRow < 2) return -1;
@@ -68,30 +66,29 @@ var InventoryItemRepository = (function () {
       if (String(ids[i][0]) === String(id)) return i + 2;
     }
     return -1;
-  }
+  };
 
-  function insert(item) {
-    return Lock.withLock(function () {
+  var insert = (item) =>
+    Lock.withLock(() => {
       getSheet().appendRow(InventoryItemMapper.toRow(item));
       Cache.remove(CACHE_KEY);
       return item;
     });
-  }
 
   // Write all items in a single setValues call. Assumes the sheet is empty
   // (header row already present). Does NOT acquire the lock — caller must
   // ensure exclusive access (used only from reseedInventory).
-  function insertMany(items) {
+  var insertMany = (items) => {
     if (!items.length) return items;
     var sheet = getSheet();
     var rows  = items.map(InventoryItemMapper.toRow);
     sheet.getRange(2, 1, rows.length, HEADERS.length).setValues(rows);
     Cache.remove(CACHE_KEY);
     return items;
-  }
+  };
 
-  function update(item) {
-    return Lock.withLock(function () {
+  var update = (item) =>
+    Lock.withLock(() => {
       var rowIndex = findRowIndexById(item.id);
       if (rowIndex === -1) throw AppError.notFound('InventoryItem', item.id);
       getSheet()
@@ -100,12 +97,11 @@ var InventoryItemRepository = (function () {
       Cache.remove(CACHE_KEY);
       return item;
     });
-  }
 
   // Batch-write many items in a single locked pass. Reads the id column once,
   // then writes each changed row. Cache is cleared once at the end.
-  function updateMany(items) {
-    return Lock.withLock(function () {
+  var updateMany = (items) =>
+    Lock.withLock(() => {
       var sheet   = getSheet();
       var lastRow = sheet.getLastRow();
       if (lastRow < 2) return [];
@@ -127,17 +123,15 @@ var InventoryItemRepository = (function () {
       Cache.remove(CACHE_KEY);
       return written;
     });
-  }
 
-  function remove(id) {
-    return Lock.withLock(function () {
+  var remove = (id) =>
+    Lock.withLock(() => {
       var rowIndex = findRowIndexById(id);
       if (rowIndex === -1) throw AppError.notFound('InventoryItem', id);
       getSheet().deleteRow(rowIndex);
       Cache.remove(CACHE_KEY);
       return { id: id };
     });
-  }
 
   return {
     findAll: findAll,

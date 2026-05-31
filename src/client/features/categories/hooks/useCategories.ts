@@ -1,9 +1,10 @@
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { SkuCategory, NewSkuCategory } from '@shared/types';
 import { server } from '../../../lib/server';
 import { queryKeys } from '../../../lib/queryKeys';
 
-export function useCategories() {
+export const useCategories = () => {
   const qc = useQueryClient();
 
   const { data: categories = [], isLoading: loading, error } = useQuery({
@@ -38,16 +39,20 @@ export function useCategories() {
     },
   });
 
-  return {
+  const mutationError = useMemo(
+    () => (addMutation.error || updateMutation.error || removeMutation.error)
+      ? String(addMutation.error ?? updateMutation.error ?? removeMutation.error)
+      : null,
+    [addMutation.error, updateMutation.error, removeMutation.error],
+  );
+
+  return useMemo(() => ({
     categories,
     loading,
     error: error ? String(error) : null,
     add: addMutation.mutateAsync,
     update: updateMutation.mutateAsync,
     remove: removeMutation.mutateAsync,
-    mutationError:
-      (addMutation.error || updateMutation.error || removeMutation.error)
-        ? String(addMutation.error ?? updateMutation.error ?? removeMutation.error)
-        : null,
-  };
-}
+    mutationError,
+  }), [categories, loading, error, addMutation.mutateAsync, updateMutation.mutateAsync, removeMutation.mutateAsync, mutationError]);
+};

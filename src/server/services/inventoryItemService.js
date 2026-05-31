@@ -1,23 +1,23 @@
 var InventoryItemService = (function () {
 
   // qtyTotal = ground pieces + upstair pieces + (boxes × units-per-box).
-  function computeQtyTotal(item) {
+  var computeQtyTotal = (item) => {
     var box = Number(item.qtyBox) || 0;
     var uom = Number(item.uom) || 0;
     return (Number(item.qtyGround) || 0)
       + (Number(item.qtyUpstair) || 0)
       + (box * uom);
-  }
+  };
 
   // Prefer the new cost; fall back to old; default 0.
-  function unitCost(item) {
+  var unitCost = (item) => {
     var n = Number(item.costPerPieceNew) || 0;
     if (n > 0) return n;
     return Number(item.costPerPieceOld) || 0;
-  }
+  };
 
   // Recompute the derived fields and return a fully-populated item.
-  function withComputed(item) {
+  var withComputed = (item) => {
     var qtyTotal  = computeQtyTotal(item);
     var qtyKyte   = Number(item.qtyKyte) || 0;
     // Match when there is no Kyte figure, or it equals the on-hand total.
@@ -27,18 +27,19 @@ var InventoryItemService = (function () {
     item.kyteMatch = kyteMatch;
     item.costTotal = unitCost(item) * qtyTotal;
     return item;
-  }
+  };
 
-  function num(v) { return Number(v) || 0; }
-  function str(v) { return String(v == null ? '' : v).trim(); }
-  function store(v) {
-    return str(v).toUpperCase() === 'GRUTON' ? 'GRUTON' : 'EASY';
-  }
+  var num = (v) => Number(v) || 0;
+  var str = (v) => String(v == null ? '' : v).trim();
+  var store = (v) => {
+    var s = str(v).toUpperCase();
+    return Config.STORES.indexOf(s) !== -1 ? s : Config.DEFAULT_STORE;
+  };
 
   // Prices/costs are read-only reference data. On add they come from the
   // migration payload; on update we ignore the client and carry `prices`
   // forward from the stored item.
-  function normalize(input, id, updatedAt, prices) {
+  var normalize = (input, id, updatedAt, prices) => {
     var src = prices || input;
     return withComputed({
       id:                    id,
@@ -63,21 +64,20 @@ var InventoryItemService = (function () {
       qtyKyte:               num(input.qtyKyte),
       updatedAt:             updatedAt,
     });
-  }
+  };
 
-  function getInventoryItems(categoryId) {
-    return InventoryItemRepository.findAll(categoryId);
-  }
+  var getInventoryItems = (categoryId) =>
+    InventoryItemRepository.findAll(categoryId);
 
-  function addInventoryItem(input) {
+  var addInventoryItem = (input) => {
     if (!CategoryRepository.findById(input.categoryId)) {
       throw AppError.validation('categoryId does not reference a known category');
     }
     var item = normalize(input, Uuid.generate(), DateTime.nowIso());
     return InventoryItemRepository.insert(item);
-  }
+  };
 
-  function updateInventoryItem(input) {
+  var updateInventoryItem = (input) => {
     var existing = InventoryItemRepository.findById(input.id);
     if (!existing) throw AppError.notFound('InventoryItem', input.id);
     if (!CategoryRepository.findById(input.categoryId)) {
@@ -86,19 +86,19 @@ var InventoryItemService = (function () {
     // Preserve read-only prices/costs from the stored item.
     var item = normalize(input, existing.id, DateTime.nowIso(), existing);
     return InventoryItemRepository.update(item);
-  }
+  };
 
-  function deleteInventoryItem(id) {
+  var deleteInventoryItem = (id) => {
     var existing = InventoryItemRepository.findById(id);
     if (!existing) throw AppError.notFound('InventoryItem', id);
     return InventoryItemRepository.remove(id);
-  }
+  };
 
   // Apply many stock-level changes at once. Each update carries the three
   // location quantities; everything else is preserved from the stored item.
-  function bulkUpdateStock(updates) {
+  var bulkUpdateStock = (updates) => {
     var now     = DateTime.nowIso();
-    var changed = updates.map(function (u) {
+    var changed = updates.map((u) => {
       var existing = InventoryItemRepository.findById(u.id);
       if (!existing) throw AppError.notFound('InventoryItem', u.id);
       existing.qtyGround  = num(u.qtyGround);
@@ -108,12 +108,12 @@ var InventoryItemService = (function () {
       return withComputed(existing);
     });
     return InventoryItemRepository.updateMany(changed);
-  }
+  };
 
   // Save one stock row and read it back DIRECTLY from the sheet (cache
   // bypassed) so the client can verify the persisted value matches what it
   // sent. Returns the freshly-read item.
-  function saveAndVerifyStock(update) {
+  var saveAndVerifyStock = (update) => {
     var existing = InventoryItemRepository.findById(update.id);
     if (!existing) throw AppError.notFound('InventoryItem', update.id);
     existing.qtyGround  = num(update.qtyGround);
@@ -126,7 +126,7 @@ var InventoryItemService = (function () {
     var fresh = InventoryItemRepository.findByIdFresh(update.id);
     if (!fresh) throw AppError.notFound('InventoryItem', update.id);
     return fresh;
-  }
+  };
 
   return {
     getInventoryItems: getInventoryItems,

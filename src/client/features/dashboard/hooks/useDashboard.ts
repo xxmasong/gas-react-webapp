@@ -1,8 +1,9 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { server } from '../../../lib/server';
 import { queryKeys } from '../../../lib/queryKeys';
 
-export function useDashboard() {
+export const useDashboard = () => {
   const { data: summary = null, isLoading: summaryLoading, error: summaryError } = useQuery({
     queryKey: queryKeys.inventorySummary,
     queryFn: () => server.getInventorySummary(),
@@ -13,10 +14,10 @@ export function useDashboard() {
     queryFn: () => server.getCategoryTotals(),
   });
 
-  return {
+  return useMemo(() => ({
     summary,
     totals,
     loading: summaryLoading || totalsLoading,
     error: summaryError || totalsError ? String(summaryError ?? totalsError) : null,
-  };
-}
+  }), [summary, totals, summaryLoading, totalsLoading, summaryError, totalsError]);
+};

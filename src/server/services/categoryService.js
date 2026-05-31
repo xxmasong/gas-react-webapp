@@ -1,10 +1,8 @@
 var CategoryService = (function () {
 
-  function getCategories() {
-    return CategoryRepository.findAll();
-  }
+  var getCategories = () => CategoryRepository.findAll();
 
-  function addCategory(input) {
+  var addCategory = (input) => {
     var code = String(input.code).trim();
     if (CategoryRepository.findByCode(code)) {
       throw AppError.conflict('Category code already exists: ' + code);
@@ -18,9 +16,9 @@ var CategoryService = (function () {
       updatedAt:      DateTime.nowIso(),
     };
     return CategoryRepository.insert(cat);
-  }
+  };
 
-  function updateCategory(input) {
+  var updateCategory = (input) => {
     var existing = CategoryRepository.findById(input.id);
     if (!existing) throw AppError.notFound('Category', input.id);
 
@@ -38,9 +36,9 @@ var CategoryService = (function () {
       updatedAt:      DateTime.nowIso(),
     };
     return CategoryRepository.update(updated);
-  }
+  };
 
-  function deleteCategory(id) {
+  var deleteCategory = (id) => {
     var existing = CategoryRepository.findById(id);
     if (!existing) throw AppError.notFound('Category', id);
     var dependents = InventoryItemRepository.findByCategoryId(id);
@@ -48,7 +46,7 @@ var CategoryService = (function () {
       throw AppError.conflict('Category has ' + dependents.length + ' item(s); delete items first');
     }
     return CategoryRepository.remove(id);
-  }
+  };
 
   return {
     getCategories: getCategories,

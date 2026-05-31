@@ -35,10 +35,10 @@ const mock: ServerFunctions | null = runningInGas ? null : createMock();
 
 // ─── RPC primitives ──────────────────────────────────────────────────────────
 
-function call<K extends keyof ServerFunctions>(
+const call = <K extends keyof ServerFunctions>(
   name: K,
   ...args: Parameters<ServerFunctions[K]>
-): Promise<ReturnType<ServerFunctions[K]>> {
+): Promise<ReturnType<ServerFunctions[K]>> => {
   type Ret = Promise<ReturnType<ServerFunctions[K]>>;
   if (real) {
     const fn = real[name] as unknown as (...a: unknown[]) => Ret;
@@ -46,15 +46,14 @@ function call<K extends keyof ServerFunctions>(
   }
   const fn = mock![name] as unknown as (...a: unknown[]) => ReturnType<ServerFunctions[K]>;
   return Promise.resolve(fn(...args));
-}
+};
 
 // Inject the current session token as the first argument of any authed call.
-function authed<K extends keyof ServerFunctions>(
+const authed = <K extends keyof ServerFunctions>(
   name: K,
   ...rest: unknown[]
-): Promise<ReturnType<ServerFunctions[K]>> {
-  return call(name, ...([getToken(), ...rest] as Parameters<ServerFunctions[K]>));
-}
+): Promise<ReturnType<ServerFunctions[K]>> =>
+  call(name, ...([getToken(), ...rest] as Parameters<ServerFunctions[K]>));
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 

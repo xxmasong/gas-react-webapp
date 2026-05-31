@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { flexRender, type Table } from '@tanstack/react-table';
 import type { InventoryItem } from '@shared/types';
 import { formatCurrency, formatQty } from '../../lib/format';
@@ -13,9 +13,11 @@ type Props = {
 };
 
 export const InventoryTable: React.FC<Props> = ({ table, catName, canEditSku, onEdit, onDelete }) => {
-  const visibleLeafCount = table.getVisibleLeafColumns().filter(
-    (c) => !c.columnDef.meta?.hidden,
-  ).length;
+  const visibleLeafCount = useMemo(
+    () => table.getVisibleLeafColumns().filter((c) => !c.columnDef.meta?.hidden).length,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [table.getState().columnVisibility],
+  );
 
   return (
     <table className="grid inventory">

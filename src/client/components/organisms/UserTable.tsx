@@ -1,13 +1,6 @@
 import React from 'react';
 import type { Role, User } from '@shared/types';
-
-const ROLE_LABEL: Record<Role, string> = {
-  admin: 'Admin',
-  supervisor: 'Supervisor',
-  inventory_staff: 'Inventory staff',
-};
-
-const ROLES: Role[] = ['inventory_staff', 'supervisor', 'admin'];
+import { ROLE_LABEL, ROLE_VALUES } from '../../config';
 
 type Props = {
   users: User[];
@@ -39,7 +32,7 @@ export const UserTable: React.FC<Props> = ({ users, selfId, onSetRole, onSetActi
                 disabled={isSelf}
                 onChange={(e) => onSetRole(u.id, e.target.value as Role)}
               >
-                {ROLES.map((r) => (
+                {ROLE_VALUES.map((r) => (
                   <option key={r} value={r}>{ROLE_LABEL[r]}</option>
                 ))}
               </select>

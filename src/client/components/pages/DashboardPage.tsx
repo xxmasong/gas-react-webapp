@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { formatCurrency, formatQty } from '../../lib/format';
 import { useDashboard } from '../../features/dashboard/hooks/useDashboard';
 import { AppShell } from '../templates';
@@ -6,10 +6,13 @@ import { AppShell } from '../templates';
 export const DashboardPage: React.FC = () => {
   const { summary, totals, loading, error } = useDashboard();
 
+  const sorted = useMemo(
+    () => [...totals].sort((a, b) => b.totalCost - a.totalCost),
+    [totals],
+  );
+
   if (error) return <AppShell><div className="error">{error}</div></AppShell>;
   if (loading || !summary) return <AppShell><p className="muted">Loading…</p></AppShell>;
-
-  const sorted = [...totals].sort((a, b) => b.totalCost - a.totalCost);
 
   return (
     <AppShell>

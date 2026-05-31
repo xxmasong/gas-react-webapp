@@ -10,6 +10,7 @@ import type {
   ServerFunctions, AuthSession, User, Role,
 } from '@shared/types';
 import { ROLE_RANK } from '@shared/types';
+import seedData from '../../mock/seed.json';
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
@@ -18,7 +19,7 @@ type MockUser = User & { password: string };
 const uuid = () => crypto.randomUUID();
 const now  = () => new Date().toISOString();
 
-function strongPw(p: string): boolean {
+const strongPw = (p: string): boolean => {
   if (p.length < 10) return false;
   let classes = 0;
   if (/[a-z]/.test(p)) classes++;
@@ -26,79 +27,54 @@ function strongPw(p: string): boolean {
   if (/[0-9]/.test(p)) classes++;
   if (/[^A-Za-z0-9]/.test(p)) classes++;
   return classes >= 3;
-}
+};
 
 // Computed-field helpers (mirror inventoryItemService.js).
-const qtyTotalOf = (i: Pick<InventoryItem, 'qtyGround' | 'qtyUpstair' | 'qtyBox' | 'uom'>) =>
-  i.qtyGround + i.qtyUpstair + i.qtyBox * i.uom;
-const unitCostOf = (i: Pick<InventoryItem, 'costPerPieceNew' | 'costPerPieceOld'>) =>
-  i.costPerPieceNew > 0 ? i.costPerPieceNew : i.costPerPieceOld;
-function withComputed<T extends Omit<InventoryItem, 'qtyTotal' | 'kyteMatch' | 'costTotal'>>(
-  i: T,
-): InventoryItem {
-  const qtyTotal = qtyTotalOf(i);
+const withComputed = (
+  i: Omit<InventoryItem, 'qtyTotal' | 'kyteMatch' | 'costTotal'>,
+): InventoryItem => {
+  const qtyTotal  = i.qtyGround + i.qtyUpstair + i.qtyBox * i.uom;
   const kyteMatch = i.qtyKyte === 0 ? true : qtyTotal === i.qtyKyte;
-  return { ...i, qtyTotal, kyteMatch, costTotal: unitCostOf(i) * qtyTotal };
-}
+  const unitCost  = i.costPerPieceNew > 0 ? i.costPerPieceNew : i.costPerPieceOld;
+  return { ...i, qtyTotal, kyteMatch, costTotal: unitCost * qtyTotal };
+};
 
-// ─── Seed data ───────────────────────────────────────────────────────────────
+// ─── Seed data (loaded from mock/seed.json) ──────────────────────────────────
 
-let users: MockUser[] = [
-  { id: 'u-admin', username: 'admin',      role: 'admin',           active: true, password: 'Admin-2026!' },
-  { id: 'u-sup',   username: 'supervisor', role: 'supervisor',      active: true, password: 'Super-2026!' },
-  { id: 'u-staff', username: 'staff',      role: 'inventory_staff', active: true, password: 'Staff-2026!' },
-];
+let users: MockUser[] = seedData.users.map((u) => ({ ...u, role: u.role as Role }));
 
 const sessions = new Map<string, string>(); // token → userId
 
-let categories: SkuCategory[] = [
-  { id: 'cat-syrups', code: 'r1f',  name: 'Syrups',      packConstraint: 'Syrup 2.5kg - 6pc max',  sortOrder: 1,  updatedAt: now() },
-  { id: 'cat-powder', code: 'r2pb', name: 'Powder Base', packConstraint: 'Powder 1kg - 4pc max',   sortOrder: 3,  updatedAt: now() },
-  { id: 'cat-milk',   code: 'hgcm', name: 'Milk',        packConstraint: '',                       sortOrder: 21, updatedAt: now() },
-];
+let categories: SkuCategory[] = seedData.categories.map((c) => ({ ...c, updatedAt: now() }));
 
-let items: Item[] = [
-  { id: 'demo-1', name: 'Sample widget', quantity: 3, updatedAt: now() },
-];
+let items: Item[] = seedData.items.map((i) => ({ ...i, updatedAt: now() }));
 
-let inventory: InventoryItem[] = [
-  withComputed({ id: 'inv-blueberry', categoryId: 'cat-syrups', store: 'EASY', sku: '🫐 Blueberry', emoji: '🫐', uom: 6,
-    costPerBoxNew: 1752, costPerPieceNew: 292, costPerPieceOld: 278.49,
-    sellingPriceWholesale: 288.49, sellingPriceDealer: 288.49, sellingPricePiece: 352, srp: 352,
-    qtyGround: 6, expiryGround: '', qtyUpstair: 4, expiryUpstair: '', qtyBox: 7, expiryBox: '',
-    qtyKyte: 52, updatedAt: now() }),
-  withComputed({ id: 'inv-caramel', categoryId: 'cat-syrups', store: 'EASY', sku: '🍬 Caramel', emoji: '🍬', uom: 6,
-    costPerBoxNew: 1752, costPerPieceNew: 292, costPerPieceOld: 278.49,
-    sellingPriceWholesale: 288.49, sellingPriceDealer: 288.49, sellingPricePiece: 352, srp: 352,
-    qtyGround: 6, expiryGround: '', qtyUpstair: 5, expiryUpstair: '', qtyBox: 3, expiryBox: '',
-    qtyKyte: 47, updatedAt: now() }),
-  withComputed({ id: 'inv-cheesecake', categoryId: 'cat-powder', store: 'EASY', sku: '🍰 Cheesecake', emoji: '🍰', uom: 10,
-    costPerBoxNew: 2320, costPerPieceNew: 232, costPerPieceOld: 218.8,
-    sellingPriceWholesale: 256, sellingPriceDealer: 226.3, sellingPricePiece: 275, srp: 275,
-    qtyGround: 4, expiryGround: '', qtyUpstair: 3, expiryUpstair: '', qtyBox: 3, expiryBox: '',
-    qtyKyte: 37, updatedAt: now() }),
-];
+type SeedInventoryItem = Omit<InventoryItem, 'qtyTotal' | 'kyteMatch' | 'costTotal' | 'updatedAt'>;
+
+let inventory: InventoryItem[] = seedData.inventory.map((i) =>
+  withComputed({ ...(i as SeedInventoryItem), store: i.store as InventoryItem['store'], updatedAt: now() }),
+);
 
 // ─── Auth guards ─────────────────────────────────────────────────────────────
 
 const pub = (u: MockUser): User => ({ id: u.id, username: u.username, role: u.role, active: u.active });
 
-function userFor(token: string): MockUser {
+const userFor = (token: string): MockUser => {
   const id = sessions.get(token);
   const u  = id ? users.find((x) => x.id === id) : undefined;
   if (!u || !u.active) throw new Error('Not signed in or session expired');
   return u;
-}
+};
 
-function requireRole(token: string, min: Role): MockUser {
+const requireRole = (token: string, min: Role): MockUser => {
   const u = userFor(token);
   if (ROLE_RANK[u.role] < ROLE_RANK[min]) throw new Error('Insufficient permissions for this action');
   return u;
-}
+};
 
 // ─── Mock implementation ─────────────────────────────────────────────────────
 
-export function createMock(): ServerFunctions {
+export const createMock = (): ServerFunctions => {
   return {
     // ── Auth ──────────────────────────────────────────────────────────────────
     login: (username, password) => {
@@ -282,4 +258,4 @@ export function createMock(): ServerFunctions {
       return { categories: 0, items: 0 };
     },
   };
-}
+};

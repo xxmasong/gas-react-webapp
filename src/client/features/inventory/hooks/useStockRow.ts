@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { InventoryItem } from '@shared/types';
 import { server } from '../../../lib/server';
@@ -10,7 +10,7 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'mismatch';
 
 // Manages one inventory row's editable stock quantities, an explicit save
 // (save + read-back verify against the sheet), and a visible status.
-export function useStockRow(item: InventoryItem) {
+export const useStockRow = (item: InventoryItem) => {
   const qc = useQueryClient();
   const toast = useToast();
   const [ground, setGround] = useState(item.qtyGround);
@@ -58,20 +58,20 @@ export function useStockRow(item: InventoryItem) {
     },
   });
 
-  function save() {
+  const save = useCallback(() => {
     if (dirty && status !== 'saving') mutation.mutate();
-  }
+  }, [dirty, status, mutation]);
 
-  function reset() {
+  const reset = useCallback(() => {
     setGround(item.qtyGround);
     setUpstair(item.qtyUpstair);
     setBox(item.qtyBox);
     setStatus('idle');
-  }
+  }, [item.qtyGround, item.qtyUpstair, item.qtyBox]);
 
-  return {
+  return useMemo(() => ({
     ground, upstair, box,
     setGround, setUpstair, setBox,
     dirty, liveTotal, status, save, reset,
-  };
-}
+  }), [ground, upstair, box, dirty, liveTotal, status, save, reset]);
+};

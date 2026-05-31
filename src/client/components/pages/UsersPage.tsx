@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import type { Role } from '@shared/types';
 import { useAuth, useToast } from '../../providers';
 import { cleanError } from '../../lib/errors';
@@ -13,19 +13,40 @@ export const UsersPage: React.FC = () => {
 
   if (error) toast.error(cleanError(error));
 
-  const guarded = async (fn: () => Promise<unknown>, ok: string) => {
+  const guarded = useCallback(async (fn: () => Promise<unknown>, ok: string) => {
     try {
       await fn();
       toast.success(ok);
     } catch (e) {
       toast.error(cleanError(e));
     }
-  };
+  }, [toast]);
+
+  const onRegister = useCallback(
+    async (data: { username: string; password: string; role: Role }) => { await register(data); },
+    [register],
+  );
+
+  const onSetRole = useCallback(
+    (id: string, role: Role) => guarded(() => setRole({ id, role }), 'Updated role.'),
+    [guarded, setRole],
+  );
+
+  const onSetActive = useCallback(
+    (id: string, active: boolean) =>
+      guarded(() => setActive({ id, active }), active ? 'Account enabled.' : 'Account disabled.'),
+    [guarded, setActive],
+  );
+
+  const onDelete = useCallback(
+    (id: string) => guarded(() => remove(id), 'Account deleted.'),
+    [guarded, remove],
+  );
 
   return (
     <AppShell>
       <h3 className="section-title">Add a user</h3>
-      <UserForm onRegister={async (data) => { await register(data); }} />
+      <UserForm onRegister={onRegister} />
 
       <h3 className="section-title">Accounts</h3>
       {loading ? (
@@ -34,16 +55,9 @@ export const UsersPage: React.FC = () => {
         <UserTable
           users={users}
           selfId={me?.id ?? ''}
-          onSetRole={(id, role: Role) =>
-            guarded(() => setRole({ id, role }), `Updated role.`)
-          }
-          onSetActive={(id, active) =>
-            guarded(
-              () => setActive({ id, active }),
-              active ? `Account enabled.` : `Account disabled.`,
-            )
-          }
-          onDelete={(id) => guarded(() => remove(id), `Account deleted.`)}
+          onSetRole={onSetRole}
+          onSetActive={onSetActive}
+          onDelete={onDelete}
         />
       )}
     </AppShell>

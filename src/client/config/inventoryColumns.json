@@ -1,0 +1,97 @@
+[
+  {
+    "id": "categoryId",
+    "accessor": "categoryId",
+    "header": "",
+    "label": "Category",
+    "hidden": true,
+    "enableGrouping": true,
+    "enableHiding": false
+  },
+  {
+    "id": "sku",
+    "accessor": "sku",
+    "header": "SKU",
+    "label": "SKU",
+    "size": 999,
+    "enableHiding": false
+  },
+  {
+    "id": "store",
+    "accessor": "store",
+    "header": "Store",
+    "label": "Store",
+    "size": 80
+  },
+  {
+    "id": "uom",
+    "accessor": "uom",
+    "header": "UOM",
+    "label": "UOM",
+    "size": 60,
+    "align": "right"
+  },
+  {
+    "id": "cost",
+    "accessor": "costPerPieceNew",
+    "header": "Cost / pc",
+    "label": "Cost / pc",
+    "size": 120
+  },
+  {
+    "id": "srp",
+    "accessor": "srp",
+    "header": "SRP",
+    "label": "SRP",
+    "size": 100,
+    "align": "right"
+  },
+  {
+    "id": "qtyGround",
+    "accessor": "qtyGround",
+    "header": "Ground",
+    "label": "Ground",
+    "size": 80,
+    "align": "right"
+  },
+  {
+    "id": "qtyUpstair",
+    "accessor": "qtyUpstair",
+    "header": "Upstairs",
+    "label": "Upstairs",
+    "size": 80,
+    "align": "right"
+  },
+  {
+    "id": "qtyBox",
+    "accessor": "qtyBox",
+    "header": "Box",
+    "label": "Box",
+    "size": 80,
+    "align": "right"
+  },
+  {
+    "id": "qtyTotal",
+    "accessor": "qtyTotal",
+    "header": "Total",
+    "label": "Total",
+    "size": 70,
+    "align": "right"
+  },
+  {
+    "id": "kyte",
+    "header": "Kyte",
+    "label": "Kyte",
+    "size": 70,
+    "align": "right"
+  },
+  {
+    "id": "actions",
+    "header": "",
+    "label": "Actions",
+    "size": 90,
+    "align": "right",
+    "enableSorting": false,
+    "enableHiding": false
+  }
+]

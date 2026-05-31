@@ -1,0 +1,387 @@
+STORE,CATEGORY,GROUP,PRODUCT,STOCKEEPING,UOM,"COST PER BOX
+(New)","COST PER PIECE
+(New)","COST PER PIECE
+(Old)","SELLING PRICE
+(WholeSale)","SELLING PRICE
+(Dealer)","SELLING PRICE
+(SRP)","QTY GROUND
+(Pieces)","EXPIRY
+(Ground)","QTY UPSTAIRS
+(Pieces)","EXPIRY
+(Upstairs)",QTY BOXES,"EXPIRY
+(Boxes)",TOTAL COST,TOTAL QTY, POS COUNT , DISCREPANCY 
+EASY,SYRUPS ,Easy r1f,🌰 Almond,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,,,,,,,0.00,0,,  - 
+EASY,SYRUPS ,Easy r1f,🫐 Blueberry,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,4,,7,,"15,184.00",52,  52 ,  - 
+EASY,SYRUPS ,Easy r1f,🍯 Brown Sugar,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,2,,1,,"4,088.00",14,  14 ,  - 
+EASY,SYRUPS ,Easy r1f,🍮 Butterscotch,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,9,,7,,,,"4,672.00",16,  16 ,  - 
+EASY,SYRUPS ,Easy r1f,🍬 Caramel,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,5,,6,,"13,724.00",47,  47 ,  - 
+EASY,SYRUPS ,Easy r1f,🍏 Green Apple,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,,,6,,"12,264.00",42,  42 ,  - 
+EASY,SYRUPS ,Easy r1f,🌰 Hazelnut,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,5,,3,,"8,468.00",29,  29 ,  - 
+EASY,SYRUPS ,Easy r1f,🥛 Hokkaido,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,12,,4,,,,"4,672.00",16,  16 ,  - 
+EASY,SYRUPS ,Easy r1f,🍋 Lemon,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,3,,7,,"14,892.00",51,  51 ,  - 
+EASY,SYRUPS ,Easy r1f,🍈 Lychee,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,10,,3,,"9,928.00",34,  34 ,  - 
+EASY,SYRUPS ,Easy r1f,🥭 Mango,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,9,,2,,6,,"13,724.00",47,  47 ,  - 
+EASY,SYRUPS ,Easy r1f,🍈 Melon,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,4,,1,,"4,672.00",16,  16 ,  - 
+EASY,SYRUPS ,Easy r1f,🍓 Mixed Berries,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,4,,,,"2,920.00",10,  10 ,  - 
+EASY,SYRUPS ,Easy r1f,🍵 Okinawa,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,5,,7,,2,,"7,008.00",24,  24 ,  - 
+EASY,SYRUPS ,Easy r1f,🥭 Passionfruit,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,4,,4,,"9,928.00",34,  34 ,  - 
+EASY,SYRUPS ,Easy r1f,🧂 Salted Caramel,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,5,,2,,"6,716.00",23,  23 ,  - 
+EASY,SYRUPS ,Easy r1f,🍓 Strawberry,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,5,,3,,"8,468.00",29,  29 ,  - 
+EASY,SYRUPS ,Easy r1f,🍠 Taro,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,3,,2,,"6,132.00",21,  21 ,  - 
+EASY,SYRUPS ,Easy r1f,🍦 Vanilla,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,7,,3,,"9,052.00",31,  31 ,  - 
+EASY,SYRUPS ,Easy r1f,🤍🍫 White Chocolate,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,5,,1,,"4,964.00",17,  17 ,  - 
+EASY,SYRUPS ,Easy r1f,🍈 Wintermelon,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,1,,1,,"3,796.00",13,  13 ,  - 
+EASY,SYRUPS ,Easy r1f,🥛 Yoghurt,Syrup 2.5kg - 6pc max,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,6,,,,"3,504.00",12,  12 ,  - 
+EASY,DRIZZLE 2.5kgx6 ,Easy r1d,🍯 Caramel Drizzle,,6,"1,752.00",292.00,278.49,288.49,288.49,352.00,6,,3,,9,,"18,396.00",63,  63 ,  - 
+EASY,DRIZZLE 2.5kgx6 ,Easy r1d,🍫 Chocolate Drizzle,,6,"2,070.00",345.00,344.00,396.00,372.00,410.00,4,,6,,4,,"11,730.00",34,  34 ,  - 
+EASY,POWDER BASE ,Easy r2pb ,🍰 Cheesecake,Powder 1kg - 4pc max                                                                                                ,10,"2,320.00",232.00,218.80,256.00,226.30,275.00,4,,3,,3,,"8,584.00",37,  37 ,  - 
+EASY,POWDER BASE ,Easy r2pb ,🍪 Cookies n Cream,Powder 1kg - 4pc max                                                                                                ,10,"2,320.00",232.00,220.10,253.00,248.90,295.00,4,,6,,3,,"9,280.00",40,  40 ,  - 
+EASY,POWDER BASE ,Easy r2pb ,🥛 Cream Base (Frappe) ,Powder 1kg - 4pc max                                                                                                ,10,"1,975.00",197.50,186.40,213.00,238.00,235.00,4,,4,,3,,"7,505.00",38,  38 ,  - 
+EASY,POWDER BASE ,Easy r2pb ,🍫 Dark Chocolate,Powder 1kg - 4pc max                                                                                                ,10,"3,080.00",308.00,306.00,352.00,330.00,365.00,4,,1,,3,,"10,780.00",35,  35 ,  - 
+EASY,POWDER BASE ,Easy r2pb ,🍫 Java Chips,Powder 1kg - 4pc max                                                                                                ,10,"2,960.00",296.00,281.00,323.00,303.00,335.00,4,,5,,7,,"23,384.00",79,  79 ,  - 
+EASY,POWDER BASE ,Easy r2pb ,🍵✨ Matcha Milk Tea,Powder 1kg - 4pc max                                                                                                ,10,"3,063.00",306.30,306.30,350.00,316.80,380.00,4,,4,,4,,"14,702.40",48,  48 ,  - 
+EASY,POWDER BASE ,Easy r2pb ,🥛🍫 Milk Chocolate,Powder 1kg - 4pc max                                                                                                ,10,"2,720.00",264.00,264.00,303.00,285.00,315.00,4,,12,,3,,"12,144.00",46,  46 ,  - 
+EASY,POWDER BASE ,Easy r2pb ,❤️🎂 Red Velvet,Powder 1kg - 4pc max                                                                                                ,10,"2,960.00",296.00,292.00,336.00,316.00,350.00,4,,3,,2,,"7,992.00",27,  27 ,  - 
+EASY,SOFT SERVE BASE ,Easy r2ss,🍫🍦Chocolate,,10,"2,270.00",272.00,264.00,436.00,285.00,315.00,10,,14,,10,,"33,728.00",124,  124 ,  - 
+EASY,SOFT SERVE BASE ,Easy r2ss,🍦 Vanilla,,10,"1,975.00",197.50,186.40,213.00,192.80,235.00,8,,11,,3,,"9,677.50",49,  49 ,  - 
+EASY,ESSENTIAL ,Easy r3e |,🍵Black Assam Tea,,10,"2,362.00",236.20,220.80,252.00,229.10,280.00,4,,1,,3,,"8,267.00",35,  35 ,  - 
+EASY,ESSENTIAL ,Easy r3e |,☕ Coffee Espresso,,6,"2,254.00",375.67,375.66,441.00,396.84,490.00,6,,6,,3,,"11,270.10",30,  30 ,  - 
+EASY,ESSENTIAL ,Easy r3e |,🥛 Creamer Pro,,10,"1,896.00",189.60,182.00,205.00,187.00,215.00,4,,2,,2,,"4,929.60",26,  26 ,  - 
+EASY,ESSENTIAL ,Easy r3e |,🍵✨ Matcha (Pure),Max 10 Ground,50,"7,880.00",157.60,150.00,180.00,187.00,190.00,7,,6,,2,,"17,808.80",113,  113 ,  - 
+EASY,ESSENTIAL ,Easy r3e |,🥛 Milk Essence,,10,"1,864.00",186.40,186.40,213.00,192.80,235.00,3,,9,,8,,"17,148.80",92,  92 ,  - 
+EASY,ESSENTIAL ,Easy r3e |,🍯🚫 Sweetener 2L ,,6,816.00,136.00,120.00,145.00,140.00,150.00,6,,2,,7,,"6,800.00",50,  50 ,  - 
+EASY,ESSENTIAL ,Easy r3e |,🍯🚫 Sweetener 20L ,,1,920.00,920.00,918.00,"1,050.00",980.00,"1,050.00",3,,,,,,"2,760.00",3,  3 ,  - 
+EASY,TOPPINGS ,Easy r3et |,🥛🧀 Cream Cheese (Salted),,10,"2,262.00",226.20,226.19,260.00,234.00,286.00,4,,7,,2,,"7,012.20",31,  31 ,  - 
+EASY,TOPPINGS ,Easy r3et |,🧂🧀 Rocksalt and Cheese,,10,"3,634.00",363.40,343.70,395.00,355.50,435.00,4,,4,,4,,"17,443.20",48,  48 ,  - 
+EASY,TOPPINGS ,Easy r3et |,🥣🥛 Whipping Cream,,10,"3,634.00",363.40,343.70,395.00,355.50,435.00,,,,,,,0.00,0,  - ,  - 
+EASY,SINKERS ,Easy r3ets,🕔🥤 5 Minutes Tapioca Pearls,,18,"2,880.00",160.00,150.00,160.00,152.78,165.00,14,,,,2,,"8,000.00",50,  50 ,  - 
+EASY,SINKERS ,Easy r3ets,🥥 Coconut Jelly,,6,"1,224.00",204.00,197.00,232.20,216.00,240.00,4,,,,4,,"5,712.00",28,  28 ,  - 
+EASY,SINKERS ,Easy r3ets,☕ Coffee Jelly,,6,"1,944.00",324.00,317.00,373.34,348.00,385.00,7,,,,1,,"4,212.00",13,  13 ,  - 
+EASY,SINKERS ,Easy r3ets,🌈 Rainbow Jelly,,6,"1,272.00",212.00,210.00,241.67,230.00,250.00,9,,,,7,,"10,812.00",51,  51 ,  - 
+EASY,SYRUP PUMP ,Easy r3p,🚰 Signature Pump,,5,700.00,140.00,140.00,180.00,160.00,180.00,2,,,,15,,"10,780.00",77,  77 ,  - 
+EASY,SYRUP PUMP ,Easy r3p,🚰 Syrup Pump,,5,700.00,140.00,140.00,180.00,160.00,180.00,2,,,,9,,"6,580.00",47,  47 ,  - 
+EASY,SIG. SYRUP ,Easy sy,🌰 Almond,Syrup 1kg - 8pc max,12,"2,086.00",173.84,165.25,191.34,170.34,208.00,6,,5,,,,"1,912.24",11,  11 ,  - 
+EASY,SIG. SYRUP ,Easy sy,🍮 Butterscotch,Syrup 1kg - 8pc max,12,"2,086.00",173.84,165.25,191.34,170.34,208.00,10,,10,,,,"3,476.80",20,  20 ,  - 
+EASY,SIG. SYRUP ,Easy sy,🍬 Caramel,Syrup 1kg - 8pc max,12,"2,086.00",173.84,165.25,191.34,170.34,208.00,3,,6,,,,"1,564.56",9,  9 ,  - 
+EASY,SIG. SYRUP ,Easy sy,🌰 Hazelnut,Syrup 1kg - 8pc max,12,"2,086.00",173.84,165.25,191.34,170.34,208.00,4,,2,,,,"1,043.04",6,  6 ,  - 
+EASY,SIG. SYRUP ,Easy sy,🌿 Peppermint,Syrup 1kg - 8pc max,12,"2,086.00",173.84,165.25,191.34,170.34,208.00,1,,,,,,173.84,1,  1 ,  - 
+EASY,SIG. SYRUP ,Easy sy,🧂🍬 Salted Caramel,Syrup 1kg - 8pc max,12,"2,086.00",173.84,165.25,191.34,170.34,208.00,8,,2,,,,"1,738.40",10,  10 ,  - 
+EASY,SIG. SYRUP ,Easy sy,🍦 Vanilla,Syrup 1kg - 8pc max,12,"2,086.00",173.84,165.25,191.34,170.34,208.00,11,,,,,,"1,912.24",11,  11 ,  - 
+EASY,SIG. SYRUP ,Easy sy,🍋✨ Yuzu,Syrup 1kg - 8pc max,12,"2,086.00",173.84,165.25,191.34,170.34,208.00,9,,1,,1,,"3,824.48",22,  22 ,  - 
+EASY,SIG. SAUCES ,Easy sa,🍬 Caramel,Sauce - 6pc max,6,"2,016.00",336.00,332.00,376.00,360.00,388.00,7,,,,3,,"8,400.00",25,  25 ,  - 
+EASY,SIG. SAUCES ,Easy sa,🍫 Chocolate,Sauce - 6pc max,6,"2,340.00",390.00,387.99,436.00,425.00,450.00,,,,,2,,"4,680.00",12,  12 ,  - 
+EASY,SIG. SAUCES ,Easy sa,🍠 Ube,Sauce - 6pc max,6,"2,340.00",390.00,388.00,436.00,425.00,450.00,6,,,,3,,"9,360.00",24,  24 ,  - 
+EASY,SIG. SAUCES ,Easy sa,🤍🍫 White Chocolate,Sauce - 6pc max,6,"2,112.00",352.00,342.00,387.00,370.00,399.00,6,,,,2,,"6,336.00",18,  18 ,  - 
+EASY,SIG. POWDER BASE ,Easy sp,☕ Coffee,,10,"2,449.00",244.90,240.60,275.00,248.90,295.00,4,,3,,1,,"4,163.30",17,  17 ,  - 
+EASY,SIG. POWDER BASE ,Easy sp,🧋 Frappe ,,10,"1,975.00",197.50,186.40,213.00,192.80,235.00,1,,3,,4,,"8,690.00",44,44,  - 
+EASY,SIG. POWDER BASE ,Easy sp,🍵 Matcha ,,10,"3,063.00",306.30,306.29,350.00,316.80,380.00,4,,2,,6,,"20,215.80",66,  66 ,  - 
+EASY,SIG. POWDER BASE ,Easy sp,🥛 Whipping Cream,,10,"3,634.00",363.40,343.70,395.00,355.50,435.00,1,,,,1,,"3,997.40",11,  11 ,  - 
+EASY,CHEESE SAUCE DIP ,Easy pcd,🧀 Cheese Dip,,15,"2,160.00",144.00,144.00,164.00,160.00,172.00,14,,11,,5,,"14,400.00",100,  100 ,  - 
+EASY,FRIES POWDER 100g ,Easy pfd,🍖 BBQ ,,70,,0.00,0.01,58.00,54.00,62.00,,,,,,,0.00,0,,  - 
+EASY,FRIES POWDER 100g ,Easy pfd,🧀 Cheese,,70,,0.00,0.01,58.00,54.00,62.00,,,,,,,0.00,0,,  - 
+EASY,FRIES POWDER 100g ,Easy pfd,🍋🥛 Sour Cream ,,70,,0.00,0.01,58.00,54.00,62.00,,,,,,,0.00,0,,  - 
+EASY,FRIES POWDER 250g ,Easy pfd,🍖 BBQ ,,30,"2,552.00",85.07,82.00,94.00,88.00,99.00,19,,,,2,,"6,720.53",79,  79 ,  - 
+EASY,FRIES POWDER 250g ,Easy pfd,🧀 Cheese ,,30,"2,552.00",85.07,82.00,94.00,88.00,99.00,18,,,,2,,"6,635.46",78,  78 ,  - 
+EASY,FRIES POWDER 250g ,Easy pfd,🍋🥛 Sour Cream ,,30,"2,552.00",85.07,82.00,94.00,88.00,99.00,24,,,,2,,"7,145.88",84,  84 ,  - 
+EASY,POWDER MIX ,Easy ppm,🍗 Breading Mix,,10,"1,201.00",120.10,120.00,134.40,125.00,143.00,6,,4,,2,,"3,603.00",30,  30 ,  - 
+EASY,POWDER MIX ,Easy ppm,🧀 Cheese Powder,,10,"2,000.00",200.00,180.00,210.50,193.70,234.00,,,,,,,0.00,0,  - ,  - 
+EASY,POWDER MIX ,Easy ppm,🧄🧀 Garlic Parmesan Cheese,,10,"3,120.00",312.00,306.90,341.00,317.10,360.00,4,,6,,4,,"15,600.00",50,  50 ,  - 
+EASY,POWDER MIX ,Easy ppm,🍲 Gravy,,10,"1,264.00",126.40,110.00,135.00,120.00,149.00,4,,5,,3,,"4,929.60",39,  39 ,  - 
+EASY,POWDER MIX ,Easy ppm,🍚 Java Rice,,10,"1,320.00",132.00,120.00,145.00,130.00,155.00,8,,6,,2,,"4,488.00",34,  34 ,  - 
+EASY,POWDER MIX ,Easy ppm,🧂🥚 Salted Egg,,10,"5,269.00",526.90,526.90,561.00,531.70,580.00,8,,12,,4,,"31,614.00",60,  60 ,  - 
+EASY,POWDER MIX ,Easy ppm,❄️🧀 Snow Cheese,,10,"2,173.00",217.30,200.00,240.00,220.00,260.00,7,,4,,2,,"6,736.30",31,  31 ,  - 
+EASY,PREMIUM SAUCES ,Easy pps,🍖 Barbeque,Sauce - 6pc max,6,"1,776.00",296.00,291.10,329.00,309.34,350.00,6,,1,,18,,"34,040.00",115,  115 ,  - 
+EASY,PREMIUM SAUCES ,Easy pps,🪽 Buffalo Wings,Sauce - 6pc max,6,"1,176.00",192.00,192.00,216.17,203.17,230.00,6,,3,,7,,"9,792.00",51,  51 ,  - 
+EASY,PREMIUM SAUCES ,Easy pps,🌶️ Chili,Sauce - 6pc max,6,"1,128.00",188.00,188.00,211.34,198.84,225.00,6,,3,,2,,"3,948.00",21,  21 ,  - 
+EASY,PREMIUM SAUCES ,Easy pps,🍯🧈 Honey Butter,Sauce - 6pc max,6,"1,536.00",256.00,248.00,280.17,263.34,298.00,9,,,,6,,"11,520.00",45,  45 ,  - 
+EASY,PREMIUM SAUCES ,Easy pps,🧄🥢 Soy Garlic,Sauce - 6pc max,6,"1,656.00",272.00,272.00,307.34,289.00,327.00,6,,,,4,,"8,160.00",30,  30 ,  - 
+EASY,PREMIUM SAUCES ,Easy pps,🍭🍋 Sweet and Sour,Sauce - 6pc max,6,"1,536.00",256.00,248.00,280.17,263.34,298.00,6,,4,,7,,"13,312.00",52,  52 ,  - 
+EASY,PREMIUM SAUCES ,Easy pps,🍯🌶️ Sweet Chili,Sauce - 6pc max,6,"1,368.00",228.00,225.00,253.84,238.50,270.00,6,,,,4,,"6,840.00",30,  30 ,  - 
+EASY,PREMIUM SAUCES ,Easy pps,🍶 Teriyaki,Sauce - 6pc max,6,"1,536.00",248.00,248.00,280.17,263.34,298.00,6,,1,,5,,"9,176.00",37,  37 ,  - 
+EASY,PREMIUM SAUCES ,Easy pps,🇰🇷🔥 Yangnyeom,Sauce - 6pc max,6,"1,536.00",256.00,247.90,280.17,263.34,298.00,6,,3,,6,,"11,520.00",45,  45 ,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🔵 Blue,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🟢 Green,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🥇 Gold Flakes,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🥇 Gold Powder,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🥇 Gold,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🟠 Orange,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨⚪ Pearl,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🌸 Pink,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🔴 Red,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🌹 Rose Gold,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨⚪ Silver,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🟡 Yellow,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+EASY,SPARKLE & SHIMMER , sparkle,✨🟣 Violet,,10,,,155.00,180.00,165.00,198.00,,,,,,,0.00,0,,  - 
+GRUTON,ANCHOR ,hg ba,🍚 Anchor Cream Cheese,,1,,,"6,500.00",,,"6,490.00",,,,,,,0.00,0,,  - 
+GRUTON,ANCHOR ,hg ba,🫕 Anchor Extra Yield Cooking Cream,,1,,,"3,780.00",,,"4,350.00",,,,,10,,"37,800.00",10,  10 ,  - 
+GRUTON,ANCHOR ,hg ba,🧀 Anchor Mozzarella Block,,2,,,"5,400.00",,,"5,695.00",,,,,,,0.00,0,,  - 
+GRUTON,ANCHOR ,hg ba,🧀 Anchor Shredded Mozzarella,,1,,,"6,290.00",,,"6,440.00",,,,,,,0.00,0,  - ,  - 
+GRUTON,ANCHOR ,hg ba,🧀 Anchor Sliced Cheese ,,1,,,"5,800.00",,,"6,290.00",,,,,6,,"34,800.00",6,  6 ,  - 
+GRUTON,ANCHOR ,hg ba,🧈 Anchor Unsalted Butter 227gx40,,1,,,"6,401.40",,,"6,890.00",,,,,13,,"83,218.20",13,  13 ,  - 
+GRUTON,ANCHOR ,hg ba,🧈 Anchor Unsalted Butter 5kgx4,,1,,,"14,200.00",,,"14,390.00",,,,,,,0.00,0,,  - 
+GRUTON,ANCHOR ,hg ba,🥣 Anchor Whipping Cream,,1,,,"4,980.00",,,"5,400.00",,,,,6,,"29,880.00",6,  6 ,  - 
+GRUTON,BERYLS ,hg bb,🍫 Beryl's Chocolate Blend Fudge 1kgx12,,1,,,"4,968.00",,,,,,,,,,0.00,0,,  - 
+GRUTON,BERYLS ,hg bb,🍫 Beryl's Dark Sevona 1kg,,10,,,"3,036.00",,,"3,350.00",,,,,,,0.00,0,,  - 
+GRUTON,BERYLS ,hg bb,🍫 Beryl's Dark Chocolate1kg,,10,,,"3,266.00",,,"3,550.00",,,,,,,0.00,0,,  - 
+GRUTON,BERYLS ,hg bb,🍫📦 Beryl's Dark Chocolate Chips 1kgx10,,1,,,"3,036.00",,,"3,360.00",1,,,,,,"3,036.00",1,  1 ,  - 
+GRUTON,BERYLS ,hg bb,🍫 Beryl's Dark Choco Chips 8800cts,,10,,,303.60,,,350.00,4,,,,,,"1,214.40",4,  4 ,  - 
+GRUTON,BERYLS ,hg bb,🍫 Beryl's Dark Choco Chips 8800cts 500g,,1,,,"2,723.20",,,,,,,,,,0.00,0,,  - 
+GRUTON,BERYLS ,hg bb,🍫 Bittersweet 200g,,12,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,BERYLS ,hg bb,🍫 Dark 200g,,12,,,80.04,,,99.00,23,,,,,,"1,840.92",23,  23 ,  - 
+GRUTON,BERYLS ,hg bb,🍫📦 Beryl's 200g Dark Chocolate 200gx24,,1,,,"1,920.96",,,"2,160.00",,,,,,,0.00,0,,  - 
+GRUTON,BERYLS ,hg bb,🍫 Milk 200g,,12,,,76.28,,,99.00,1,,,,,,76.28,1,  1 ,  - 
+GRUTON,BERYLS ,hg bb,🍫 Semisweet 200g,,12,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,BERYLS ,hg bb,🍫 White 200g,,12,,,77.67,,,99.00,,,,,,,0.00,0,,  - 
+GRUTON,SPECULOOS ,hg bs,🫓 Biscuits,,1,,,105.80,,,120.00,30,,,,,,"3,174.00",30,  30 ,  - 
+GRUTON,SPECULOOS ,hg bs,🫓 Caramelised Crumbs,,1,,,469.20,,,510.00,,,,,,,0.00,0,  - ,  - 
+GRUTON,SPECULOOS ,hg bs,🫙 Creamy Biscuit Spread,,1,,,271.40,,,320.00,13,,,,,,"3,528.20",13,  13 ,  - 
+GRUTON,SPECULOOS ,hg bs,🫙 Crunchy Biscuit Spread,,1,,,271.40,,,309.00,,,,,,,0.00,0,,  - 
+GRUTON,SPECULOOS ,hg bs,📦 Caramelised Crumbs 1.1kgx6,,1,,,"2,550.00",,,"2,999.90",,,,,,,0.00,0,,  - 
+GRUTON,SPECULOOS ,hg bs,📦 Creamy Biscuit Spread 400gx12,,1,,,"3,399.00",,,"3,520.00",16,,,,,,"54,384.00",16,  16 ,  - 
+GRUTON,SPECULOOS ,hg bs,📦 Crunchy Biscuit Spread,,1,,,"3,256.80",,,"3,720.00",,,,,,,0.00,0,,  - 
+GRUTON,SPECULOOS ,hg bs,📦 Biscuits,,1,,,"3,808.80",,,,4,,,,,,"15,235.20",4,  4 ,  - 
+GRUTON,MILK ,hg cm,📦 Arla Barista,,1,,,880.00,,,880.00,48,,,,,,"42,240.00",48,  48 ,  - 
+GRUTON,MILK ,hg cm,📦 Arla Goodness 1L x 10,,1,,,880.00,,,899.00,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,📦 Arla Goodness 1L x 12,,1,,,"1,056.00",,,"1,088.00",54,,,,,,"57,024.00",54,  54 ,  - 
+GRUTON,MILK ,hg cm,📦 Bravo Condensed Milk,,1,,,"2,200.00",,,"4,500.00",4,,,,,,"8,800.00",4,  4 ,  - 
+GRUTON,MILK ,hg cm,📦 Bravo Evaporated Creamer,,1,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,📦 Bravo Filled Milk,,1,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,📦 Conaprole Full Cream,,1,,,840.00,,,910.00,10,,,,,,"8,400.00",10,  10 ,  - 
+GRUTON,MILK ,hg cm,📦 Emborg,,1,,,"1,002.00",,,"1,049.00",21,,,,,,"21,042.00",21,  21 ,  - 
+GRUTON,MILK ,hg cm,📦 Jersey,,1,,,855.00,,,889.00,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,📦 Laciate,,1,,,840.00,,,899.00,7,,,,,,"5,880.00",7,  7 ,  - 
+GRUTON,MILK ,hg cm,📦 Milklab,,1,,,"1,080.00",,,"1,199.00",2,,,,,,"2,160.00",2,  2 ,  - 
+GRUTON,MILK ,hg cm,📦 Mlekovita,,1,,,876.00,,,"1,150.00",11,,,,,,"9,636.00",11,  11 ,  - 
+GRUTON,MILK ,hg cm,📦🌾 Oatside Oat Milk,,1,,,765.00,,,799.00,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,📦🌰 Orasi Almond,,1,,,763.01,,,,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,📦🌴 Orasi Coconut,,1,,,763.02,,,,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,📦🌾 Orasi Oat,,1,,,763.03,,,,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,🛒 Arla Barista (pc),,1,,,88.00,,,99.00,8,,,,,,704.00,8,  8 ,  - 
+GRUTON,MILK ,hg cm,🛒 Arla Goodness (pc),,1,,,88.00,,,105.00,8,,,,,,704.00,8,  8 ,  - 
+GRUTON,MILK ,hg cm,🛒 Bravo Condensed Milk (pc),,1,,,92.00,,,198.00,18,,,,,,"1,656.00",18,  18 ,  - 
+GRUTON,MILK ,hg cm,🛒 Bravo Evaporated Creamer (pc),,1,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,🛒 Bravo Filled Milk (pc),,1,,,29.44,,,140.00,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,🛒 Conaprole Full Milk (pc),,1,,,72.00,,,95.00,1,,,,,,72.00,1,  1 ,  - 
+GRUTON,MILK ,hg cm,🛒 Emborg (pc),,1,,,80.00,,,95.00,3,,,,,,240.00,3,  3 ,  - 
+GRUTON,MILK ,hg cm,🛒 Jersey (pc),,1,,,71.25,,,,,,,,,,0.00,0,,  - 
+GRUTON,MILK ,hg cm,🛒 Laciate (pc),,1,,,70.00,,,95.00,,,,,,,0.00,0,  - ,  - 
+GRUTON,MILK ,hg cm,🛒 Milklab (pc),,1,,,89.00,,,109.00,12,,,,,,"1,068.00",12,  12 ,  - 
+GRUTON,MILK ,hg cm,🛒 Mlekovita (pc),,1,,,82.00,,,89.00,3,,,,,,246.00,3,  3 ,  - 
+GRUTON,MILK ,hg cm,🛒🌾 Oatside Oat Milk (pc),,1,,,127.17,,,145.00,,,,,,,0.00,0,,  - 
+GRUTON,COFFEE BEANS ,hg ccb,☕ Arabica Blend,,1,,,820.00,,,820.00,11,,,,,,"9,020.00",11,  11 ,  - 
+GRUTON,COFFEE BEANS ,hg ccb,☕ Barako,,1,,,680.00,,,690.00,,,,,,,0.00,0,,  - 
+GRUTON,COFFEE BEANS ,hg ccb,☕ Benguet (Dark Roast),,1,,,680.00,,,690.00,,,,,,,0.00,0,,  - 
+GRUTON,COFFEE BEANS ,hg ccb,☕ Espresso,,1,,,820.00,,,839.00,4,,,,,,"3,280.00",4,  4 ,  - 
+GRUTON,COFFEE BEANS ,hg ccb,☕ Arabica Dark,,1,,,880.00,,,890.00,5,,,,,,"4,400.00",5,  5 ,  - 
+GRUTON,COFFEE BEANS ,hg ccb,☕ Arabica Medium,,1,,,880.00,,,890.00,4,,,,,,"3,520.00",4,  4 ,  - 
+GRUTON,COFFEE BEANS ,hg ccb,☕ Robusta Dark,,1,,,690.00,,,709.00,7,,,,,,"4,830.00",7,  7 ,  - 
+GRUTON,COFFEE BEANS ,hg ccb,☕ Robusta Medium,,1,,,690.00,,,709.00,15,,,,,,"10,350.00",15,  15 ,  - 
+GRUTON,CONES ,hg cc,Baby Giant Cone 53mm x 145mm,,1,,,725.00,,,"1,099.00",,,7,,,,"5,075.00",7,  7 ,  - 
+GRUTON,CONES ,hg cc,Happy Cup Cones,,1,,,694.40,,,"1,099.00",,,1,,,,694.40,1,  1 ,  - 
+GRUTON,CONES ,hg cc,Ice Cream Cart,,1,,,"15,000.00",,,"35,000.00",1,,,,,,"15,000.00",1,  1 ,  - 
+GRUTON,CONES ,hg cc,Danish Cone,,1,,,840.00,,,"1,199.00",,,,,,,0.00,0,,  - 
+GRUTON,DAIRY ,hg cd,Master Martini Pleasure Gold,,1,,,"2,650.00",,,"3,199.00",,,,,,,0.00,0,,  - 
+GRUTON,DAIRY ,hg cd,Arla gr Whipping Cream 1Lx10,,1,,,"4,232.00",,,"4,799.00",,,,,,,0.00,0,,  - 
+GRUTON,DAIRY ,hg cd,ACC Whipping Cream,,1,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,DAIRY ,hg cd,📦 Bunge,,1,,,"2,327.60",,,"2,500.00",5,,,,,,"11,638.00",5,  5 ,  - 
+GRUTON,DAIRY ,hg cd,Bunge (pc),,1,,,194.00,,,210.00,10,,,,,,"1,940.00",10,  10 ,  - 
+GRUTON,DAIRY ,hg cd,Emborg Cream Cheese,,2,,,"1,605.00",,,"1,890.00",,,,,,,0.00,0,,  - 
+GRUTON,DAIRY ,hg cd,ACC Whipping Cream,,1,,,"4,000.00",,,"4,275.00",,,,,,,0.00,0,  - ,  - 
+GRUTON,DAIRY ,hg cd,Gourmet Red,,1,,,"2,100.00",,,"2,500.00",31,,,,,,"65,100.00",31,  31 ,  - 
+GRUTON,DAIRY ,hg cd,📦 Monnalisa,,1,,,"2,150.00",,,"2,500.00",6,,,,,,"12,900.00",6,  6 ,  - 
+GRUTON,DAIRY ,hg cd,Monnalisa (pc),,1,,,179.17,,,250.00,11,,,,,,"1,970.87",11,  11 ,  - 
+GRUTON,DAIRY ,hg cd,Vivo gr Whipping Cream 1Lx12,,1,,,"2,340.00",,,"2,500.00",,,,,,,0.00,0,  - ,  - 
+GRUTON,FROZEN GOODS ,hg cf,🧀 Arla Emmental,,1,,,"7,601.39",,,,,,,,,,0.00,0,  - ,  - 
+GRUTON,FROZEN GOODS ,hg cf,🍟📦 Mccain Fries,,1,,,950.00,,,,29,,,,,,"27,550.00",29,  29 ,  - 
+GRUTON,FROZEN GOODS ,hg cf,🍟 Mccain Fries (pc),,1,,,95.00,,,,59,,,,,,"5,605.00",59,  59 ,  - 
+GRUTON,FROZEN GOODS ,hg cf,🍟 2.5kg Aviko Shoestring Fries,,1,,,239.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,FROZEN GOODS ,hg cf,🍟📦 2.5kgx4 Aviko Shoestring Fries,,1,,,950.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,FROZEN GOODS ,hg cf,🍟📦 Aviko Fries,,1,,,870.00,,,"1,290.00",66,,,,,,"57,420.00",66,  66 ,  - 
+GRUTON,FROZEN GOODS ,hg cf,🍟 Aviko Fries (pc),,1,,,95.00,,,129.00,62,,,,,,"5,890.00",62,  62 ,  - 
+GRUTON,FROZEN GOODS ,hg cf,🥐 Banquet D’or Butter Croissant,,1,,,"3,150.00",,,,,,,,,,0.00,0,,  - 
+GRUTON,FROZEN GOODS ,hg cf,🥐 Banquet D’or Margarine Croissant,,1,,,"1,932.00",,,"2,650.00",,,,,,,0.00,0,  - ,  - 
+GRUTON,FROZEN GOODS ,hg cf,🥐 Banquet D’or Mini Croissant,,1,,,"4,600.00",,,,,,,,,,0.00,0,,  - 
+GRUTON,FROZEN GOODS ,hg cf,🧈 Bravo Butter Creme,,1,,,"1,170.24",,,"1,199.00",17,,,,,,"19,894.08",17,  17 ,  - 
+GRUTON,FROZEN GOODS ,hg cf,Arla Mozzarella 2.3kg,,1,,,"1,245.00",,,,3,,,,,,"3,735.00",3,  3 ,  - 
+GRUTON,FROZEN GOODS ,hg cf,Arla Mozzarella 2.3kgx8,,1,,,"10,072.16",,,"11,200.00",,,,,,,0.00,0,  - ,  - 
+GRUTON,FROZEN GOODS ,hg cf,📦 Conaprole Mozzarella Box 2.5kgx4,,1,,,"8,965.40",,,"9,690.00",4,,,,,,"35,861.60",4,  4 ,  - 
+GRUTON,FROZEN GOODS ,hg cf,🧀 Conaprole Mozzarella 2.5kg,,4,,,"2,243.85",,,"2,490.00",5,,,,,,"11,219.25",5,  5 ,  - 
+GRUTON,FROZEN GOODS ,hg cf,📦 Mlekpol Mozzarella Block,,6,,,"5,014.00",,,"5,400.00",1,,,,,,"5,014.00",1,  1 ,  - 
+GRUTON,FROZEN GOODS ,hg cf,🧀 Prochiz Gold Slice 10's,,1,,,"1,435.20",,,"1,690.00",,,,,,,0.00,0,,  - 
+GRUTON,FROZEN GOODS ,hg cf,Sunny Farms Butter Blend Salted,,1,,,"1,634.00",,,"1,760.00",,,,,,,0.00,0,,  - 
+GRUTON,FROZEN GOODS ,hg cf,Sunny Farms Butter Blend Unsalted,,1,,,"1,634.00",,,"1,760.00",,,,,,,0.00,0,,  - 
+GRUTON,FROZEN GOODS ,hg cf,Arla Pro Natural Red Cheddar Block,,1,,,"2,290.00",,,"2,372.00",,,,,,,0.00,0,  - ,  - 
+GRUTON,FROZEN GOODS ,hg cf,🦑 Squid Tube Premium,,1,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,FROZEN GOODS ,hg cf,🍟 Sunny Farm Fries,,1,,,110.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,FROZEN GOODS ,hg cf,Frozen Strawberries,,1,,,250.00,,,300.00,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,🌈 Belgian Rainbow Jelly,,8,,,210.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,🥖 Bonomi Lady Fingers 500gx10,,1,,,"2,100.00",,,,2,,,,,,"4,200.00",2,  2 ,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,🥖 Bonomi Lady Fingers,,10,,,250.00,,,299.00,11,,,,,,"2,750.00",11,  11 ,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,Milin Nata De Coco,,6,,,220.00,,,310.00,,,,,,,0.00,0,  - ,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,Milin Rainbow Jelly,,6,,,235.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,🍪 Crushed Oreo 454gx24,,1,,,"4,356.00",,,"4,776.00",,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,🍪 Crushed Oreo,,1,,,181.50,,,199.00,6,,,,,,"1,089.00",6,  6 ,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,🍫 Chocolate Sprinkles,,1,,,230.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,DLA Lafruta 30% Blueberry 630g,,12,,,234.26,,,,6,,,,,,"1,405.56",6,  6 ,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,DLA Fondant Dough White,,1,,,"2,925.60",,,,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,Sunny Farm Nature's Bounty Whole Mushrooms,,1,,,"1,214.40",,,,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,Sunny Farm Nature's Bounty Sliced Mushrooms,,1,,,"1,214.40",,,,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,🌽 Sunny Farm Sweetcorn Whole,,1,,,950.00,,,960.00,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,🌈 Rainbow Sprinkles,,1,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,🌰 JB cocoa ,,1,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,🥖 Vicenzovo Lady Fingers,,1,,,193.00,,,280.00,,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,Flechard Creamery Butter Unsalted 1kgx10,,1,,,"8,791.00",,,"9,499.00",,,,,,,0.00,0,,  - 
+GRUTON,TOPPERS and SINKERS ,hg ct,Ersao Tapioca Pearl,,20,,,83.00,,,95.00,,,,,,,0.00,0,  - ,  - 
+GRUTON,PAPER PRODUCTS ,hg dpa,Paper Bowl 320cc ,,,,,"1,160.00",,,,,,,,,,0.00,0,,  - 
+GRUTON,PAPER PRODUCTS ,hg dpa,Paper Bowl 390cc,,1,,,"1,350.00",,,,,,7,,,,"9,450.00",7,  7 ,  - 
+GRUTON,PAPER PRODUCTS ,hg dpa,Paper Bag #16,,,,,"1,230.00",,,"1,590.00",,,,,,,0.00,0,,  - 
+GRUTON,PAPER PRODUCTS ,hg dpa,Paper Bowl 260cc,,1,,,"1,100.00",,,"1,390.00",,,,,,,0.00,0,,  - 
+GRUTON,PAPER PRODUCTS ,hg dpa,Paper Coffee Cup 10oz,,20,,,55.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,PAPER PRODUCTS ,hg dpa,Paper Coffee Cup 10oz Lid,,20,,,54.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,PAPER PRODUCTS ,hg dpa,Paper Cup 8oz,,1,,,36.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,PAPER PRODUCTS ,hg dpa,Paper Cup 16oz,,10,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,PAPER PRODUCTS ,hg dpa,Paper Cup 16oz Lid,,20,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,PAPER PRODUCTS ,hg dpa,Paper Thin Straw,,1,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,STRAW ,hg dsw,📦Clear Boba Straw 100pcx30,,0,,,"1,380.00",,,"1,640.00",,,,,,,0.00,0,,  - 
+GRUTON,STRAW ,hg dsw,📦Black Boba Straw 100pcx30,,1,,,"1,470.00",,,"1,640.00",,,,,2,,"2,940.00",2,  2 ,  - 
+GRUTON,STRAW ,hg dsw,📦Black Thin Straw,,1,,,"1,300.00",,,"1,500.00",,,,,2,,"2,600.00",2,  2 ,  - 
+GRUTON,STRAW ,hg dsw,📦Clear Thin Straw,,1,,,"1,300.00",,,"1,500.00",,,,,,,0.00,0,,  - 
+GRUTON,STRAW ,hg dsw,Clear Boba Straw,,100,,,46.00,,,62.00,,,,,,,0.00,0,,  - 
+GRUTON,STRAW ,hg dsw,Black Boba Straw,,1,,,49.00,,,62.00,10,,15,,,,"1,225.00",25,  25 ,  - 
+GRUTON,STRAW ,hg dsw,Black Thin Straw,,50,,,26.00,,,42.00,8,,20,,,,728.00,28,  28 ,  - 
+GRUTON,STRAW ,hg dsw,Clear Thin Straw,,100,,,26.00,,,39.00,,,,,,,0.00,0,,  - 
+GRUTON,STRAW ,hg dsw,Single Take Out,,10,,,54.00,,,110.00,2,,,,3,,"1,728.00",32,  32 ,  - 
+GRUTON,STRAW ,hg dsw,Double Take Out,,5,,,80.00,,,90.00,,,,,6,,"2,400.00",30,  30 ,  - 
+GRUTON,STRAW ,hg dsw,Fork Medium 25pcx100,,100,,,8.70,,,"1,170.00",,,138,,,,"1,200.60",138,  138 ,  - 
+GRUTON,STRAW ,hg dsw,Spoon Medium 25pcx100,,100,,,8.70,,,"1,170.00",,,32,,,,278.40,32,  32 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,Y Cup 8oz,,20,,,680.00,,,890.00,,,,,,,0.00,0,,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,Y Cup 12oz,,20,,,83.15,,,120.00,,,20,,,,"1,663.00",20,  20 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,Y Cup 16oz,,20,,,108.00,,,130.00,1,,20,,,,"2,268.00",21,  21 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,Y Cup 22oz,,10,,,160.70,,,178.00,,,7,,1,,"2,731.90",17,  17 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,U Cup 12oz,,20,,,120.00,,,135.00,5,,14,,3,,"9,480.00",79,  79 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,U Cup 16oz ,,10,,,131.30,,,144.00,5,,5,,2,,"3,939.00",30,  30 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,U Cup 22oz,,10,,,160.70,,,172.00,5,,10,,,,"2,410.50",15,  15 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,Sundae Cup,,1,,,95.00,,,175.00,,,,,,,0.00,0,,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,Sundae Lid,,1,,,130.00,,,,,,4,,,,520.00,4,  4 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,1oz Sauce Cup ,,1,,,430.00,,,620.00,,,1,,,,430.00,1,  1 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,1oz Sauce Lid,,1,,,360.00,,,550.00,,,1,,,,360.00,1,  1 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,3.5oz Salad Cup with Lid,,1,,,45.00,,,55.00,,,,,,,0.00,0,,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,Diamond Dome Lid 95mm,,10,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,Dome Lid 95mm,,10,,,64.00,,,99.00,3,,8,,7,,"5,184.00",81,  81 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,Flat Lid 95mm,,10,,,54.00,,,89.00,,,7,,7,,"4,158.00",77,  77 ,  - 
+GRUTON,PLASTIC CUPS & LIDS ,hg dpcl,Strawless Lid 95mm,,10,,,115.00,,,140.00,,,,,2,,"2,300.00",20,  20 ,  - 
+GRUTON,ORGANIZERS ,hg dpo,2 Slot Japanese ,,,,,479.00,,,599.00,4,,,,,,"1,916.00",4,  4 ,  - 
+GRUTON,ORGANIZERS ,hg dpo,B04 Cup Org,,,,,295.00,,,295.00,,,,,,,0.00,0,,  - 
+GRUTON,ORGANIZERS ,hg dpo,B06 Cup Org,,,,,173.00,,,295.00,1,,,,,,173.00,1,  1 ,  - 
+GRUTON,ORGANIZERS ,hg dpo,B08 Cup Org,,,,,225.00,,,350.00,,,,,,,0.00,0,,  - 
+GRUTON,ORGANIZERS ,hg dpo,B14 Cup Org,,,,,484.00,,,599.00,8,,,,,,"3,872.00",8,  8 ,  - 
+GRUTON,ORGANIZERS ,hg dpo,B14 Double White Cup Org,,,,,279.00,,,459.00,,,,,,,0.00,0,,  - 
+GRUTON,ORGANIZERS ,hg dpo,B14 Single Black Cup Org,,,,,149.00,,,359.00,,,,,,,0.00,0,,  - 
+GRUTON,ORGANIZERS ,hg dpo,Rotatable Black Cup Org,,,,,269.00,,,320.00,,,2,,,,538.00,2,  2 ,  - 
+GRUTON,ORGANIZERS ,hg dpo,Rotatable Grey Cup Org,,,,,269.00,,,320.00,,,,,,,0.00,0,,  - 
+GRUTON,ORGANIZERS ,hg dpo,Rotatable White Cup Org,,,,,269.00,,,320.00,2,,,,,,538.00,2,  2 ,  - 
+GRUTON,ORGANIZERS ,hg dpo,Straw Holder,,,,,389.00,,,399.00,4,,9,,,,"5,057.00",13,  13 ,  - 
+GRUTON,Micro ,hg dpl,Micro Re 500ml,,1,,,"1,450.00",,,"1,900.00",,,,,,,0.00,0,,  - 
+GRUTON,Micro ,hg dpl,Micro Re 750ml,,1,,,"1,599.90",,,"2,050.00",,,,,,,0.00,0,,  - 
+GRUTON,Micro ,hg dpl,Micro Re 1000ml,,1,,,"1,575.00",,,"2,200.00",,,,,,,0.00,0,,  - 
+GRUTON,Micro ,hg dpl,Multiplast Micro Re 500ml,,1,,,"1,172.00",,,"1,600.00",2,,,,,,"2,344.00",2,  2 ,  - 
+GRUTON,Micro ,hg dpl,Multiplast Micro Re 750ml,,1,,,"1,376.00",,,"1,750.00",2,,,,,,"2,752.00",2,  2 ,  - 
+GRUTON,Micro ,hg dpl,Multiplast Micro Re 1000ml,,1,,,"1,520.00",,,"2,200.00",2,,,,,,"3,040.00",2,  2 ,  - 
+GRUTON,STYRO PRODUCTS ,hg dso,Styro Cup 8oz 1000pc,,1,,,"1,400.00",,,,,,1,,,,"1,400.00",1,  1 ,  - 
+GRUTON,STYRO PRODUCTS ,hg dso,C1 Chicken Box,,4,,,205.00,,,230.00,,,10,,,,"2,050.00",10,  10 ,  - 
+GRUTON,STYRO PRODUCTS ,hg dso,C2 Chicken Box,,1,,,329.00,,,360.00,,,5,,,,"1,645.00",5,  5 ,  - 
+GRUTON,STYRO PRODUCTS ,hg dso,P3 Plate,,1,,,150.00,,,225.00,,,,,,,0.00,0,,  - 
+GRUTON,STYRO PRODUCTS ,hg dso,S1 Spaghetti Box,,1,,,155.00,,,180.00,,,,,,,0.00,0,,  - 
+GRUTON,STYRO PRODUCTS ,hg dso,T1 Tray Small,,1,,,120.00,,,200.00,,,,,,,0.00,0,,  - 
+GRUTON,STYRO PRODUCTS ,hg dso,T2 Tray Medium,,1,,,200.00,,,275.00,,,,,,,0.00,0,,  - 
+GRUTON,SUPPLIES ,hg es,Barista Apron,,1,,,199.00,,,199.00,7,,5,,,,"2,388.00",12,  12 ,  - 
+GRUTON,SUPPLIES ,hg es,Bartending Set,,1,,,480.00,,,599.00,7,,,,,,"3,360.00",7,  7 ,  - 
+GRUTON,SUPPLIES ,hg es,European Cocktail Bartending Set,,1,,,599.00,,,699.00,6,,,,,,"3,594.00",6,  6 ,  - 
+GRUTON,SUPPLIES ,hg es,Cocktail Bartending 750ml,,1,,,799.00,,,899.00,,,,,,,0.00,0,,  - 
+GRUTON,SUPPLIES ,hg es,Black Spoon,,1,,,,,,599.00,,,,,,,0.00,0,,  - 
+GRUTON,SUPPLIES ,hg es,Collapsible Booth,,1,,,"1,750.00",,,"3,200.00",5,,,,,,"8,750.00",5,  5 ,  - 
+GRUTON,SUPPLIES ,hg es,Hello Pre Cut Tissue,,5,,,57.00,,,80.00,1,,,,,,57.00,1,  1 ,  - 
+GRUTON,SUPPLIES ,hg es,Matcha Tea Set,,1,,,830.00,,,849.00,9,,3,,,,"9,960.00",12,  12 ,  - 
+GRUTON,SUPPLIES ,hg es,📦 Mosa Charger 10pcx36,,1,,,"6,660.00",,,"7,690.00",,,,,,,0.00,0,  - ,  - 
+GRUTON,SUPPLIES ,hg es,Mosa Charger 10pc,,10,,,190.00,,,239.00,18,,,,,,"3,420.00",18,  18 ,  - 
+GRUTON,SUPPLIES ,hg es,Tea Barrel 6L,,1,,,,,,799.00,,,,,,,0.00,0,,  - 
+GRUTON,SUPPLIES ,hg es,Tea Barrel 8L,,1,,,441.00,,,899.00,3,,,,,,"1,323.00",3,  3 ,  - 
+GRUTON,SUPPLIES ,hg es,Tea Barrel 10L,,1,,,791.00,,,999.00,1,,8,,,,"7,119.00",9,  9 ,  - 
+GRUTON,SUPPLIES ,hg es,Whip Cream Canister Pink,,1,,,699.00,,,799.00,3,,,,,,"2,097.00",3,  3 ,  - 
+GRUTON,SUPPLIES ,hg es,Whip Cream Canister Black,,1,,,699.00,,,799.00,1,,,,,,699.00,1,  1 ,  - 
+GRUTON,SUPPLIES ,hg es,Whip Cream Canister Silver,,1,,,699.00,,,799.00,,,,,,,0.00,0,  - ,  - 
+GRUTON,SUPPLIES ,hg es,Whip Cream Canister White,,1,,,699.00,,,799.00,,,,,,,0.00,0,,  - 
+GRUTON,SUPPLIES ,hg es,Sealing Film,,1,,,420.00,,,499.00,5,,,,,,"2,100.00",5,  5 ,  - 
+GRUTON,SUPPLIES ,hg es,Sealing Machine,,1,,,"2,900.00",,,"3,400.00",1,,,,,,"2,900.00",1,  1 ,  - 
+GRUTON,SUPPLIES ,hg es,Sealing Machine Heavy Duty,,1,,,,,,"4,200.00",,,,,,,0.00,0,,  - 
+GRUTON,SUPPLIES ,hg es,Tumbler B1T1,,,,,359.00,,,,9,,,,,,"3,231.00",9,  9 ,  - 
+GRUTON,SUPPLIES ,hg es,Measuring Cup B1T1,,,,,160.00,,,,6,,,,,,960.00,6,  6 ,  - 
+GRUTON,SUPPLIES ,hg es,Sealing Clip B1T1,,,,,89.00,,,,7,,,,,,623.00,7,  7 ,  - 
+GRUTON,SUPPLIES ,hg es,Pitcher & Squeeze Bottle Set,,,,,129.00,,,,3,,1,,,,516.00,4,  4 ,  - 
+GRUTON,SUPPLIES ,hg es,Frother Black B1T1,,,,,189.00,,,,18,,20,,,,"7,182.00",38,  38 ,  - 
+GRUTON,SUPPLIES ,hg es,French Press Coffee Maker,,1,,,399.00,,,,12,,,,,,"4,788.00",12,  12 ,  - 
+GRUTON,SUPPLIES ,hg es,Packing Tape Dispencer,,,,,157.00,,,,3,,,,,,471.00,3,  3 ,  - 
+GRUTON,SUPPLIES ,hg es,Squeeze Bottle,,1,,,,,,,,,,,,,0.00,0,,  - 
+GRUTON,SUPPLIES ,hg es,Acrylic Container ,,1,,,"1,999.00",,,"1,999.00",1,,,,,,"1,999.00",1,  1 ,  - 
+GRUTON,SUPPLIES ,hg es,Coffee Pouch 1kg,,,,,25.00,,,,14,,,,,,350.00,14,  14 ,  - 
+GRUTON,SUPPLIES ,hg es,Coffee Pouch 500g,,,,,20.00,,,,14,,,,,,280.00,14,  14 ,  - 
+GRUTON,SUPPLIES ,hg es,Coffee Pouch 250g,,,,,20.00,,,,15,,,,,,300.00,15,  15 ,  - 
+GRUTON,SUPPLIES ,hg es,3pc Flatware Set ,,,,,80.00,,,99.00,5,,,,,,400.00,5,  5 ,  - 
+GRUTON,SUPPLIES ,hg es,B1T1 Pump Dispenser,,,,,89.00,,,99.00,10,,25,,,,"3,115.00",35,  35 ,  - 
+GRUTON,SUPPLIES ,hg es,B1T1 Resealable Bag 25pc,,,,,189.00,,,199.00,6,,5,,,,"2,079.00",11,  11 ,  - 
+GRUTON,SUPPLIES ,hg es,B1T1 Sponge Gray,,,,,89.00,,,99.00,6,,4,,,,890.00,10,  10 ,  - 
+GRUTON,SUPPLIES ,hg es,B1T1 Tin with Lid,,,,,259.00,,,299.00,4,,4,,,,"2,072.00",8,  8 ,  - 
+GRUTON,SUPPLIES ,hg es,B1T1 Squeeze Bottle,,,,,189.00,,,,24,,,,,,"4,536.00",24,  24 ,  - 
+GRUTON,JAM ,hg oj,🫐 Blueberry,,6,,,265.00,,,295.00,,,,,,,0.00,0,,  - 
+GRUTON,JAM ,hg oj,🍈 Cantaloupe,,6,,,305.00,,,295.00,,,,,,,0.00,0,,  - 
+GRUTON,JAM ,hg oj,🍏 Green Apple,,6,,,265.00,,,295.00,4,,,,,,"1,060.00",4,  4 ,  - 
+GRUTON,JAM ,hg oj,🥝 Kiwi,,6,,,267.00,,,295.00,,,,,,,0.00,0,,  - 
+GRUTON,JAM ,hg oj,🥭 Mango,,6,,,265.00,,,295.00,,,,,1,,"1,590.00",6,  6 ,  - 
+GRUTON,JAM ,hg oj,🍊 Orange,,6,,,303.00,,,295.00,,,,,,,0.00,0,,  - 
+GRUTON,JAM ,hg oj,🥭 Passion Fruit,,6,,,273.00,,,295.00,,,,,,,0.00,0,,  - 
+GRUTON,JAM ,hg oj,🍍 Pineapple,,6,,,265.00,,,295.00,,,,,,,0.00,0,,  - 
+GRUTON,JAM ,hg oj,🍓 Strawberry,,6,,,270.00,,,300.00,1,,,,1,,"1,890.00",7,  7 ,  - 
+GRUTON,JAM ,hg oj,🍑 Yellow Peach,,6,,,265.00,,,295.00,,,,,,,0.00,0,,  - 
+GRUTON,JAM ,hg oj,🍓 Strawberry Popping Boba,,20,,,176.00,,,295.00,,,,,,,0.00,0,,  - 
+GRUTON,OTHERS ,hg o,10000 mAh Powerbank,,,,,799.00,,,799.00,,,3,,,,"2,397.00",3,  3 ,  - 
+GRUTON,OTHERS ,hg o,20000 mAh Powerbank,,,,,"1,299.00",,,"1,299.00",,,2,,,,"2,598.00",2,  2 ,  - 
+GRUTON,OTHERS ,hg o,Colored Tissue 30x30 cm,,,,,129.00,,,,3,,,,,,387.00,3,  3 ,  - 
+GRUTON,OTHERS ,hg o,Multicolor Flower Tissue 30x30 cm,,,,,129.00,,,,3,,,,,,387.00,3,  3 ,  - 
+GRUTON,OTHERS ,hg o,Red Flower Tissue 38x38 cm,,,,,129.00,,,,5,,,,,,645.00,5,  5 ,  - 
+GRUTON,OTHERS ,hg o,White Tissue 30x30 cm,,,,,99.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,OTHERS ,hg o,Eco Bag Thick Red,,,,,99.00,,,,3,,,,,,297.00,3,  3 ,  - 
+GRUTON,OTHERS ,hg o,Blue Eco Bag,,8,,,50.00,,,,8,,,,,,400.00,8,  8 ,  - 
+GRUTON,OTHERS ,hg o,Silent Packaging Tape,,1,,,45.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,OTHERS ,hg o,Tomato Ketchup,,1,,,240.00,,,290.00,,,,,,,0.00,0,,  - 
+GRUTON,TORANI ,hg to,Torani Dark Chocolate Sauce 1.89L,,,,,"1,150.00",,,"1,190.00",,,7,,,,"8,050.00",7,  7 ,  - 
+GRUTON,TORANI ,hg to,Torani White Chocolate Sauce 1.89L,,,,,"1,267.00",,,"1,280.00",,,5,,,,"6,335.00",5,  5 ,  - 
+GRUTON,TORANI ,hg to,Torani Strawberry Syrup 750ml,,,,,540.75,,,640.00,,,4,,,,"2,163.00",4,  4 ,  - 
+GRUTON,TORANI ,hg to,Torani  Watermelon Syrup 750ml,,,,,540.75,,,640.00,,,4,,,,"2,163.00",4,  4 ,  - 
+GRUTON,ARMANDO ,hg ar,Armando Fettucine 500gx24,,1,,,"1,943.00",,,,,,,,,,0.00,0,,  - 
+GRUTON,ARMANDO ,hg ar,Armando Fusilli 500gx12,,1,,,872.17,,,,,,,,,,0.00,0,,  - 
+GRUTON,ARMANDO ,hg ar,Armando Penne 500gx12,,1,,,872.17,,,,,,,,,,0.00,0,,  - 
+GRUTON,ARMANDO ,hg ar,Armando Spaghetti 500gx24,,1,,,"1,722.23",,,,,,,,,,0.00,0,,  - 
+GRUTON,SACHET ,sachet,Coffeesachet,,,,,235.00,,,285.00,,,,,,,0.00,0,,  - 
+GRUTON,SACHET ,sachet,Creamersachet,,,,,138.00,,,188.00,,,,,,,0.00,0,,  - 
+GRUTON,SACHET ,sachet,Tomato Ketchup,,,,,240.00,,,290.00,,,,,,,0.00,0,,  - 
+GRUTON,SACHET ,sachet,Brown Sugar,,,,,135.00,,,185.00,,,,,,,0.00,0,,  - 
+GRUTON,SACHET ,sachet,Hot Sauce,,,,,230.00,,,"2,890.00",,,,,,,0.00,0,,  - 
+GRUTON,SACHET ,sachet,White Sugar ,,,,,138.00,,,188.00,,,,,,,0.00,0,,  - 
+GRUTON,BELCRIS ,hg bc,Black Angus Ribeye 1kg,,1,,,"2,100.00",,,,,,,,,,0.00,0,,  - 
+GRUTON,INGREDIENTS ,hg dcc,🌰 DLA Pistachio,,1,,,"2,880.00",,,"3,100.00",,,,,,,0.00,0,,  - 
+GRUTON,INGREDIENTS ,hg dcc,Cavella Dubai Pistachio Cream,,6,,,"2,800.00",,,"2,890.00",8,,,,3,,"72,800.00",26,  26 ,  - 
+GRUTON,INGREDIENTS ,hg dcc,Cavella PH Pistachio Cream,,6,,,"2,900.00",,,"3,199.00",19,,,,8,,"194,300.00",67,  67 ,  - 
+GRUTON,INGREDIENTS ,hg dcc,Cavella Pistachio Cream 300g,,12,,,850.00,,,,,,,,,,0.00,0,,  - 
+GRUTON,INGREDIENTS ,hg dcc,JB15 500gx40,,,,,450.00,,,"17,900.00",,,,,,,0.00,0,,  - 
+GRUTON,INGREDIENTS ,hg dcc,Kataifi Premium Roasted 1kg,,10,,,999.00,,,"1,099.00",3,,11,,17,,"183,816.00",184,  184 ,  - 
+GRUTON,INGREDIENTS ,hg dcc,Kataifi 500g ,,,,,499.00,,,699.00,,,,,,,0.00,0,,  - 
+GRUTON,INGREDIENTS ,hg dcc,Cupcake Liner,,,,,45.00,,,65.00,,,,,,,0.00,0,,  - 
+GRUTON,INGREDIENTS ,hg dcc,Marshmallow White Large 680g,,4,,,148.00,,,169.00,,,,,,,0.00,0,,  - 
+GRUTON,INGREDIENTS ,hg dcc,Marshmallow White Small 680g,,4,,,148.00,,,169.00,,,,,,,0.00,0,  - ,  - 
+GRUTON,INGREDIENTS ,hg dcc,MEDIUM Marshmallow White 680g,,4,,,148.00,,,169.00,,,,,14,,"8,288.00",56,  56 ,  - 
+GRUTON,INGREDIENTS ,hg dcc,Dessert Rectangle 300ml 50pc |hg dcc,,1,,,325.00,,,369.00,,,1,,,,325.00,1,  1 ,  - 
+GRUTON,INGREDIENTS ,hg dcc,DLA Pistachio,,12,,,"1,949.41",,,"2,899.00",9,,5,,4,,"120,863.42",62,  62 ,  - 
+GRUTON,INGREDIENTS ,hg dcc,Square Dessert Bento Clear,,1,,,300.00,,,359.00,10,,,,,,"3,000.00",10,  10 ,  - 
+GRUTON,INGREDIENTS ,hg dcc,Backerei Life Pistachio Cream,,,,,"4,890.00",,,"4,999.00",,,,,,,0.00,0,,  - 
+GRUTON,ASIAN W,,Squid tube 1kg,,,,,245.00,,,280.00,5,,,,,,"1,225.00",5,  5 ,  - 
+GRUTON,ASIAN W,,Shrimp 26/30 1kg,,,,,460.00,,,490.00,5,,,,,,"2,300.00",5,  5.0 ,  - 

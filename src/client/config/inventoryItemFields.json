@@ -1,0 +1,15 @@
+{
+  "qtyFields": [
+    { "key": "uom",        "label": "UOM (per box)" },
+    { "key": "qtyGround",  "label": "Qty ground" },
+    { "key": "qtyUpstair", "label": "Qty upstairs" },
+    { "key": "qtyBox",     "label": "Qty box" },
+    { "key": "qtyKyte",    "label": "Kyte qty" }
+  ],
+  "expiryFields": [
+    { "key": "expiryGround",  "label": "Expiry ground" },
+    { "key": "expiryUpstair", "label": "Expiry upstairs" },
+    { "key": "expiryBox",     "label": "Expiry box" }
+  ],
+  "defaultStore": "EASY"
+}

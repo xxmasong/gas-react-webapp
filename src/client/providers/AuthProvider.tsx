@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Role, User } from '@shared/types';
 import { ROLE_RANK } from '@shared/types';
 import { server, setToken, getToken } from '../lib/server';
@@ -47,31 +47,32 @@ export const AuthProvider: React.FC<Props> = ({ children }) => {
     return () => { cancelled = true; };
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = useCallback(async (username: string, password: string) => {
     const session = await server.login(username, password);
     setToken(session.token);
     setUser(session.user);
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try { await server.logout(); } catch { /* ignore */ }
     setToken(null);
     setUser(null);
-  };
+  }, []);
 
-  const rank = user ? ROLE_RANK[user.role] : 0;
-
-  const value: AuthContextValue = {
-    user,
-    loading,
-    login,
-    logout,
-    hasRole: (min) => rank >= ROLE_RANK[min],
-    isAdmin: rank >= ROLE_RANK.admin,
-    isSupervisor: rank >= ROLE_RANK.supervisor,
-    canEditSku: rank >= ROLE_RANK.supervisor,
-    canUpdateCounts: rank >= ROLE_RANK.inventory_staff,
-  };
+  const value = useMemo<AuthContextValue>(() => {
+    const rank = user ? ROLE_RANK[user.role] : 0;
+    return {
+      user,
+      loading,
+      login,
+      logout,
+      hasRole: (min: Role) => rank >= ROLE_RANK[min],
+      isAdmin:         rank >= ROLE_RANK.admin,
+      isSupervisor:    rank >= ROLE_RANK.supervisor,
+      canEditSku:      rank >= ROLE_RANK.supervisor,
+      canUpdateCounts: rank >= ROLE_RANK.inventory_staff,
+    };
+  }, [user, loading, login, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useAuth, useToast } from '../../providers';
 import { cleanError } from '../../lib/errors';
 import { Spinner } from '../atoms';
@@ -12,7 +12,7 @@ export const LoginForm: React.FC = () => {
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password) return;
     setBusy(true);
@@ -24,7 +24,11 @@ export const LoginForm: React.FC = () => {
     } finally {
       setBusy(false);
     }
-  };
+  }, [username, password, login, toast]);
+
+  const onUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value), []);
+  const onPasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value), []);
+  const toggleShowPw = useCallback(() => setShowPw((s) => !s), []);
 
   return (
     <div className="login-screen">
@@ -42,7 +46,7 @@ export const LoginForm: React.FC = () => {
             <span>Username</span>
             <input
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={onUsernameChange}
               autoComplete="username"
               autoFocus
               autoCapitalize="none"
@@ -56,13 +60,13 @@ export const LoginForm: React.FC = () => {
               <input
                 type={showPw ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={onPasswordChange}
                 autoComplete="current-password"
               />
               <button
                 type="button"
                 className="pw-toggle"
-                onClick={() => setShowPw((s) => !s)}
+                onClick={toggleShowPw}
                 aria-label={showPw ? 'Hide password' : 'Show password'}
               >
                 {showPw ? 'Hide' : 'Show'}

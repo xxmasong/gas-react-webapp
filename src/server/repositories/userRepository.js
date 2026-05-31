@@ -10,16 +10,16 @@
 
 var UserRepository = (function () {
 
-  var PROP_KEY      = 'AUTH_SPREADSHEET_ID';
-  var WORKBOOK_NAME = 'Inventory Auth (do not share)';
-  var USERS_SHEET   = 'Users';
-  var SESS_SHEET    = 'Sessions';
+  var PROP_KEY      = Config.AUTH_SPREADSHEET_ID_PROP;
+  var WORKBOOK_NAME = Config.AUTH_WORKBOOK_NAME;
+  var USERS_SHEET   = Config.SHEETS.users;
+  var SESS_SHEET    = Config.SHEETS.sessions;
   var USER_HEADERS  = ['id', 'username', 'passwordHash', 'role', 'active', 'createdAt', 'updatedAt'];
   var SESS_HEADERS  = ['token', 'userId', 'createdAt', 'expiresAt', 'lastUsedAt'];
 
-  function props() { return PropertiesService.getScriptProperties(); }
+  var props = () => PropertiesService.getScriptProperties();
 
-  function getWorkbook() {
+  var getWorkbook = () => {
     var id = props().getProperty(PROP_KEY);
     if (id) {
       try { return SpreadsheetApp.openById(id); }
@@ -28,9 +28,9 @@ var UserRepository = (function () {
     var ss = SpreadsheetApp.create(WORKBOOK_NAME);
     props().setProperty(PROP_KEY, ss.getId());
     return ss;
-  }
+  };
 
-  function getSheet(name, headers) {
+  var getSheet = (name, headers) => {
     var ss    = getWorkbook();
     var sheet = ss.getSheetByName(name);
     if (!sheet) {
@@ -42,92 +42,89 @@ var UserRepository = (function () {
     var def = ss.getSheetByName('Sheet1');
     if (def && ss.getSheets().length > 1) { try { ss.deleteSheet(def); } catch (e) {} }
     return sheet;
-  }
+  };
 
-  function usersSheet() { return getSheet(USERS_SHEET, USER_HEADERS); }
-  function sessSheet()  { return getSheet(SESS_SHEET, SESS_HEADERS); }
+  var usersSheet = () => getSheet(USERS_SHEET, USER_HEADERS);
+  var sessSheet  = () => getSheet(SESS_SHEET, SESS_HEADERS);
 
-  function userFromRow(r) {
-    return {
-      id:           String(r[0]),
-      username:     String(r[1]),
-      passwordHash: String(r[2]),
-      role:         String(r[3]),
-      active:       r[4] === true || String(r[4]).toLowerCase() === 'true',
-      createdAt:    String(r[5]),
-      updatedAt:    String(r[6]),
-    };
-  }
+  var userFromRow = (r) => ({
+    id:           String(r[0]),
+    username:     String(r[1]),
+    passwordHash: String(r[2]),
+    role:         String(r[3]),
+    active:       r[4] === true || String(r[4]).toLowerCase() === 'true',
+    createdAt:    String(r[5]),
+    updatedAt:    String(r[6]),
+  });
 
-  function userToRow(u) {
-    return [u.id, u.username, u.passwordHash, u.role, u.active, u.createdAt, u.updatedAt];
-  }
+  var userToRow = (u) =>
+    [u.id, u.username, u.passwordHash, u.role, u.active, u.createdAt, u.updatedAt];
 
   // ─── Users ──────────────────────────────────────────────────────────────────
-  function allUsers() {
+  var allUsers = () => {
     var sheet = usersSheet();
     var last  = sheet.getLastRow();
     if (last < 2) return [];
     return sheet.getRange(2, 1, last - 1, USER_HEADERS.length).getValues()
-      .filter(function (r) { return r[0] !== '' && r[0] != null; })
+      .filter((r) => r[0] !== '' && r[0] != null)
       .map(userFromRow);
-  }
+  };
 
-  function findByUsername(username) {
+  var findByUsername = (username) => {
     var u = String(username).trim().toLowerCase();
     var all = allUsers();
     for (var i = 0; i < all.length; i++) {
       if (all[i].username.toLowerCase() === u) return all[i];
     }
     return null;
-  }
+  };
 
-  function findById(id) {
+  var findById = (id) => {
     var all = allUsers();
     for (var i = 0; i < all.length; i++) if (all[i].id === String(id)) return all[i];
     return null;
-  }
+  };
 
-  function insertUser(user) {
+  var insertUser = (user) => {
     usersSheet().appendRow(userToRow(user));
     return user;
-  }
+  };
 
-  function _rowIndexById(id) {
+  var _rowIndexById = (id) => {
     var sheet = usersSheet();
     var last  = sheet.getLastRow();
     if (last < 2) return -1;
     var ids = sheet.getRange(2, 1, last - 1, 1).getValues();
     for (var i = 0; i < ids.length; i++) if (String(ids[i][0]) === String(id)) return i + 2;
     return -1;
-  }
+  };
 
-  function updateUser(user) {
+  var updateUser = (user) => {
     var idx = _rowIndexById(user.id);
     if (idx === -1) throw AppError.notFound('User', user.id);
     usersSheet().getRange(idx, 1, 1, USER_HEADERS.length).setValues([userToRow(user)]);
     return user;
-  }
+  };
 
-  function deleteUser(id) {
+  var deleteUser = (id) => {
     var idx = _rowIndexById(id);
     if (idx === -1) throw AppError.notFound('User', id);
     usersSheet().deleteRow(idx);
     return { id: id };
-  }
+  };
 
-  function countUsers() { return allUsers().length; }
+  var countUsers = () => allUsers().length;
 
   // ─── Sessions ───────────────────────────────────────────────────────────────
-  function insertSession(session) {
+  var insertSession = (session) => {
     sessSheet().appendRow([
       session.token, session.userId, session.createdAt, session.expiresAt,
       session.lastUsedAt || session.createdAt,
     ]);
     return session;
-  }
+  };
 
-  function findSession(token) {
+  var findSession = (token) => {
     var sheet = sessSheet();
     var last  = sheet.getLastRow();
     if (last < 2) return null;
@@ -145,21 +142,21 @@ var UserRepository = (function () {
       }
     }
     return null;
-  }
+  };
 
   // Update the sliding "last used" timestamp for a session (idle-timeout reset).
-  function touchSession(token, isoNow) {
+  var touchSession = (token, isoNow) => {
     var s = findSession(token);
     if (s) sessSheet().getRange(s._row, 5, 1, 1).setValues([[isoNow]]);
-  }
+  };
 
-  function deleteSession(token) {
+  var deleteSession = (token) => {
     var s = findSession(token);
     if (s) sessSheet().deleteRow(s._row);
-  }
+  };
 
   // Remove sessions for a user (e.g. on deactivation) and any past-expiry rows.
-  function purgeSessions(userId) {
+  var purgeSessions = (userId) => {
     var sheet = sessSheet();
     var last  = sheet.getLastRow();
     if (last < 2) return;
@@ -171,10 +168,10 @@ var UserRepository = (function () {
       var matches = userId && String(rows[i][1]) === String(userId);
       if (expired || matches) sheet.deleteRow(i + 2);
     }
-  }
+  };
 
   return {
-    getWorkbookId: function () { return props().getProperty(PROP_KEY); },
+    getWorkbookId: () => props().getProperty(PROP_KEY),
     allUsers: allUsers,
     findByUsername: findByUsername,
     findById: findById,

@@ -7,10 +7,10 @@ const peso = new Intl.NumberFormat('en-PH', {
   maximumFractionDigits: 2,
 });
 
-export function formatCurrency(value: number): string {
-  return peso.format(Number.isFinite(value) ? value : 0);
-}
+const qty = new Intl.NumberFormat('en-PH');
 
-export function formatQty(value: number): string {
-  return new Intl.NumberFormat('en-PH').format(Number.isFinite(value) ? value : 0);
-}
+export const formatCurrency = (value: number): string =>
+  peso.format(Number.isFinite(value) ? value : 0);
+
+export const formatQty = (value: number): string =>
+  qty.format(Number.isFinite(value) ? value : 0);

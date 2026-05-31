@@ -1,12 +1,8 @@
 var DateTime = (function () {
 
-  function nowIso() {
-    return new Date().toISOString();
-  }
+  var nowIso = () => new Date().toISOString();
 
-  function isValidIso(value) {
-    return typeof value === 'string' && !isNaN(Date.parse(value));
-  }
+  var isValidIso = (value) => typeof value === 'string' && !isNaN(Date.parse(value));
 
   return { nowIso: nowIso, isValidIso: isValidIso };
 

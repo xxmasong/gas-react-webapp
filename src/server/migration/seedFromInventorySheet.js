@@ -20,8 +20,15 @@
  * picked up automatically. Columns are resolved by header text, not position.
  */
 
-var SOURCE_SPREADSHEET_ID = '1D_tPksBpflSUD2Hx4I_MYHPQL2yYz_V-c-1uVkkaaIo';
-var SOURCE_SHEET_GID      = 1625801440;
+// Read from Script Properties — set these before running the migration:
+//   SOURCE_SPREADSHEET_ID  — the spreadsheet ID of the "Product Info" source sheet
+//   SOURCE_SHEET_GID       — the gid (sheet tab ID) within that spreadsheet
+// See .env.example at the repo root for documentation.
+var SOURCE_SPREADSHEET_ID = PropertiesService.getScriptProperties()
+  .getProperty('SOURCE_SPREADSHEET_ID');
+var SOURCE_SHEET_GID = Number(
+  PropertiesService.getScriptProperties().getProperty('SOURCE_SHEET_GID') || 0
+);
 
 // Column resolution by header text. Headers are normalized first: newlines/tabs
 // collapse to single spaces, lowercased. `match: 'eq'` requires the whole cell
@@ -48,15 +55,14 @@ var HEADER_HINTS = {
   posCount:              { hints: ['pos count'] },
 };
 
-function _norm(v) {
-  return String(v == null ? '' : v)
+var _norm = (v) =>
+  String(v == null ? '' : v)
     .replace(/[\r\n\t]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .toLowerCase();
-}
 
-function _resolveColumns(headerRow) {
+var _resolveColumns = (headerRow) => {
   var cols = {};
   for (var field in HEADER_HINTS) {
     var spec  = HEADER_HINTS[field];
@@ -73,24 +79,41 @@ function _resolveColumns(headerRow) {
     }
   }
   return cols;
-}
+};
 
 // Use the raw GROUP cell as the category code, trimmed.
 // Fall back to the CATEGORY name (trimmed) when GROUP is blank.
 // Strip trailing pipe characters that appear in some GROUP cells (e.g. "Easy r3e |").
-function _deriveCode(groupCell, categoryName) {
+var _deriveCode = (groupCell, categoryName) => {
   var g = String(groupCell == null ? '' : groupCell).replace(/\|/g, '').trim();
   return g || String(categoryName == null ? '' : categoryName).trim() || 'uncategorized';
-}
+};
 
-function _leadingEmoji(name) {
+var _leadingEmoji = (name) => {
   var m = String(name).match(/^([^\w\s]+)/u);
   return m ? m[1].trim() : '';
-}
+};
 
-function _store(v) {
-  return _norm(v) === 'gruton' ? 'GRUTON' : 'EASY';
-}
+var _store = (v) => _norm(v) === 'gruton' ? 'GRUTON' : 'EASY';
+
+// Expiry cells may be blank, a day-count number, or a Date. Keep ISO dates;
+// drop everything else to '' (the model treats expiry as an optional ISO date).
+var _dateCell = (v) => {
+  if (v == null || v === '') return '';
+  if (Object.prototype.toString.call(v) === '[object Date]') {
+    return isNaN(v.getTime()) ? '' : v.toISOString().slice(0, 10);
+  }
+  return '';
+};
+
+var _openSourceSheet = () => {
+  var src    = SpreadsheetApp.openById(SOURCE_SPREADSHEET_ID);
+  var sheets = src.getSheets();
+  for (var s = 0; s < sheets.length; s++) {
+    if (sheets[s].getSheetId() === SOURCE_SHEET_GID) return sheets[s];
+  }
+  return src.getSheets()[0];
+};
 
 /**
  * Fast bulk reseed — builds all rows in memory then writes each tab in a
@@ -107,10 +130,10 @@ function _reseedBatch() {
   var cols = _resolveColumns(values[0]);
   if (cols.product == null) throw new Error('Could not locate the PRODUCT column.');
 
-  function pick(row, field) {
+  var pick = (row, field) => {
     var idx = cols[field];
     return idx == null ? '' : row[idx];
-  }
+  };
 
   var now = DateTime.nowIso();
 
@@ -132,7 +155,7 @@ function _reseedBatch() {
 
   // Build category objects in memory and write them in one shot.
   var codeToId = {};
-  var catRows  = codeOrder.map(function (code, idx) {
+  var catRows  = codeOrder.map((code, idx) => {
     var id  = Uuid.generate();
     codeToId[code] = id;
     return {
@@ -221,10 +244,10 @@ function seedInventoryFromSheet() {
     throw new Error('Could not locate a GROUP or CATEGORY column to derive categories from.');
   }
 
-  function pick(row, field) {
+  var pick = (row, field) => {
     var idx = cols[field];
     return idx == null ? '' : row[idx];
-  }
+  };
 
   // Pass 1: discover categories from (CATEGORY, GROUP) pairs in row order.
   var codeToId   = {};
@@ -287,25 +310,6 @@ function seedInventoryFromSheet() {
   console.log('Seed complete: ' + sortOrder + ' categories, ' + itemsWritten + ' items written.');
 }
 
-// Expiry cells may be blank, a day-count number, or a Date. Keep ISO dates;
-// drop everything else to '' (the model treats expiry as an optional ISO date).
-function _dateCell(v) {
-  if (v == null || v === '') return '';
-  if (Object.prototype.toString.call(v) === '[object Date]') {
-    return isNaN(v.getTime()) ? '' : v.toISOString().slice(0, 10);
-  }
-  return '';
-}
-
-function _openSourceSheet() {
-  var src    = SpreadsheetApp.openById(SOURCE_SPREADSHEET_ID);
-  var sheets = src.getSheets();
-  for (var s = 0; s < sheets.length; s++) {
-    if (sheets[s].getSheetId() === SOURCE_SHEET_GID) return sheets[s];
-  }
-  return src.getSheets()[0];
-}
-
 /**
  * Preview the migration WITHOUT writing anything. Logs the resolved column map,
  * the categories it would create, and a per-category SKU count + store split.
@@ -320,10 +324,10 @@ function dryRunInventorySeed() {
   console.log('Header row (normalized): ' + JSON.stringify(values[0].map(_norm)));
   console.log('Resolved columns: ' + JSON.stringify(cols));
 
-  function pick(row, field) {
+  var pick = (row, field) => {
     var idx = cols[field];
     return idx == null ? '' : row[idx];
-  }
+  };
 
   var cats     = {};     // code -> { name, count, easy, gruton }
   var order    = [];
@@ -344,7 +348,7 @@ function dryRunInventorySeed() {
   }
 
   console.log('Would create ' + order.length + ' categories from ' + skuCount + ' SKU rows:');
-  order.forEach(function (code) {
+  order.forEach((code) => {
     var c = cats[code];
     console.log('  [' + code + '] ' + c.name + ' — ' + c.count + ' SKUs (EASY ' + c.easy + ', GRUTON ' + c.gruton + ')');
   });
@@ -354,7 +358,7 @@ function dryRunInventorySeed() {
 /** Clears the seeded tabs so seedInventoryFromSheet can be re-run. */
 function resetSeededTabs() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  ['InventoryItems', 'SkuCategories'].forEach(function (tab) {
+  ['InventoryItems', 'SkuCategories'].forEach((tab) => {
     var sheet = ss.getSheetByName(tab);
     if (sheet) ss.deleteSheet(sheet);
   });

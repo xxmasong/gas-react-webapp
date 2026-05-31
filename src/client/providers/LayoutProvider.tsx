@@ -1,4 +1,4 @@
-import React, { createContext, useContext, type ReactNode } from 'react';
+import React, { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { useBreakpoint, type Breakpoint } from '../hooks/useMediaQuery';
 
 type LayoutContextValue = {
@@ -16,12 +16,12 @@ type Props = {
 
 export const LayoutProvider: React.FC<Props> = ({ children }) => {
   const breakpoint = useBreakpoint();
-  const value: LayoutContextValue = {
+  const value = useMemo<LayoutContextValue>(() => ({
     breakpoint,
     isMobile: breakpoint === 'mobile',
     isTablet: breakpoint === 'tablet',
     isLaptop: breakpoint === 'laptop',
-  };
+  }), [breakpoint]);
   return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>;
 };
 

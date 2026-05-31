@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Table } from '@tanstack/react-table';
 import type { InventoryItem } from '@shared/types';
 
@@ -19,13 +19,17 @@ export const ColumnVisibilityMenu: React.FC<Props> = ({ table }) => {
     return () => document.removeEventListener('mousedown', onClick);
   }, [open]);
 
-  const toggleable = table
-    .getAllLeafColumns()
-    .filter((c) => c.getCanHide() && !c.columnDef.meta?.hidden);
+  const toggleable = useMemo(
+    () => table.getAllLeafColumns().filter((c) => c.getCanHide() && !c.columnDef.meta?.hidden),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [table.getState().columnVisibility],
+  );
+
+  const toggle = useCallback(() => setOpen((o) => !o), []);
 
   return (
     <div className="colvis" ref={ref}>
-      <button className="ghost" onClick={() => setOpen((o) => !o)}>
+      <button className="ghost" onClick={toggle}>
         Columns ▾
       </button>
       {open && (

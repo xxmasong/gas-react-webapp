@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { flexRender, type Row, type Cell } from '@tanstack/react-table';
 import type { InventoryItem } from '@shared/types';
 import { formatQty } from '../../lib/format';
@@ -25,18 +25,25 @@ export const InventoryRow: React.FC<Props> = ({ row, canEdit, onEdit, onDelete }
   const s = useStockRow(item);
   const { isAdmin } = useAuth();
 
-  const stockValue: Record<string, number> = { qtyGround: s.ground, qtyUpstair: s.upstair, qtyBox: s.box };
-  const stockSetter: Record<string, (n: number) => void> = {
-    qtyGround: s.setGround,
-    qtyUpstair: s.setUpstair,
-    qtyBox: s.setBox,
-  };
+  const stockValue = useMemo<Record<string, number>>(
+    () => ({ qtyGround: s.ground, qtyUpstair: s.upstair, qtyBox: s.box }),
+    [s.ground, s.upstair, s.box],
+  );
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') s.save();
-  };
+  const stockSetter = useMemo<Record<string, (n: number) => void>>(
+    () => ({ qtyGround: s.setGround, qtyUpstair: s.setUpstair, qtyBox: s.setBox }),
+    [s.setGround, s.setUpstair, s.setBox],
+  );
 
-  const renderCell = (cell: Cell<InventoryItem, unknown>) => {
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent) => { if (e.key === 'Enter') s.save(); },
+    [s.save],
+  );
+
+  const handleEdit = useCallback(() => onEdit(item), [onEdit, item]);
+  const handleDelete = useCallback(() => onDelete(item.id), [onDelete, item.id]);
+
+  const renderCell = useCallback((cell: Cell<InventoryItem, unknown>) => {
     if (cell.column.columnDef.meta?.hidden) return null;
     const id = cell.column.id;
     const align = cell.column.columnDef.meta?.align;
@@ -67,8 +74,8 @@ export const InventoryRow: React.FC<Props> = ({ row, canEdit, onEdit, onDelete }
               {s.status === 'saving' ? 'Saving' : 'Save'}
             </button>
           )}
-          {!s.dirty && canEdit && <button onClick={() => onEdit(item)}>Edit</button>}
-          {isAdmin && <button className="del" onClick={() => onDelete(item.id)}>×</button>}
+          {!s.dirty && canEdit && <button onClick={handleEdit}>Edit</button>}
+          {isAdmin && <button className="del" onClick={handleDelete}>×</button>}
         </td>
       );
     }
@@ -88,7 +95,7 @@ export const InventoryRow: React.FC<Props> = ({ row, canEdit, onEdit, onDelete }
         {flexRender(cell.column.columnDef.cell, cell.getContext())}
       </td>
     );
-  };
+  }, [s, stockValue, stockSetter, onKeyDown, handleEdit, handleDelete, canEdit, isAdmin]);
 
   return (
     <tr className={item.kyteMatch ? '' : 'row-mismatch'}>

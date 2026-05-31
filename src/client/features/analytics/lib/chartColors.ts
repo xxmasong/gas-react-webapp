@@ -3,11 +3,11 @@ import { useTheme } from '../../../providers';
 
 // Resolve a CSS custom property to its computed value (charts need real colors,
 // not var() strings). Re-reads when the theme changes.
-function readVar(name: string, fallback: string): string {
+const readVar = (name: string, fallback: string): string => {
   if (typeof window === 'undefined') return fallback;
   const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return v || fallback;
-}
+};
 
 export type ChartTheme = {
   text: string;
@@ -22,7 +22,7 @@ export type ChartTheme = {
   palette: string[];
 };
 
-export function useChartTheme(): ChartTheme {
+export const useChartTheme = (): ChartTheme => {
   const { theme } = useTheme();
   const [t, setT] = useState<ChartTheme>(() => build());
 
@@ -33,9 +33,9 @@ export function useChartTheme(): ChartTheme {
   }, [theme]);
 
   return t;
-}
+};
 
-function build(): ChartTheme {
+const build = (): ChartTheme => {
   const accent = readVar('--color-accent', '#1f883d');
   const danger = readVar('--color-danger', '#cf222e');
   const warn = readVar('--color-warn-text', '#bc4c00');
@@ -51,4 +51,4 @@ function build(): ChartTheme {
     palette: ['#1f883d', '#0969da', '#8250df', '#bf8700', '#cf222e', '#1a7f37',
               '#bc4c00', '#0550ae', '#a475f9', '#953800', '#116329', '#54aeff'],
   };
-}
+};

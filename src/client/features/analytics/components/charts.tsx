@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
+import { STORES } from '../../../config';
 import {
   ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell,
@@ -13,18 +14,23 @@ const HEALTH_COLORS: Record<string, keyof ReturnType<typeof useChartTheme>> = {
   ok: 'success', low: 'warn', out: 'danger',
 };
 
-const tooltipStyle = (t: ReturnType<typeof useChartTheme>) => ({
-  background: t.surface,
-  border: `1px solid ${t.border}`,
-  borderRadius: 8,
-  color: t.text,
-  fontSize: 12,
-});
-
 const short = (s: string, n = 16) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
 
 export const ValueByCategoryChart: React.FC<{ data: CategoryDatum[] }> = ({ data }) => {
   const t = useChartTheme();
+  const tipStyle = useMemo(() => ({
+    background: t.surface,
+    border: `1px solid ${t.border}`,
+    borderRadius: 8,
+    color: t.text,
+    fontSize: 12,
+  }), [t.surface, t.border, t.text]);
+
+  const formatter = useCallback((v: unknown, _n: unknown, p: { payload?: CategoryDatum }) => {
+    const d = p?.payload as CategoryDatum;
+    return [`${formatCurrency(Number(v))} · ${formatQty(d.qty)} pcs`, d.name];
+  }, []);
+
   return (
     <ResponsiveContainer width="100%" height={Math.max(200, data.length * 30 + 40)}>
       <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16, top: 4, bottom: 4 }}>
@@ -35,13 +41,7 @@ export const ValueByCategoryChart: React.FC<{ data: CategoryDatum[] }> = ({ data
           tick={{ fill: t.muted, fontSize: 11 }}
           tickFormatter={(s: string) => short(s)}
         />
-        <Tooltip
-          contentStyle={tooltipStyle(t)}
-          formatter={(v, _n, p) => {
-            const d = p?.payload as CategoryDatum;
-            return [`${formatCurrency(Number(v))} · ${formatQty(d.qty)} pcs`, d.name];
-          }}
-        />
+        <Tooltip contentStyle={tipStyle} formatter={formatter} />
         <Bar dataKey="value" radius={[0, 4, 4, 0]}>
           {data.map((d, i) => <Cell key={d.id} fill={t.palette[i % t.palette.length]} />)}
         </Bar>
@@ -52,8 +52,21 @@ export const ValueByCategoryChart: React.FC<{ data: CategoryDatum[] }> = ({ data
 
 export const StoreSplitChart: React.FC<{ data: StoreDatum[] }> = ({ data }) => {
   const t = useChartTheme();
-  const colorFor = (store: string) =>
-    store === 'EASY' ? t.palette[1] : store === 'GRUTON' ? t.palette[2] : t.palette[3];
+  const tipStyle = useMemo(() => ({
+    background: t.surface,
+    border: `1px solid ${t.border}`,
+    borderRadius: 8,
+    color: t.text,
+    fontSize: 12,
+  }), [t.surface, t.border, t.text]);
+
+  const colorFor = useCallback((store: string) => {
+    const idx = STORES.findIndex((s) => s.value === store);
+    return t.palette[idx >= 0 ? idx + 1 : t.palette.length - 1];
+  }, [t.palette]);
+
+  const formatter = useCallback((v: unknown) => formatCurrency(Number(v)), []);
+
   return (
     <ResponsiveContainer width="100%" height={240}>
       <PieChart>
@@ -63,7 +76,7 @@ export const StoreSplitChart: React.FC<{ data: StoreDatum[] }> = ({ data }) => {
         >
           {data.map((d) => <Cell key={d.store} fill={colorFor(d.store)} />)}
         </Pie>
-        <Tooltip contentStyle={tooltipStyle(t)} formatter={(v) => formatCurrency(Number(v))} />
+        <Tooltip contentStyle={tipStyle} formatter={formatter} />
         <Legend wrapperStyle={{ fontSize: 12, color: t.muted }} />
       </PieChart>
     </ResponsiveContainer>
@@ -72,13 +85,23 @@ export const StoreSplitChart: React.FC<{ data: StoreDatum[] }> = ({ data }) => {
 
 export const StockHealthChart: React.FC<{ data: StockHealthDatum[] }> = ({ data }) => {
   const t = useChartTheme();
+  const tipStyle = useMemo(() => ({
+    background: t.surface,
+    border: `1px solid ${t.border}`,
+    borderRadius: 8,
+    color: t.text,
+    fontSize: 12,
+  }), [t.surface, t.border, t.text]);
+
+  const formatter = useCallback((v: unknown) => `${Number(v)} SKUs`, []);
+
   return (
     <ResponsiveContainer width="100%" height={240}>
       <PieChart>
         <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={85} paddingAngle={2}>
           {data.map((d) => <Cell key={d.key} fill={t[HEALTH_COLORS[d.key]] as string} />)}
         </Pie>
-        <Tooltip contentStyle={tooltipStyle(t)} formatter={(v) => `${Number(v)} SKUs`} />
+        <Tooltip contentStyle={tipStyle} formatter={formatter} />
         <Legend wrapperStyle={{ fontSize: 12, color: t.muted }} />
       </PieChart>
     </ResponsiveContainer>
@@ -87,6 +110,19 @@ export const StockHealthChart: React.FC<{ data: StockHealthDatum[] }> = ({ data 
 
 export const TopSkusChart: React.FC<{ data: TopSkuDatum[] }> = ({ data }) => {
   const t = useChartTheme();
+  const tipStyle = useMemo(() => ({
+    background: t.surface,
+    border: `1px solid ${t.border}`,
+    borderRadius: 8,
+    color: t.text,
+    fontSize: 12,
+  }), [t.surface, t.border, t.text]);
+
+  const formatter = useCallback((v: unknown, _n: unknown, p: { payload?: TopSkuDatum }) => {
+    const d = p?.payload as TopSkuDatum;
+    return [`${formatCurrency(Number(v))} · ${formatQty(d.qty)} pcs`, d.sku];
+  }, []);
+
   return (
     <ResponsiveContainer width="100%" height={Math.max(220, data.length * 32 + 40)}>
       <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16, top: 4, bottom: 4 }}>
@@ -97,13 +133,7 @@ export const TopSkusChart: React.FC<{ data: TopSkuDatum[] }> = ({ data }) => {
           tick={{ fill: t.muted, fontSize: 11 }}
           tickFormatter={(s: string) => short(s, 18)}
         />
-        <Tooltip
-          contentStyle={tooltipStyle(t)}
-          formatter={(v, _n, p) => {
-            const d = p?.payload as TopSkuDatum;
-            return [`${formatCurrency(Number(v))} · ${formatQty(d.qty)} pcs`, d.sku];
-          }}
-        />
+        <Tooltip contentStyle={tipStyle} formatter={formatter} />
         <Bar dataKey="value" fill={t.accent} radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
@@ -112,6 +142,17 @@ export const TopSkusChart: React.FC<{ data: TopSkuDatum[] }> = ({ data }) => {
 
 export const AbcCurveChart: React.FC<{ abc: AbcResult }> = ({ abc }) => {
   const t = useChartTheme();
+  const tipStyle = useMemo(() => ({
+    background: t.surface,
+    border: `1px solid ${t.border}`,
+    borderRadius: 8,
+    color: t.text,
+    fontSize: 12,
+  }), [t.surface, t.border, t.text]);
+
+  const formatter  = useCallback((v: unknown) => [`${Number(v)}% of value`, 'Cumulative'], []);
+  const labelFormatter = useCallback((l: unknown) => `Top ${l}% of SKUs`, []);
+
   return (
     <ResponsiveContainer width="100%" height={260}>
       <AreaChart data={abc.curve} margin={{ left: 8, right: 16, top: 8, bottom: 4 }}>
@@ -131,11 +172,7 @@ export const AbcCurveChart: React.FC<{ abc: AbcResult }> = ({ abc }) => {
           domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fill: t.muted, fontSize: 11 }}
           label={{ value: '% of value', angle: -90, position: 'insideLeft', fill: t.muted, fontSize: 11 }}
         />
-        <Tooltip
-          contentStyle={tooltipStyle(t)}
-          formatter={(v) => [`${Number(v)}% of value`, 'Cumulative']}
-          labelFormatter={(l) => `Top ${l}% of SKUs`}
-        />
+        <Tooltip contentStyle={tipStyle} formatter={formatter} labelFormatter={labelFormatter} />
         <ReferenceLine y={80} stroke={t.warn} strokeDasharray="4 4" />
         <Area type="monotone" dataKey="cumulativePct" stroke={t.accent} strokeWidth={2} fill="url(#abcFill)" />
       </AreaChart>

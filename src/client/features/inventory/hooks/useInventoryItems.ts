@@ -1,9 +1,10 @@
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { InventoryItem, NewInventoryItem, StockUpdate } from '@shared/types';
 import { server } from '../../../lib/server';
 import { queryKeys } from '../../../lib/queryKeys';
 
-export function useInventoryItems() {
+export const useInventoryItems = () => {
   const qc = useQueryClient();
 
   const { data: items = [], isLoading: itemsLoading, error: itemsError } = useQuery({
@@ -15,9 +16,6 @@ export function useInventoryItems() {
     queryKey: queryKeys.categories,
     queryFn: () => server.getCategories(),
   });
-
-  const loading = itemsLoading || catsLoading;
-  const fetchError = itemsError || catsError;
 
   const addMutation = useMutation({
     mutationFn: (item: NewInventoryItem) => server.addInventoryItem(item),
@@ -62,17 +60,27 @@ export function useInventoryItems() {
     },
   });
 
-  const mutationError =
-    addMutation.error || updateMutation.error || removeMutation.error || bulkStockMutation.error;
+  const mutationError = useMemo(
+    () => addMutation.error || updateMutation.error || removeMutation.error || bulkStockMutation.error,
+    [addMutation.error, updateMutation.error, removeMutation.error, bulkStockMutation.error],
+  );
 
-  return {
+  return useMemo(() => ({
     items,
     categories,
-    loading,
-    error: fetchError ? String(fetchError) : mutationError ? String(mutationError) : null,
+    loading: itemsLoading || catsLoading,
+    error: itemsError || catsError
+      ? String(itemsError ?? catsError)
+      : mutationError ? String(mutationError) : null,
     add: addMutation.mutateAsync,
     update: updateMutation.mutateAsync,
     remove: removeMutation.mutateAsync,
     bulkUpdateStock: (updates: StockUpdate[]) => bulkStockMutation.mutateAsync(updates),
-  };
-}
+  }), [
+    items, categories,
+    itemsLoading, catsLoading,
+    itemsError, catsError, mutationError,
+    addMutation.mutateAsync, updateMutation.mutateAsync,
+    removeMutation.mutateAsync, bulkStockMutation.mutateAsync,
+  ]);
+};

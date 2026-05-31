@@ -1,6 +1,6 @@
 var SummaryService = (function () {
 
-  function getInventorySummary() {
+  var getInventorySummary = () => {
     var items      = InventoryItemRepository.findAll();
     var categories = CategoryRepository.findAll();
     var totalCost     = 0;
@@ -22,9 +22,9 @@ var SummaryService = (function () {
       mismatchCount:  mismatchCount,
       zeroStockCount: zeroStockCount,
     };
-  }
+  };
 
-  function getCategoryTotals() {
+  var getCategoryTotals = () => {
     var categories = CategoryRepository.findAll();
     var items      = InventoryItemRepository.findAll();
 
@@ -38,7 +38,7 @@ var SummaryService = (function () {
       byCat[key].count += 1;
     }
 
-    return categories.map(function (cat) {
+    return categories.map((cat) => {
       var agg = byCat[cat.id] || { cost: 0, qty: 0, count: 0 };
       return {
         categoryId:   cat.id,
@@ -49,7 +49,7 @@ var SummaryService = (function () {
         skuCount:     agg.count,
       };
     });
-  }
+  };
 
   return {
     getInventorySummary: getInventorySummary,

@@ -1,8 +1,6 @@
 var Uuid = (function () {
 
-  function generate() {
-    return Utilities.getUuid();
-  }
+  var generate = () => Utilities.getUuid();
 
   return { generate: generate };
 

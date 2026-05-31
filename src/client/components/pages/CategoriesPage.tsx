@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import type { SkuCategory } from '@shared/types';
 import { useToast } from '../../providers';
 import { cleanError } from '../../lib/errors';
@@ -13,9 +13,9 @@ export const CategoriesPage: React.FC = () => {
 
   if (error) toast.error(cleanError(error));
 
-  const reset = () => setEditing(null);
+  const reset = useCallback(() => setEditing(null), []);
 
-  const onSubmit = async (form: { code: string; name: string; packConstraint: string; sortOrder: number }) => {
+  const onSubmit = useCallback(async (form: { code: string; name: string; packConstraint: string; sortOrder: number }) => {
     try {
       if (editing) {
         await update({ id: editing.id, updatedAt: '', ...form });
@@ -28,9 +28,9 @@ export const CategoriesPage: React.FC = () => {
     } catch (e) {
       toast.error(`Failed to ${editing ? 'update' : 'add'} category: ${cleanError(e)}`);
     }
-  };
+  }, [editing, add, update, reset, toast]);
 
-  const onDelete = async (id: string) => {
+  const onDelete = useCallback(async (id: string) => {
     const cat = categories.find((c) => c.id === id);
     try {
       await remove(id);
@@ -38,7 +38,7 @@ export const CategoriesPage: React.FC = () => {
     } catch (e) {
       toast.error(`Failed to delete category: ${cleanError(e)}`);
     }
-  };
+  }, [categories, remove, toast]);
 
   return (
     <AppShell>

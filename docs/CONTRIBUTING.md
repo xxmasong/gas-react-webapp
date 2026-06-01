@@ -1,86 +1,143 @@
 # Contributing — add or change a feature
 
-The end-to-end recipe for this stack. The golden rule: **start at the contract,
-end at the deploy.** Every change flows through `src/shared/types.ts`.
+The end-to-end recipe for this stack.
+**Golden rule: start at the contract, end at the deploy.**
 
-## The recipe
+For detailed standards see:
+[BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md) · [FRONTEND_GUIDELINES.md](FRONTEND_GUIDELINES.md) · [DATA_MODEL.md](DATA_MODEL.md)
+
+---
+
+## The 7-step recipe
 
 ### 1. Define the contract — `src/shared/types.ts`
-Add or change the entity type and its functions on `ServerFunctions`:
+
+Add the entity type and its server functions to `ServerFunctions`. Arguments and
+returns must be **JSON-serializable**.
 
 ```ts
-export interface Item { id: string; name: string; quantity: number; updatedAt: string; }
-export type NewItem = Pick<Item, 'name' | 'quantity'>;
-
-export interface ServerFunctions {
-  getItems(): Item[];
-  addItem(item: NewItem): Item;
-  // ...add your new function signature here
-}
-```
-Arguments and returns must be **JSON-serializable** (RPC crosses a process boundary).
-
-### 2. Implement the server function — `src/server/api.js`
-A top-level named function. Keep it thin: validate, delegate, return.
-
-```js
-function addItem(item) {
-  if (!item || !item.name) throw new Error('name is required');   // validate
-  var created = {
-    id: Utilities.getUuid(),
-    name: String(item.name),
-    quantity: Number(item.quantity) || 0,
-    updatedAt: new Date().toISOString(),
-  };
-  return insertItem_(created);                                    // delegate to DAL
-}
-```
-Business logic that is more than trivial belongs in `src/server/services/`, not here.
-
-### 3. Persist it — `src/server/sheets.js`
-The data-access layer. If the schema changes, update `HEADERS` and the row mappers.
-See [DATA_MODEL.md](DATA_MODEL.md) for the Sheets conventions and the `LockService`
-requirement on writes.
-
-### 4. Wire the client bridge — `src/client/server.ts`
-Add a typed wrapper **and** a mock branch (mock parity is required):
-
-```ts
-export const server = {
-  // ...
-  addItem: (item: NewItem) => call('addItem', item),
+// src/shared/types.ts
+export type ReconciliationSession = {
+  id: string;
+  branch: string;
+  date: string;            // YYYY-MM-DD
+  shift: string;
+  status: SessionStatus;
+  createdAt: string;
 };
 
-// inside createMock():
-addItem: (item) => { /* in-memory mirror of the server behaviour */ },
+export type NewReconciliationSession = Omit<ReconciliationSession, 'id' | 'status' | 'createdAt'>;
+
+// Add to ServerFunctions:
+createReconciliationSession(token: string, params: NewReconciliationSession): ReconciliationSession;
+listReconciliationSessions(token: string): ReconciliationSession[];
 ```
 
-### 5. Build the UI
-Add a feature view + a `useXxx()` hook that wraps `server.*` and owns
-loading/error/optimistic state. Components never call `server.*` directly through
-`google.script.run`; they go through the hook → `server.ts`.
+### 2. Implement the repository — `src/server/repositories/`
 
-### 6. Verify and ship
-```bash
-npm run typecheck   # catches client/contract drift
-npm run dev         # exercise the UI against the mock
-npm run deploy      # build + push to the live app
+One file per Sheet tab. Implement `findAll`, `findById`, `insert`, `softDelete`.
+
+```js
+// reconciliationSessionRepository.js
+var SHEET_NAME = Config.SHEETS.reconciliationSessions;
+var HEADERS = ['id', 'branch', 'date', 'shift', 'status', 'created_by', 'created_at', 'deleted_at'];
 ```
 
-## Definition of done
+### 3. Write the mapper — `src/server/mappers/`
 
-- [ ] `ServerFunctions` updated in `src/shared/types.ts`.
-- [ ] Server function implemented (thin in `api.js`; logic in `services/`).
-- [ ] DAL + `HEADERS` updated; writes wrapped in `LockService`.
-- [ ] Client wrapper **and** mock branch added in `server.ts`.
-- [ ] `npm run typecheck` passes.
-- [ ] Verified locally against the mock, then deployed.
+Pure functions only — no I/O, no service calls.
 
-## Code conventions
+```js
+// reconciliationSessionMapper.js
+function rowToSession(row) { return { id: row[0], branch: row[1], /* … */ }; }
+function sessionToRow(s)   { return [s.id, s.branch, /* … */ ]; }
+```
 
-- TypeScript on the client/shared; plain modern JS on the server (GAS V8).
-- Server DAL helpers are suffixed `_` (e.g. `insertItem_`) by convention — these
-  are internal and not part of the RPC surface.
-- Keep `api.js` functions as routing shims; push real logic down a layer.
-- Only `sheets.js` imports/uses `SpreadsheetApp`.
-- No new runtime deps that break single-file inlining.
+### 4. Implement the service — `src/server/services/`
+
+Business logic and rule enforcement here, not in `api.js`.
+
+```js
+// reconciliationService.js
+function createSession(params) {
+  var existing = ReconciliationSessionRepository.findByBranchDateShift(
+    params.branch, params.date, params.shift
+  );
+  if (existing) throw AppError('Session already exists for this branch/date/shift', 'REC_DUPLICATE_SESSION');
+  var id = newUuid();
+  var session = { id: id, status: 'draft', /* … */ };
+  ReconciliationSessionRepository.insert(session);
+  AuditService.log(params.createdBy, 'create_session', 'ReconciliationSessions', id);
+  return session;
+}
+```
+
+### 5. Add the RPC shim — `src/server/api.js`
+
+Thin. Validate → check role → delegate → return.
+
+```js
+function createReconciliationSession(token, params) {
+  AuthService.requireRole(token, ROLE.OPS_MANAGER);
+  validate.required(params.branch, 'branch');
+  validate.string(params.date, 'date');
+  validate.oneOf(params.shift, ['morning', 'afternoon', 'full'], 'shift');
+  return ReconciliationService.createSession(params);
+}
+```
+
+### 6. Wire the client bridge — `src/client/lib/server.ts`
+
+Add the typed wrapper **and** a mock branch (mock parity is required):
+
+```ts
+// Real call
+createReconciliationSession: (params: NewReconciliationSession) =>
+  call('createReconciliationSession', params),
+
+// Inside createMock():
+createReconciliationSession: async (params) => {
+  const session: ReconciliationSession = {
+    id: crypto.randomUUID(),
+    ...params,
+    status: 'draft',
+    createdAt: new Date().toISOString(),
+  };
+  mockSessions.push(session);
+  return session;
+},
+```
+
+### 7. Build the UI — feature hook + view
+
+```ts
+// features/reconciliation/hooks/useReconciliationSessions.ts
+export function useReconciliationSessions() {
+  const [sessions, setSessions] = useState<ReconciliationSession[]>([]);
+  // … load, create, error, loading
+  return { sessions, loading, error, create, reload };
+}
+```
+
+```tsx
+// features/reconciliation/components/SessionList.tsx
+export function SessionList() {
+  const { sessions, loading, error, create } = useReconciliationSessions();
+  // render — no server.* calls here
+}
+```
+
+Export from `features/reconciliation/index.ts` and register the route in `PrivateApp.tsx`.
+
+---
+
+## Checklist before deploying
+
+- [ ] `npm run typecheck` passes with no errors
+- [ ] Mock mirrors the real service (same validation, same output shape)
+- [ ] New sheet tab name registered in `config.js` under `SHEETS`
+- [ ] Role gate added in `api.js` (`AuthService.requireRole`)
+- [ ] Audit log called for any approve/post/reopen action
+- [ ] Business rules from `BACKEND_GUIDELINES.md §7` verified in service
+- [ ] Route added to `PrivateApp.tsx` or `MobileApp.tsx` with correct `<RequireRole>`
+- [ ] Path constant added to `routes/paths.ts`

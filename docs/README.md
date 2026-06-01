@@ -1,19 +1,21 @@
 # Documentation index
 
-Developer-facing docs for the GAS React Web App. Start at the top.
+Developer-facing docs for the GAS Inventory Reconciliation System. Start at the top.
 
 | Doc | Read it when you want to… |
 |---|---|
-| [../README.md](../README.md) | Get the project running for the first time. |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Understand the system design, constraints, and decisions. |
-| [DEVELOPMENT.md](DEVELOPMENT.md) | Run the local dev loop and learn the mock backend. |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Add or change a feature end-to-end (the recipe). |
-| [DATA_MODEL.md](DATA_MODEL.md) | Work with Google Sheets as the database. |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Build, push, version, and roll back the deployed app. |
-| [FRONTEND_GUIDELINES.md](FRONTEND_GUIDELINES.md) | Component structure, design system, responsive design, hooks, context. |
-| [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md) | Layer architecture, services, repositories, mappers, lib utilities, locking, caching. |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Diagnose GAS-specific failures. |
-| [DEPLOY_URL.md](DEPLOY_URL.md) | Look up the live script/sheet IDs and `/exec` URLs. |
-
-> `../KNOWLEDGE.md` is **not** a developer doc — it is an internal context cache
-> for the AI assistant. Don't rely on it for onboarding; use the docs above.
+| [../README.md](../README.md) | Get the project running for the first time; understand the system purpose. |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Understand the system design, module map, constraints, and ADR index. |
+| [DATA_MODEL.md](DATA_MODEL.md) | Work with Google Sheets as the database; understand all entities and the ledger model. |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Run the local dev loop, understand the mock backend, learn conventions. |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Add or change a feature end-to-end (the 7-step recipe). |
+| [BACKEND_GUIDELINES.md](BACKEND_GUIDELINES.md) | Layer architecture, services, repositories, mappers, lib utilities, locking, caching, RBAC. |
+| [FRONTEND_GUIDELINES.md](FRONTEND_GUIDELINES.md) | Component structure, design system, routing, hooks, RBAC in the UI. |
+| [API_CONTRACT.md](API_CONTRACT.md) | Every RPC function — purpose, min role, inputs, outputs. |
+| [SECURITY.md](SECURITY.md) | Auth model, session policy, RBAC enforcement, audit trail. |
+| [TESTING_STRATEGY.md](TESTING_STRATEGY.md) | UAT checklist, acceptance criteria, mock parity rules. |
+| [OPERATIONS.md](OPERATIONS.md) | Deploy run book, migration, script properties, rollback. |
+| [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) | GAS constraints, Sheets limits, deliberate non-goals, current gaps. |
+| [ADR/](ADR/) | Architecture Decision Records — why key choices were made. |
+| [AGENTS.md](AGENTS.md) | Claude Code agent context — read this first if you are an AI. |
+| [DEPLOY_URL.md](DEPLOY_URL.md) | Live script/sheet IDs and `/exec` URLs. |

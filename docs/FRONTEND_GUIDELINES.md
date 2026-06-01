@@ -1,349 +1,376 @@
 # Frontend Guidelines
 
 Rules and conventions for the React + TypeScript + Vite + Tailwind frontend.
-Read [ARCHITECTURE.md](ARCHITECTURE.md) first for the system-level context; this
-doc is the implementation standard.
-
----
-
-## Table of contents
-
-1. [Folder structure](#1-folder-structure)
-2. [Atomic Design — shared components](#2-atomic-design--shared-components)
-3. [Feature modules](#3-feature-modules)
-4. [Design system — shadcn/ui + Tailwind](#4-design-system--shadcnui--tailwind)
-5. [Responsive design](#5-responsive-design)
-6. [Context and state](#6-context-and-state)
-7. [Custom hooks](#7-custom-hooks)
-8. [TypeScript standards](#8-typescript-standards)
-9. [Error handling and boundaries](#9-error-handling-and-boundaries)
-10. [Accessibility](#10-accessibility)
-11. [Performance](#11-performance)
+Read [ARCHITECTURE.md](ARCHITECTURE.md) first for system-level context; this doc
+is the implementation standard for everything under `src/client/`.
 
 ---
 
 ## 1. Folder structure
 
 ```
-src/
-  client/
-    main.tsx                    # mount only — no logic
-    app/
-      App.tsx                   # shell: providers, router, error boundary
-      router.tsx                # route definitions (hash-based, see note)
-    shared/
-      components/               # Atomic Design library (atoms → organisms)
-        atoms/
-        molecules/
-        organisms/
-      hooks/                    # hooks used by 2+ features
-      context/                  # app-wide providers (Theme, Auth, etc.)
-      types/                    # types shared across features
-      utils/                    # pure, stateless helpers
-    features/
-      inventory/                # one folder per domain feature
-        components/             # feature-specific UI
-        hooks/                  # useInventory, useInventoryForm, …
-        context/                # feature-scoped providers (if needed)
-        types/                  # feature-local types
-        index.ts                # barrel — exports the feature's public surface
-    lib/
-      server.ts                 # RPC bridge (real gas-client vs mock) — DO NOT move
-    styles/
-      globals.css               # Tailwind base + CSS vars
+src/client/
+  main.tsx                      mount only — no logic
+  App.tsx                       shell: providers, router, error boundary
+  apps/
+    PublicApp.tsx               unauthenticated routes (login)
+    PrivateApp.tsx              desktop authenticated routes
+    MobileApp.tsx               mobile authenticated routes (cashier, counter)
+    index.ts
+  components/                   Atomic Design shared library
+    atoms/                      Button, Badge, Spinner, Input, Label, Icon
+    molecules/                  SearchBar, FormField, QuantityControl, AlertBanner
+    organisms/                  AppHeader, DataTable, EmptyState, Modal
+    templates/                  PageLayout, SidebarLayout, MobileLayout
+  features/                     one folder per domain
+    reconciliation/
+    cashierCount/
+    physicalCount/
+    posImport/
+    comparison/
+    investigation/
+    approval/
+    posting/
+    inventory/                  product master (InventoryItems, SkuCategories)
+    dashboard/
+    analytics/
+    users/
+    auditLog/
+  hooks/                        hooks used by 2+ features
+  providers/                    Auth, Theme, Layout, Toast
+  routes/
+    index.ts                    route definitions
+    paths.ts                    path constants
+    guards.tsx                  auth + role guards
+  lib/
+    server.ts                   RPC bridge — the hard boundary (real vs mock)
+    errors.ts                   client-side error normalization
+    format.ts                   display formatters
+    queryKeys.ts                cache key constants
+    tokenStore.ts               session token persistence
+  config/
+    roles.json                  role display labels
+    stores.json                 store codes
+    inventoryColumns.json       column config for inventory table
+  styles.css                    Tailwind base + CSS vars
 ```
-
-> **GAS note:** route with `hash` mode (`/#/path`) — the GAS iframe has no real
-> URL control and the app is served from a single `/exec` entry point.
 
 ---
 
-## 2. Atomic Design — shared components
+## 2. Three-app routing split
 
-All **reusable, feature-agnostic** components live in `shared/components/` and
-follow the Atomic Design hierarchy.
+The app is split into three sub-apps gated by route prefix and authentication state:
 
-### Levels
+```tsx
+// App.tsx
+<HashRouter>
+  <Routes>
+    <Route path="/login" element={<PublicApp />} />
+    <Route path="/m/*"   element={<RequireAuth><MobileApp /></RequireAuth>} />
+    <Route path="/*"     element={<RequireAuth><PrivateApp /></RequireAuth>} />
+  </Routes>
+</HashRouter>
+```
+
+Route guards live in `routes/guards.tsx`. Never put auth or role logic inside
+feature components — use `<RequireRole role="approver">` wrappers at the route level.
+
+### Path constants
+
+All route paths are constants in `routes/paths.ts`. Never hardcode string paths
+in `<Link>` or `navigate()` calls.
+
+```ts
+// routes/paths.ts
+export const PATHS = {
+  login:          '/login',
+  dashboard:      '/',
+  sessions:       '/sessions',
+  sessionDetail:  (id: string) => `/sessions/${id}`,
+  cashierCount:   (id: string) => `/sessions/${id}/cashier`,
+  physicalCount:  (id: string) => `/sessions/${id}/physical`,
+  posImport:      (id: string) => `/sessions/${id}/pos-import`,
+  comparison:     (id: string) => `/sessions/${id}/comparison`,
+  investigation:  (varId: string) => `/variances/${varId}/investigate`,
+  approvalQueue:  '/approvals',
+  inventory:      '/inventory',
+  categories:     '/categories',
+  users:          '/users',
+  auditLog:       '/audit',
+  // Mobile
+  mCashier:       (id: string) => `/m/sessions/${id}/cashier`,
+  mCounter:       (id: string) => `/m/sessions/${id}/count`,
+} as const;
+```
+
+---
+
+## 3. Atomic Design — shared components
+
+All **reusable, feature-agnostic** components live in `components/` and follow the
+Atomic Design hierarchy.
 
 | Level | What lives here | Rule |
 |---|---|---|
-| **Atoms** | `Button`, `Input`, `Label`, `Icon`, `Badge`, `Spinner` | No business logic; no data fetching; props only. Never imports molecules or organisms. |
-| **Molecules** | `SearchBar`, `FormField`, `QuantityControl`, `AlertBanner` | Composes atoms. May have local UI state. No context, no services. |
-| **Organisms** | `ItemList`, `AppHeader`, `EmptyState` | Composes molecules + atoms. May consume context via a hook. No direct `server.*` calls. |
-| **Templates** | `PageLayout`, `SidebarLayout` | Structural scaffolding — named slots (`header`, `main`, `aside`). No data, no business logic. |
+| **Atoms** | `Button`, `Input`, `Label`, `Icon`, `Badge`, `Spinner` | No business logic; no data fetching; props only. Never imports molecules/organisms. |
+| **Molecules** | `SearchBar`, `FormField`, `QuantityControl`, `AlertBanner`, `ColumnVisibilityMenu` | Composes atoms. May have local UI state. No context, no services. |
+| **Organisms** | `AppHeader`, `DataTable`, `EmptyState`, `Modal`, `SessionStatusBadge` | Composes molecules + atoms. May consume context via a hook. No direct `server.*` calls. |
+| **Templates** | `PageLayout`, `SidebarLayout`, `MobileLayout` | Structural scaffolding — named slots. No data, no business logic. |
 
-Pages live in `features/<name>/` as feature components, not in `shared/`.
-
-### Practical rules
-
-- A component belongs in `shared/` only if it is **used by two or more features** or is clearly design-system-level (buttons, inputs).
-- Feature-specific variants stay inside the feature. Promote to `shared/` when a second feature needs them.
-- Atoms and molecules must be **fully controlled** (all state as props + callbacks). No `useState` for application data inside atoms.
+A component belongs in `components/` only if it is used by **two or more features**.
+Feature-specific variants stay inside the feature folder. Promote to shared when a
+second feature needs them.
 
 ---
 
-## 3. Feature modules
+## 4. Feature modules
 
-Each feature is a self-contained slice that can be understood in isolation.
+Each feature is a self-contained slice understood in isolation.
 
 ```
-features/inventory/
+features/reconciliation/
   components/
-    InventoryView.tsx     # the routable view — composes organisms/molecules
-    ItemRow.tsx           # feature-local organism (not shared yet)
+    SessionList.tsx         routable view — composes organisms/molecules
+    SessionCard.tsx         feature-local component
+    SessionStatusBadge.tsx  promoted to organisms/ if used elsewhere
   hooks/
-    useInventory.ts       # server state: list, loading, error, CRUD actions
-    useInventoryForm.ts   # local form state, validation, submit handler
-  context/
-    InventoryContext.tsx  # only if the feature needs shared state across sub-components
-  types/
-    inventory.types.ts    # extends or re-exports from src/shared/types
-  index.ts                # exports InventoryView (and anything the rest of the app needs)
+    useReconciliationSessions.ts    server state: list, loading, error, CRUD
+    useSessionForm.ts               form state, validation, submit
+  index.ts                  public surface only — exports the routable view
 ```
 
-### Rules
-
-- **Features do not import from other features.** Cross-feature data goes through `shared/` or app-level context.
-- `index.ts` is the **only public surface**. The rest of the app imports from `features/inventory`, never from `features/inventory/hooks/useInventory`.
-- A feature's routable view (`InventoryView`) is the *page* in Atomic Design terms. It imports organisms/molecules but contains no raw Tailwind layout primitives — layout belongs in a template.
+**Rules:**
+- Features do not import from other features. Cross-feature data goes through
+  `providers/` or app-level context.
+- `index.ts` is the **only public surface**. The rest of the app imports from
+  `features/reconciliation`, never from `features/reconciliation/hooks/useReconciliationSessions`.
+- The routable view imports organisms/molecules but contains no raw Tailwind layout
+  primitives — layout belongs in a template.
 
 ---
 
-## 4. Design system — shadcn/ui + Tailwind
+## 5. Design system — shadcn/ui + Tailwind
 
-### Choice: shadcn/ui
+Components are copy-pasted into `components/atoms/` — you own the code, no
+external runtime dep. Built on Radix UI primitives (ARIA-compliant). Fully Tailwind-native.
 
-**Why:** Components are copy-pasted into `shared/components/atoms/` — you own the code, no external runtime dep. Built on Radix UI primitives (ARIA-compliant out of the box). Fully Tailwind-native. TypeScript first.
+### CSS variable tokens
 
-**Why not DaisyUI:** Semantic CSS classes hide the Tailwind primitives, reducing composability. **Why not Headless UI alone:** requires hand-rolling every visual style; shadcn is already opinionated but fully overrideable.
+Always use CSS variable tokens — never hardcode Tailwind color utilities for semantic colors:
 
-### Setup
+```tsx
+// good
+<div className="bg-background text-foreground border-border">
+<Button className="bg-primary text-primary-foreground">
 
-```bash
-npx shadcn-ui@latest init          # writes tailwind.config.ts, globals.css CSS vars
-npx shadcn-ui@latest add button    # copies Button into shared/components/atoms/
+// bad
+<div className="bg-white text-gray-900 border-gray-200">
 ```
 
-### CSS variables for theming
+Extend `tailwind.config.ts` for project-specific tokens. One source of truth there.
 
-shadcn uses CSS variables in `globals.css`. Customize here — **do not** fork component files to change colors.
+### Dark mode
 
-```css
-/* styles/globals.css */
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    /* … */
-  }
-  .dark { /* dark mode overrides */ }
-}
-```
-
-### Rules
-
-- **Use the CSS variable tokens** (`bg-background`, `text-foreground`, `bg-primary`) in all components — never hardcode Tailwind color utilities like `bg-blue-500` for semantic colors.
-- Extend `tailwind.config.ts` for project-specific tokens (brand colors, spacing scale, font family). Keep one source of truth there.
-- shadcn components land in `shared/components/atoms/`. Rename them to match project conventions (`button.tsx` → `Button.tsx`).
+Dark mode overrides live in `styles.css` under `.dark { ... }`. Toggle via `ThemeProvider`.
 
 ---
 
-## 5. Responsive design
+## 6. Responsive design
 
-Tailwind is **mobile-first**: unprefixed utilities apply to all sizes; prefixed utilities apply at that breakpoint and above.
-
-### Breakpoints
+Tailwind is **mobile-first**: unprefixed utilities apply to all sizes.
 
 | Prefix | Min-width | Target |
 |---|---|---|
 | *(none)* | 0px | Mobile / phones |
 | `sm:` | 640px | Large phones |
 | `md:` | 768px | Tablets |
-| `lg:` | 1024px | Laptops / small desktops |
+| `lg:` | 1024px | Laptops |
 | `xl:` | 1280px | Desktops |
-| `2xl:` | 1536px | Large / wide monitors |
 
-### Patterns
-
-**Stacked → grid layout:**
-```tsx
-<div className="flex flex-col gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
-```
-
-**Show/hide by breakpoint:**
-```tsx
-<nav className="hidden md:flex">        {/* desktop nav */}
-<button className="md:hidden">          {/* hamburger — mobile only */}
-```
-
-**Fluid typography:**
-```tsx
-<h1 className="text-xl md:text-2xl lg:text-3xl font-semibold">
-```
-
-**Responsive padding / container:**
-```tsx
-<main className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-```
-
-### Rules
-
-- Always start from the **mobile layout first** — design the narrowest view, then add breakpoint classes to widen.
-- Test at: 375px (phone), 768px (tablet), 1024px (laptop), 1440px (desktop), 1920px+ (large monitor).
-- Never use absolute pixel widths for layout (`w-[480px]`) — use responsive fractions (`w-full md:w-1/2`).
-- Avoid horizontal scroll at any breakpoint. Use `overflow-hidden` on containers only when intentional.
+MobileApp routes target phone-sized viewports (cashier/counter data entry). PrivateApp
+targets tablet/desktop (reviewer, approver, manager workflows).
 
 ---
 
-## 6. Context and state
-
-### When to use Context
+## 7. Context and state
 
 | Concern | Solution |
 |---|---|
-| Auth state, current user | `AuthContext` in `shared/context/` |
-| Theme / display preferences | `ThemeContext` in `shared/context/` |
-| Cross-component feature state (rare) | Feature-scoped context in `features/<name>/context/` |
-| Server data (items, lists) | **Hook only** (`useInventory`) — not Context |
-| Form state | **Local hook** (`useInventoryForm`) — not Context |
+| Auth state, current user, role | `AuthContext` in `providers/AuthProvider.tsx` |
+| Theme / display preferences | `ThemeContext` in `providers/ThemeProvider.tsx` |
+| Layout (sidebar collapse, etc.) | `LayoutContext` in `providers/LayoutProvider.tsx` |
+| Toast notifications | `ToastContext` in `providers/ToastProvider.tsx` |
+| Server data (lists, entities) | **Hook only** — not Context |
+| Form state | **Local hook** — not Context |
+| Cross-component feature state | Feature-scoped context in `features/<name>/` (rarely needed) |
 
-Do not put frequently-changing state in Context (causes whole-tree re-renders). Server data belongs in hooks/React Query, not in providers.
-
-### Provider pattern
-
-```tsx
-// shared/context/AuthContext.tsx
-
-interface AuthContextValue {
-  user: User | null;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const logout = useCallback(() => setUser(null), []);
-
-  const value = useMemo(() => ({ user, logout }), [user, logout]);
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
-  return ctx;
-}
-```
-
-### Rules
-
-- **Always create a paired `useXxx` hook** that throws if used outside the provider. Never call `useContext(XxxContext)` directly in components.
-- **Memoize the provider value** with `useMemo` to prevent unnecessary re-renders of all consumers when the parent re-renders.
-- **Split contexts** when values change independently (`UserContext` + `ThemeContext`, not one `AppContext`).
-- Providers are wired in `app/App.tsx` only — never nested deep inside feature components.
+Do not put frequently-changing state in Context — it causes whole-tree re-renders.
 
 ---
 
-## 7. Custom hooks
+## 8. Custom hooks
 
-Custom hooks are the primary unit of logic encapsulation. Prefer a well-named hook over any other abstraction.
+Custom hooks are the primary unit of logic encapsulation.
 
 ### When to extract a hook
 
-- Logic is used in **two or more** components → extract to `shared/hooks/`.
-- Logic mixes state + side effects + business rules → extract to a feature hook.
-- A component `useEffect` is longer than ~10 lines → extract.
-- A function reads from context or calls `server.*` → it belongs in a hook, not a component.
+- Logic is used in two or more components → `hooks/` (shared)
+- Logic mixes state + side effects + business rules → feature hook
+- A component `useEffect` is longer than ~10 lines → extract
+- A function reads from context or calls `server.*` → hook, not component
 
-### Structure
+### Pattern
 
 ```ts
-// features/inventory/hooks/useInventory.ts
+// features/reconciliation/hooks/useReconciliationSessions.ts
 
-export function useInventory() {
-  const [items, setItems] = useState<Item[]>([]);
+export function useReconciliationSessions() {
+  const [sessions, setSessions] = useState<ReconciliationSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => { /* server.getItems() */ }, []);
-  const add  = useCallback(async (item: NewItem) => { /* ... */ }, []);
-  const remove = useCallback(async (id: string) => { /* ... */ }, []);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await server.listReconciliationSessions();
+      setSessions(data);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const create = useCallback(async (params: NewReconciliationSession) => {
+    const session = await server.createReconciliationSession(params);
+    setSessions(prev => [session, ...prev]);
+    return session;
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  return { items, loading, error, add, remove, reload: load };
+  return { sessions, loading, error, create, reload: load };
 }
 ```
 
-Components receive the return value and render — they contain no business logic.
-
-### Rules
-
-- **Name:** always `useXxx`. File name matches: `useInventory.ts`.
-- **Single responsibility:** one hook, one concern. `useInventory` handles server state; `useInventoryForm` handles form state. Do not merge them.
-- **No JSX in hooks.** Hooks return data and callbacks; components return JSX.
-- **All `server.*` calls live in hooks** — never call `server.getItems()` directly in a component.
-- **Keep const functions inside hooks** with `useCallback` so consumers can safely list them as effect deps.
-- **Typed return objects:** return `{ items, loading, error, add, remove }` (not a tuple) for 3+ values.
-- Hooks that are feature-specific live in `features/<name>/hooks/`. Only promote to `shared/hooks/` when used by multiple features.
+**Rules:**
+- Name always `useXxx`. File name matches.
+- No JSX in hooks — hooks return data and callbacks; components return JSX.
+- All `server.*` calls live in hooks — never call `server.*` directly in a component.
+- Return objects for 3+ values (not tuples).
+- `useCallback` for all action functions so consumers can safely list them as effect deps.
 
 ---
 
-## 8. TypeScript standards
+## 9. TypeScript standards
 
-- **`strict: true`** in `tsconfig.client.json` — no exceptions.
+- **`strict: true`** — no exceptions.
 - **No `any`** — use `unknown` and narrow, or define the type.
-- **Type the context, hook returns, and component props explicitly.** Rely on inference for local variables inside hooks.
-- **Shared entity types** live in `src/shared/types.ts` — the contract between client and server. Do not duplicate them in feature `types/` files; import and extend.
-- **`type` vs `interface`:** use `interface` for object shapes (extendable); use `type` for unions, intersections, mapped types.
-- Component props: inline for simple components; named interface (`ButtonProps`) for anything shared.
+- **`type` over `interface`** for all declarations. This is the project convention.
 
 ```ts
 // good
-interface ButtonProps {
+type ButtonProps = {
   label: string;
   onClick: () => void;
   variant?: 'primary' | 'ghost' | 'danger';
+};
+
+// bad — don't use interface
+interface ButtonProps {
+  label: string;
 }
 ```
 
+- **Shared entity types** live in `src/shared/types.ts` — the contract. Do not duplicate them in feature `types/` files; import and extend with `type`.
+- **Type the context, hook returns, and component props explicitly.** Rely on inference only for local variables inside hooks.
+- **Computed/derived types** use `Pick`, `Omit`, `Partial`, intersection — don't redefine fields that exist in the source type.
+
 ---
 
-## 9. Error handling and boundaries
+## 10. RBAC in the UI
+
+The UI enforces permissions for **convenience only** — the server always enforces them for real. Never rely on UI-only role checks to block actions.
+
+### Role-gated rendering
 
 ```tsx
-// app/App.tsx
+// routes/guards.tsx
+export function RequireRole({ role, children }: { role: Role; children: ReactNode }) {
+  const { user } = useAuth();
+  if (!user || ROLE_RANK[user.role] < ROLE_RANK[role]) {
+    return <Navigate to={PATHS.dashboard} replace />;
+  }
+  return <>{children}</>;
+}
+```
+
+Use at the **route level**, not inside feature components:
+
+```tsx
+// PrivateApp.tsx
+<Route
+  path={PATHS.approvalQueue}
+  element={
+    <RequireRole role="approver">
+      <ApprovalQueuePage />
+    </RequireRole>
+  }
+/>
+```
+
+### Conditional rendering by role
+
+For hiding UI elements (not blocking routes):
+
+```tsx
+const { user } = useAuth();
+const canApproveCosts = user && ROLE_RANK[user.role] >= ROLE_RANK['ops_manager'];
+
+{canApproveCosts && <CostDisplay value={varianceValue} />}
+```
+
+### Blind count enforcement
+
+The physical count form **never requests** expected/system quantities from the server
+for counter-role users. The server enforces this in `physicalCountService.getCountForm`.
+The UI must not display any field that was not returned — don't read it from local state.
+
+---
+
+## 11. Error handling and boundaries
+
+```tsx
+// App.tsx
 <ErrorBoundary fallback={<AppError />}>
   <Suspense fallback={<FullPageSpinner />}>
-    <RouterProvider router={router} />
+    <RouterProvider ... />
   </Suspense>
 </ErrorBoundary>
 ```
 
-- **One `ErrorBoundary` at the app shell.** Add a second one at the feature level if a feature failure should not crash the rest of the app.
-- **Feature hooks own their own `error` state** (shown inline in the feature UI). The boundary is the last resort for uncaught errors.
-- **GAS-specific:** `server.*` calls reject with a string error message from `google.script.run`. Normalize in the RPC bridge (`server.ts`), not in individual hooks.
-- Never swallow errors silently (`catch (e) {}`). Log to console at minimum; surface to the user when recovery is possible.
+- **One `ErrorBoundary` at the app shell.** Add a second at the feature level if a feature failure should not crash the rest of the app.
+- **Feature hooks own their own `error` state** — shown inline in the feature UI.
+- **GAS-specific:** `server.*` calls reject with a string error message from `google.script.run`. `server.ts` normalizes this — don't handle raw GAS errors in hooks.
+- Never swallow errors silently (`catch (e) {}`). Log at minimum; surface to user when recovery is possible.
 
 ---
 
-## 10. Accessibility
+## 12. Performance
 
-- Use **semantic HTML** — `<button>` not `<div onClick>`, `<nav>`, `<main>`, `<header>`, `<section>`.
-- shadcn/ui (Radix primitives) provides ARIA roles and keyboard behavior automatically — do not override `role`, `aria-*`, or `tabIndex` on shadcn components without understanding the Radix contract.
-- Every interactive element must be reachable by **keyboard** (Tab/Shift-Tab to focus, Enter/Space to activate).
-- **Color contrast:** WCAG AA — 4.5:1 for normal text, 3:1 for large text. The shadcn default palette meets this; verify if you customize CSS variables.
-- Images and icons that convey meaning need `alt` / `aria-label`. Decorative icons get `aria-hidden="true"`.
+- **Code-split routes** with `React.lazy` + dynamic `import()`. Each feature's view is a split point. (Note: this is within the single inlined bundle — code splitting still reduces parse time.)
+- **`React.memo`** only when profiling confirms unnecessary re-renders.
+- **`useMemo` / `useCallback`** for: context provider values (always), and callbacks passed to `React.memo` children.
+- **Bundle size:** everything is inlined into one HTML file (GAS constraint). Keep deps lean. Check minified+gzipped size before installing a library.
+- **Sheets I/O is the real bottleneck.** Optimistic updates mask latency better than any memoization. Apply optimistic updates in hooks for user-facing write operations.
 
 ---
 
-## 11. Performance
+## 13. Accessibility
 
-- **Code-split routes** with `React.lazy` + dynamic `import()`. Each feature's view is a split point.
-- **`React.memo`** only when profiling confirms unnecessary re-renders. Default: don't memo.
-- **`useMemo` / `useCallback`** for: context provider values (always), and callbacks passed to `React.memo` children (otherwise skip).
-- **Bundle size:** this project inlines everything into one HTML file (GAS constraint). Keep deps lean. Before installing a library, check its minified+gzipped size. Prefer tree-shakeable packages.
-- **Sheets I/O is the real bottleneck,** not JS. Optimistic updates (`useInventory` already does this) mask latency better than any memoization.
+- Semantic HTML: `<button>` not `<div onClick>`, `<nav>`, `<main>`, `<header>`, `<section>`.
+- shadcn/ui (Radix primitives) provides ARIA roles and keyboard behavior — do not override `role`, `aria-*`, or `tabIndex` without understanding the Radix contract.
+- Every interactive element must be keyboard reachable (Tab/Shift-Tab, Enter/Space).
+- WCAG AA contrast: 4.5:1 normal text, 3:1 large text.
+- Decorative icons: `aria-hidden="true"`. Meaningful icons: `aria-label`.

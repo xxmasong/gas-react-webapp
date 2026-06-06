@@ -1,6 +1,12 @@
 # CLAUDE.md — GAS Inventory System
 
-Complete reference for Claude Code. No external docs needed — everything is here.
+The always-on contract for Claude Code: system overview, hard constraints, business rules, data model, API surface, file map, routes. Each rule lives in exactly one place.
+
+**Layered config** (so each task loads only what it needs):
+- **This file** — always loaded. The contract and index.
+- **`.claude/rules/*.md`** — path-scoped deep detail + copy-paste code templates; auto-loaded only when you edit matching files (`server.md` → `src/server/**`, `client.md` → `src/client/**`, `contract.md` → the 3 RPC-contract files).
+- **`.claude/skills/*`** — guided procedures with live state injection (`/add-feature`, `/new-rpc`, `/verify-contract`, `/deploy-check`).
+- **`.claude/hooks/*.cjs`** — deterministic gates (block HEAD deploy / destructive git; gate deploy on `typecheck:all`).
 
 @CLAUDE.local.md
 
@@ -58,6 +64,8 @@ A Google Apps Script web app. React frontend + Google Sheets backend. GAS dictat
 ---
 
 ## Hard Rules — Never Violate
+
+> Always-on checklist of rule *statements*. The full "how" (code templates, layer mechanics) lives in the path-scoped `.claude/rules/*.md` — loaded when you edit matching files.
 
 ### Contract & Types
 - **Edit `src/shared/types.ts` first** — every new entity, RPC function, or shape change starts here
@@ -188,7 +196,7 @@ api.js → service → repository → mapper
 
 ---
 
-## API Surface (23 RPC Functions)
+## API Surface (26 RPC Functions)
 
 Source of truth: `src/shared/types.ts` `ServerFunctions`. Token injected automatically by `server.ts` — never pass from a component.
 
@@ -262,147 +270,15 @@ type Item             = { id: string; name: string; quantity: number; updatedAt:
 
 ## Code Patterns
 
-### api.js function
-```js
-function addInventoryItem(token, item) {        // named function declaration, not arrow
-  AuthService.requireRole(token, _getRole().SUPERVISOR);
-  validate.inventoryItem(item);
-  return InventoryItemService.addInventoryItem(item);  // delegate, never catch
-}
-```
+Full copy-paste code templates live in path-scoped rules (auto-loaded when you edit matching files), so each pattern has exactly one home:
 
-### Repository
-```js
-var CategoryRepository = (function () {
-  var SHEET_NAME = Config.SHEETS.categories;
-  var HEADERS    = ['id', 'code', 'name', 'packConstraint', 'sortOrder', 'updatedAt'];
-  var CACHE_KEY  = Config.CACHE_KEYS.categories;
+| Pattern | Canonical home | Loads when editing |
+|---|---|---|
+| api.js function · Repository · Mapper · Service · Validator | `.claude/rules/server.md` | `src/server/**` |
+| Feature hook · atomic levels · routing | `.claude/rules/client.md` | `src/client/**` |
+| RPC bridge entry (`buildServer` + `createMock`) | `.claude/rules/contract.md` | `types.ts` · `server.ts` · `serverMock.ts` |
 
-  var getSheet = () => {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet) { sheet = ss.insertSheet(SHEET_NAME); sheet.getRange(1,1,1,HEADERS.length).setValues([HEADERS]); sheet.setFrozenRows(1); }
-    return sheet;
-  };
-
-  var findAll = () => Cache.getOrSet(CACHE_KEY, () => {
-    var sheet = getSheet(); var last = sheet.getLastRow();
-    if (last < 2) return [];
-    return sheet.getRange(2, 1, last - 1, HEADERS.length).getValues()
-      .filter(r => r[0]).map(CategoryMapper.fromRow).sort((a,b) => a.sortOrder - b.sortOrder);
-  }, Config.CACHE_TTL.categories);
-
-  var findById = (id) => findAll().find(c => c.id === String(id)) || null;
-
-  var insert = (cat) => Lock.withLock(() => {
-    getSheet().appendRow(CategoryMapper.toRow(cat));
-    Cache.remove(CACHE_KEY);
-    return cat;
-  });
-
-  var update = (cat) => Lock.withLock(() => {
-    var sheet = getSheet();
-    var rows  = sheet.getRange(2, 1, sheet.getLastRow() - 1, HEADERS.length).getValues();
-    var idx   = rows.findIndex(r => r[0] === cat.id);
-    if (idx === -1) throw AppError.notFound('Category', cat.id);
-    sheet.getRange(idx + 2, 1, 1, HEADERS.length).setValues([CategoryMapper.toRow(cat)]);
-    Cache.remove(CACHE_KEY);
-    return cat;
-  });
-
-  var remove = (id) => Lock.withLock(() => {
-    var sheet = getSheet();
-    var rows  = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
-    var idx   = rows.findIndex(r => r[0] === id);
-    if (idx === -1) throw AppError.notFound('Category', id);
-    sheet.deleteRow(idx + 2);
-    Cache.remove(CACHE_KEY);
-  });
-
-  return { findAll, findById, insert, update, remove };
-})();
-```
-
-### Mapper
-```js
-var CategoryMapper = (function () {
-  var fromRow = (row) => ({
-    id: String(row[0]), code: String(row[1]), name: String(row[2]),
-    packConstraint: String(row[3] || ''), sortOrder: Number(row[4]) || 0, updatedAt: String(row[5]),
-  });
-  var toRow = (cat) => [cat.id, cat.code, cat.name, cat.packConstraint, cat.sortOrder, cat.updatedAt];
-  return { fromRow, toRow };
-})();
-```
-
-### Service
-```js
-var CategoryService = (function () {
-  var addCategory = (input) => {
-    var code = String(input.code).trim();
-    if (CategoryRepository.findByCode(code)) throw AppError.conflict('Category code exists: ' + code);
-    var cat = { id: Uuid.generate(), code, name: String(input.name).trim(),
-                packConstraint: String(input.packConstraint || '').trim(),
-                sortOrder: Number(input.sortOrder) || 0, updatedAt: DateTime.nowIso() };
-    return CategoryRepository.insert(cat);
-  };
-  var updateCategory = (input) => {
-    var existing = CategoryRepository.findById(input.id);
-    if (!existing) throw AppError.notFound('Category', input.id);
-    var clash = CategoryRepository.findByCode(String(input.code).trim());
-    if (clash && clash.id !== existing.id) throw AppError.conflict('Category code exists: ' + input.code);
-    return CategoryRepository.update({ ...existing, ...input, updatedAt: DateTime.nowIso() });
-  };
-  return { getCategories: () => CategoryRepository.findAll(), addCategory, updateCategory, deleteCategory };
-})();
-```
-
-### Feature hook
-```ts
-export function useCategories() {
-  const [items, setItems] = useState<SkuCategory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true); setError(null);
-    try { setItems(await server.getCategories()); }
-    catch (e) { setError(String(e)); }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  const add = useCallback(async (input: Omit<SkuCategory, 'id'|'updatedAt'>) => {
-    await server.addCategory(input); await load();
-  }, [load]);
-
-  return { items, loading, error, reload: load, add };
-}
-```
-
-### RPC bridge entry (server.ts)
-```ts
-// In buildServer():
-addCategory: (cat) => call('addCategory', cat),
-
-// In createMock():
-addCategory: async (cat) => {
-  const entity: SkuCategory = { ...cat, id: crypto.randomUUID(), updatedAt: new Date().toISOString() };
-  mockCategories.push(entity);
-  return entity;
-},
-```
-
-### Validator
-```js
-// In validate.js, add to return object:
-var category = (input) => {
-  required(input, 'category');
-  string(input.code, 'code');
-  string(input.name, 'name');
-};
-```
+The layer order, business rules, data model, and API surface below remain the always-on contract.
 
 ---
 
@@ -413,7 +289,7 @@ var category = (input) => {
 | `src/shared/types.ts` | Master contract — entity types + `ServerFunctions`. **Edit first.** |
 | `src/client/lib/server.ts` | RPC bridge — real `gas-client` vs mock. Only file touching `google.script.run`. |
 | `src/client/lib/serverMock.ts` | Mock implementations — mirrors every real server function. |
-| `src/server/api.js` | 23 top-level named functions — thin shims only. |
+| `src/server/api.js` | 26 top-level named functions — thin shims only. |
 | `src/server/config.js` | Sheet names, cache TTLs, roles, stores, auth policy. |
 | `src/server/lib/validate.js` | All input validators. |
 | `src/server/lib/errors.js` | `AppError.validation/notFound/conflict/auth(msg)` |

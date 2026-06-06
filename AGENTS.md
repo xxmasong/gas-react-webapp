@@ -26,7 +26,7 @@ Google Apps Script web app. React 18 + TypeScript frontend (Vite, single inlined
 |---|---|
 | `src/shared/types.ts` | Contract — entity types + ServerFunctions |
 | `src/client/lib/server.ts` | RPC bridge — real GAS call vs in-memory mock |
-| `src/server/api.js` | 23 top-level RPC functions |
+| `src/server/api.js` | 26 top-level RPC functions |
 | `src/server/config.js` | Sheet names, cache TTLs, roles, stores |
 
 ## Layer templates (copy these)

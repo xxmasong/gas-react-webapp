@@ -14,7 +14,7 @@
  * Keep signatures in sync with ServerFunctions in src/shared/types.ts.
  */
 
-var ROLE = Config.ROLES;
+function _getRole() { return Config.ROLES; }
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
@@ -70,7 +70,7 @@ function getItems(token) {
 }
 
 function addItem(token, item) {
-  AuthService.requireRole(token, ROLE.SUPERVISOR);
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
   validate.required(item, 'item');
   validate.string(item.name, 'name');
   validate.nonNegativeNumber(item.quantity, 'quantity');
@@ -78,7 +78,7 @@ function addItem(token, item) {
 }
 
 function updateItem(token, item) {
-  AuthService.requireRole(token, ROLE.SUPERVISOR);
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
   validate.required(item, 'item');
   validate.string(item.id, 'id');
   validate.string(item.name, 'name');
@@ -87,7 +87,7 @@ function updateItem(token, item) {
 }
 
 function deleteItem(token, id) {
-  AuthService.requireRole(token, ROLE.SUPERVISOR);
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
   validate.string(id, 'id');
   return InventoryService.deleteItem(id);
 }
@@ -100,20 +100,20 @@ function getCategories(token) {
 }
 
 function addCategory(token, cat) {
-  AuthService.requireRole(token, ROLE.SUPERVISOR);
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
   validate.category(cat);
   return CategoryService.addCategory(cat);
 }
 
 function updateCategory(token, cat) {
-  AuthService.requireRole(token, ROLE.SUPERVISOR);
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
   validate.category(cat);
   validate.string(cat.id, 'id');
   return CategoryService.updateCategory(cat);
 }
 
 function deleteCategory(token, id) {
-  AuthService.requireRole(token, ROLE.SUPERVISOR);
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
   validate.string(id, 'id');
   return CategoryService.deleteCategory(id);
 }
@@ -126,27 +126,27 @@ function getInventoryItems(token, categoryId) {
 }
 
 function addInventoryItem(token, item) {
-  AuthService.requireRole(token, ROLE.SUPERVISOR);
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
   validate.inventoryItem(item);
   return InventoryItemService.addInventoryItem(item);
 }
 
 function updateInventoryItem(token, item) {
-  AuthService.requireRole(token, ROLE.SUPERVISOR);
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
   validate.inventoryItem(item);
   validate.string(item.id, 'id');
   return InventoryItemService.updateInventoryItem(item);
 }
 
 function deleteInventoryItem(token, id) {
-  AuthService.requireRole(token, ROLE.SUPERVISOR);
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
   validate.string(id, 'id');
   return InventoryItemService.deleteInventoryItem(id);
 }
 
 /** Stock-count updates — inventory_staff and above. */
 function bulkUpdateStock(token, updates) {
-  AuthService.requireRole(token, ROLE.STAFF);
+  AuthService.requireRole(token, _getRole().STAFF);
   validate.array(updates, 'updates');
   updates.forEach(function (u) { validate.stockUpdate(u); });
   return InventoryItemService.bulkUpdateStock(updates);
@@ -154,7 +154,7 @@ function bulkUpdateStock(token, updates) {
 
 /** Save one stock row + verify against the sheet — inventory_staff and above. */
 function saveAndVerifyStock(token, update) {
-  AuthService.requireRole(token, ROLE.STAFF);
+  AuthService.requireRole(token, _getRole().STAFF);
   validate.stockUpdate(update);
   return InventoryItemService.saveAndVerifyStock(update);
 }
@@ -162,7 +162,7 @@ function saveAndVerifyStock(token, update) {
 // ─── Reseed (supervisor+) ───────────────────────────────────────────────────────
 
 function reseedInventory(token) {
-  AuthService.requireRole(token, ROLE.SUPERVISOR);
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
   return _reseedBatch();
 }
 

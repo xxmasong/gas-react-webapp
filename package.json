@@ -15,7 +15,9 @@
     "setup": "node scripts/setup.mjs",
     "open": "clasp open-script",
     "logs": "clasp tail-logs",
-    "typecheck": "tsc -p tsconfig.client.json --noEmit"
+    "typecheck": "tsc -p tsconfig.client.json --noEmit",
+    "typecheck:server": "tsc -p tsconfig.server.json --noEmit",
+    "typecheck:all": "tsc -p tsconfig.client.json --noEmit && tsc -p tsconfig.server.json --noEmit"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.100.14",

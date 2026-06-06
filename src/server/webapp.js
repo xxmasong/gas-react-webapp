@@ -50,9 +50,31 @@ function resetAuthData() {
   var id = UserRepository.getWorkbookId();
   if (!id) { console.log('No auth workbook exists yet.'); return; }
   var ss = SpreadsheetApp.openById(id);
+  // GAS forbids removing the last sheet, so park a temp sheet first.
+  var temp = ss.insertSheet('_temp_reset');
   ['Users', 'Sessions'].forEach(function (name) {
     var sheet = ss.getSheetByName(name);
     if (sheet) ss.deleteSheet(sheet);
   });
+  ss.deleteSheet(temp);
   console.log('Auth data cleared. Now run bootstrapFirstAdmin().');
+}
+
+/**
+ * DANGER — wipes all auth data then re-creates the three seed accounts:
+ *   admin       / Admin-2026!
+ *   supervisor  / Super-2026!
+ *   staff       / Staff-2026!
+ * Run once from the Apps Script editor when you need a clean slate.
+ */
+function reseedUsers() {
+  resetAuthData();
+  var seeds = [
+    { username: 'admin',      password: 'Admin-2026!', role: Config.ROLES.ADMIN      },
+    { username: 'supervisor', password: 'Super-2026!', role: Config.ROLES.SUPERVISOR },
+    { username: 'staff',      password: 'Staff-2026!', role: Config.ROLES.STAFF      },
+  ];
+  var results = AuthService.seedUsers(seeds);
+  console.log('Reseeded users: ' + JSON.stringify(results));
+  return results;
 }

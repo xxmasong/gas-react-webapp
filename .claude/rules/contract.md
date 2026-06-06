@@ -43,3 +43,17 @@ For each function in `ServerFunctions`:
 4. Does the mock return the correct shape including all computed fields? ✓
 
 Run `npm run typecheck:all` — if it passes, the contract is in sync.
+
+## Canonical server.ts entry (real call + mock, same commit)
+
+```ts
+// In buildServer():
+addCategory: (cat) => call('addCategory', cat),
+
+// In createMock():
+addCategory: async (cat) => {
+  const entity: SkuCategory = { ...cat, id: crypto.randomUUID(), updatedAt: new Date().toISOString() };
+  mockCategories.push(entity);
+  return entity;
+},
+```

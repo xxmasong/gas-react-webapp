@@ -1,19 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "Bash(*)",
-      "Edit(*)",
-      "Write(*)",
-      "Read(*)",
-      "Glob(*)",
-      "Grep(*)",
-      "MultiEdit(*)"
+      "Bash",
+      "Edit",
+      "Write",
+      "Read",
+      "Glob",
+      "Grep",
+      "MultiEdit"
     ],
     "deny": [
       "Read(**/.env)",
       "Edit(**/.env)",
       "Read(**/secrets/**)",
-      "Edit(**/secrets/**)"
+      "Edit(**/secrets/**)",
+      "Read(**/CLAUDE.local.md)",
+      "Read(**/.clasp.json)"
     ]
   },
   "hooks": {
@@ -23,27 +25,30 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/guard-deploy.js",
-            "env": { "CLAUDE_TOOL_INPUT": "$TOOL_INPUT_JSON" },
+            "command": "node .claude/hooks/guard-deploy.cjs",
             "statusMessage": "Checking deploy safety..."
           },
           {
             "type": "command",
-            "command": "node .claude/hooks/guard-destructive.js",
-            "env": { "CLAUDE_TOOL_INPUT": "$TOOL_INPUT_JSON" },
+            "command": "node .claude/hooks/guard-destructive.cjs",
             "statusMessage": "Checking for destructive operations..."
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/gate-deploy-typecheck.cjs",
+            "timeout": 150,
+            "statusMessage": "Gating deploy on typecheck:all..."
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/guard-contract.js",
-            "env": { "CLAUDE_TOOL_INPUT": "$TOOL_INPUT_JSON" },
+            "command": "node .claude/hooks/remind-contract.cjs",
             "statusMessage": "Checking contract sync..."
           }
         ]

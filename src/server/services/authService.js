@@ -79,6 +79,15 @@ var AuthService = (function () {
     return { created: true, user: publicUser(user) };
   };
 
+  // Bulk-create accounts without a token check — intended for server-side
+  // reseed scripts only (webapp.js reseedUsers). Each entry: {username, password, role}.
+  var seedUsers = (accounts) => {
+    return accounts.map(function (a) {
+      var user = _createUser(a.username, a.password, a.role);
+      return publicUser(user);
+    });
+  };
+
   // Require length + a mix of character classes so accounts aren't protected
   // by trivially guessable passwords.
   var assertStrongPassword = (password) => {
@@ -274,6 +283,7 @@ var AuthService = (function () {
   return {
     ROLES: ROLES,
     seedFirstAdmin: seedFirstAdmin,
+    seedUsers: seedUsers,
     login: login,
     logout: logout,
     me: me,

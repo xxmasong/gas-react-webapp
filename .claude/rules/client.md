@@ -24,23 +24,28 @@ Never call `server.*` from a component — not even `useEffect` in a component.
 - `features/xyz/index.ts` is the only public surface — never import deeper paths
 - If two features need the same component, it belongs in `components/` not either feature
 
-## Hook pattern (always follow this)
+## Hook pattern (always follow this — canonical template)
 
 ```ts
-export function useXxx(param?: Type) {
-  const [data, setData] = useState<Entity[]>([]);
+export function useCategories() {
+  const [items, setItems] = useState<SkuCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
-    try { setData(await server.getXxx(param)); }
+    try { setItems(await server.getCategories()); }
     catch (e) { setError(String(e)); }
     finally { setLoading(false); }
-  }, [param]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
-  return { data, loading, error, reload: load };
+
+  const add = useCallback(async (input: Omit<SkuCategory, 'id'|'updatedAt'>) => {
+    await server.addCategory(input); await load();
+  }, [load]);
+
+  return { items, loading, error, reload: load, add };
 }
 ```
 

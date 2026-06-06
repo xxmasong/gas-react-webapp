@@ -46,3 +46,113 @@ You are editing the GAS backend. These rules are absolute.
 - `Uuid.generate()` only for IDs — never `Math.random()` or client values
 - `DateTime.nowIso()` for all timestamps
 - `console.log` goes to Stackdriver — use it for debugging
+
+---
+
+## Canonical code templates
+
+These are the single source of truth for backend layer shape. Copy the structure exactly.
+
+### api.js function
+```js
+function addInventoryItem(token, item) {        // named function declaration, not arrow
+  AuthService.requireRole(token, _getRole().SUPERVISOR);
+  validate.inventoryItem(item);
+  return InventoryItemService.addInventoryItem(item);  // delegate, never catch
+}
+```
+
+### Repository
+```js
+var CategoryRepository = (function () {
+  var SHEET_NAME = Config.SHEETS.categories;
+  var HEADERS    = ['id', 'code', 'name', 'packConstraint', 'sortOrder', 'updatedAt'];
+  var CACHE_KEY  = Config.CACHE_KEYS.categories;
+
+  var getSheet = () => {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEET_NAME);
+    if (!sheet) { sheet = ss.insertSheet(SHEET_NAME); sheet.getRange(1,1,1,HEADERS.length).setValues([HEADERS]); sheet.setFrozenRows(1); }
+    return sheet;
+  };
+
+  var findAll = () => Cache.getOrSet(CACHE_KEY, () => {
+    var sheet = getSheet(); var last = sheet.getLastRow();
+    if (last < 2) return [];
+    return sheet.getRange(2, 1, last - 1, HEADERS.length).getValues()
+      .filter(r => r[0]).map(CategoryMapper.fromRow).sort((a,b) => a.sortOrder - b.sortOrder);
+  }, Config.CACHE_TTL.categories);
+
+  var findById = (id) => findAll().find(c => c.id === String(id)) || null;
+
+  var insert = (cat) => Lock.withLock(() => {
+    getSheet().appendRow(CategoryMapper.toRow(cat));
+    Cache.remove(CACHE_KEY);
+    return cat;
+  });
+
+  var update = (cat) => Lock.withLock(() => {
+    var sheet = getSheet();
+    var rows  = sheet.getRange(2, 1, sheet.getLastRow() - 1, HEADERS.length).getValues();
+    var idx   = rows.findIndex(r => r[0] === cat.id);
+    if (idx === -1) throw AppError.notFound('Category', cat.id);
+    sheet.getRange(idx + 2, 1, 1, HEADERS.length).setValues([CategoryMapper.toRow(cat)]);
+    Cache.remove(CACHE_KEY);
+    return cat;
+  });
+
+  var remove = (id) => Lock.withLock(() => {
+    var sheet = getSheet();
+    var rows  = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
+    var idx   = rows.findIndex(r => r[0] === id);
+    if (idx === -1) throw AppError.notFound('Category', id);
+    sheet.deleteRow(idx + 2);
+    Cache.remove(CACHE_KEY);
+  });
+
+  return { findAll, findById, insert, update, remove };
+})();
+```
+
+### Mapper
+```js
+var CategoryMapper = (function () {
+  var fromRow = (row) => ({
+    id: String(row[0]), code: String(row[1]), name: String(row[2]),
+    packConstraint: String(row[3] || ''), sortOrder: Number(row[4]) || 0, updatedAt: String(row[5]),
+  });
+  var toRow = (cat) => [cat.id, cat.code, cat.name, cat.packConstraint, cat.sortOrder, cat.updatedAt];
+  return { fromRow, toRow };
+})();
+```
+
+### Service
+```js
+var CategoryService = (function () {
+  var addCategory = (input) => {
+    var code = String(input.code).trim();
+    if (CategoryRepository.findByCode(code)) throw AppError.conflict('Category code exists: ' + code);
+    var cat = { id: Uuid.generate(), code, name: String(input.name).trim(),
+                packConstraint: String(input.packConstraint || '').trim(),
+                sortOrder: Number(input.sortOrder) || 0, updatedAt: DateTime.nowIso() };
+    return CategoryRepository.insert(cat);
+  };
+  var updateCategory = (input) => {
+    var existing = CategoryRepository.findById(input.id);
+    if (!existing) throw AppError.notFound('Category', input.id);
+    var clash = CategoryRepository.findByCode(String(input.code).trim());
+    if (clash && clash.id !== existing.id) throw AppError.conflict('Category code exists: ' + input.code);
+    return CategoryRepository.update({ ...existing, ...input, updatedAt: DateTime.nowIso() });
+  };
+  return { getCategories: () => CategoryRepository.findAll(), addCategory, updateCategory, deleteCategory };
+})();
+```
+
+### Validator (add to `validate.js` return object)
+```js
+var category = (input) => {
+  required(input, 'category');
+  string(input.code, 'code');
+  string(input.name, 'name');
+};
+```

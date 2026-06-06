@@ -37,55 +37,19 @@ If a new input shape is needed, define `type New<X>` above `ServerFunctions`. Ru
 
 ---
 
+> Templates: service/validator/api.js shapes in `.claude/rules/server.md`; server.ts entry in `.claude/rules/contract.md`. Copy and adapt — don't reinvent.
+
 ### Step 2 — Service method
-
-Add to the relevant service's IIFE return object:
-```js
-var $fn = (/* args */) => {
-  // business logic — throw AppError on violations
-  // Uuid.generate() for ids, DateTime.nowIso() for timestamps
-};
-return { ...existing, $fn };
-```
-
----
+Add `$fn` to the relevant service IIFE return object. Business logic + `AppError` on violations; `Uuid.generate()` / `DateTime.nowIso()` as needed.
 
 ### Step 3 — Validator (if needed)
-
-Add to `src/server/lib/validate.js` return object:
-```js
-var inputName = (input) => {
-  required(input, 'input');
-  string(input.field, 'field');
-};
-```
-
----
+Add `validate.inputName` to `src/server/lib/validate.js` (validator template in `rules/server.md`).
 
 ### Step 4 — `src/server/api.js`
-
-Named function declaration:
-```js
-function $fn(token, /* args */) {
-  AuthService.requireRole(token, _getRole().ROLE);
-  validate.inputName(arg);
-  return ServiceName.$fn(/* args */);
-}
-```
-
----
+Named function declaration: `auth → validate → delegate → return`. Min role via `_getRole()`.
 
 ### Step 5 — `src/client/lib/server.ts` (same commit)
-
-```ts
-// buildServer():
-$fn: (/* clientArgs */) => authed('$fn', /* clientArgs */),
-
-// createMock():
-$fn: async (/* clientArgs */) => {
-  // mirror real output shape
-},
-```
+Real call in `buildServer()` + mock in `createMock()` mirroring real output shape (template in `rules/contract.md`).
 
 ---
 

@@ -56,68 +56,33 @@ $feature: '${feature}_all',
 
 ---
 
+> Steps 3–6 follow the canonical code templates in `.claude/rules/server.md` (auto-loaded when you edit `src/server/**`). Don't restate them — copy the template and adapt.
+
 ### Step 3 — `src/server/repositories/${feature}Repository.js`
-
-Use the repository pattern from CLAUDE.md § Code Patterns exactly:
-- `SHEET_NAME`, `HEADERS`, `CACHE_KEY` from Config
-- `getSheet()` auto-creates tab + frozen header row
-- `findAll()` via `Cache.getOrSet` → batch `getValues()` → filter → `Mapper.fromRow`
-- `findById()` from `findAll()`
-- `insert()`, `update()`, `remove()` all inside `Lock.withLock()` with `Cache.remove()` after
-
----
+Repository template in `rules/server.md`. `SHEET_NAME`/`HEADERS`/`CACHE_KEY` from Config; `findAll` via `Cache.getOrSet` + batch `getValues()`; all writes in `Lock.withLock()` + `Cache.remove()` after.
 
 ### Step 4 — `src/server/mappers/${feature}Mapper.js`
-
-Pure functions only:
-- `fromRow(row)` — handle null/empty: `String(row[N] || '')`, `Number(row[N]) || 0`
-- `toRow(entity)` — column order must match `HEADERS` exactly
-
----
+Mapper template in `rules/server.md`. Pure `fromRow`/`toRow`; column order matches `HEADERS`; handle null cells.
 
 ### Step 5 — `src/server/services/${feature}Service.js`
-
-IIFE pattern. Business rules:
-- `add`: uniqueness checks → compute fields → `Uuid.generate()` + `DateTime.nowIso()` → insert
-- `update`: `findById` → throw `AppError.notFound` if missing → merge → preserve read-only fields → recompute
-- `remove`: `findById` → throw if missing → check dependents → remove
-- Throw `AppError.notFound/conflict/validation` — never return null on error
-
----
+Service template in `rules/server.md`. All business rules + computed fields here; throw `AppError.notFound/conflict/validation`. `add`: uniqueness → compute → `Uuid.generate()` + `DateTime.nowIso()`. `update`: `findById` → preserve read-only fields → recompute. `remove`: check dependents.
 
 ### Step 6 — `src/server/api.js`
-
-One **named function declaration** per operation. No arrow functions. No exports.
-```js
-function list$features(token) {
-  AuthService.requireUser(token);
-  return ${feature}Service.list();
-}
-function add$feature(token, input) {
-  AuthService.requireRole(token, _getRole().SUPERVISOR);
-  validate.$feature(input);
-  return ${feature}Service.add(input);
-}
-```
-
-Also add `validate.$feature` to `src/server/lib/validate.js`.
+api.js + validator templates in `rules/server.md`. One named function declaration per op (`auth → validate → delegate → return`); add `validate.$feature` to `src/server/lib/validate.js`.
 
 ---
 
 ### Step 7 — `src/client/lib/server.ts` (same commit as api.js)
 
-Real calls in `buildServer()` + mocks in `createMock()`. Mock must:
-- Return correct shape including all computed fields
-- Use `crypto.randomUUID()` for id
-- Use `new Date().toISOString()` for updatedAt
+server.ts entry template in `.claude/rules/contract.md`. Real calls in `buildServer()` + mocks in `createMock()`; mock returns full shape incl. computed fields, `crypto.randomUUID()` id, `new Date().toISOString()` updatedAt.
 
 ---
 
 ### Step 8 — `src/client/features/$feature/`
 
-Create:
-- `hooks/use${feature}s.ts` — follows hook pattern from CLAUDE.md § Code Patterns
-- `components/` — feature-local UI
+Hook pattern + atomic levels in `.claude/rules/client.md` (auto-loaded for `src/client/**`).
+- `hooks/use${feature}s.ts` — follows the hook template; all `server.*` calls live here
+- `components/` — feature-local UI (respect atomic levels)
 - `index.ts` — exports only the routable page component
 
 ---

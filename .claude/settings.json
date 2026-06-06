@@ -1,0 +1,53 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Read(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "MultiEdit(*)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Edit(**/.env)",
+      "Read(**/secrets/**)",
+      "Edit(**/secrets/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/guard-deploy.js",
+            "env": { "CLAUDE_TOOL_INPUT": "$TOOL_INPUT_JSON" },
+            "statusMessage": "Checking deploy safety..."
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/guard-destructive.js",
+            "env": { "CLAUDE_TOOL_INPUT": "$TOOL_INPUT_JSON" },
+            "statusMessage": "Checking for destructive operations..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/guard-contract.js",
+            "env": { "CLAUDE_TOOL_INPUT": "$TOOL_INPUT_JSON" },
+            "statusMessage": "Checking contract sync..."
+          }
+        ]
+      }
+    ]
+  }
+}

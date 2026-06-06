@@ -1,7 +1,7 @@
 ---
 name: deploy-check
 description: Run the full pre-deploy gate before npm run deploy:version. Checks typecheck, mock parity, contract sync, config, roles, routes, and docs.
-allowed-tools: "Read Glob Grep Bash(npm run typecheck:all) Bash(npm run build)"
+allowed-tools: "Read Glob Grep Bash(npm run typecheck:all) Bash(npm run verify:contract) Bash(npm run build)"
 ---
 
 # Pre-deploy gate
@@ -17,7 +17,10 @@ api.js functions:
 ServerFunctions in types.ts:
 !`grep -n "^  [a-zA-Z]" src/shared/types.ts | grep -v "//"`
 
-server.ts buildServer:
+contract check (deterministic name-set parity):
+!`npm run verify:contract 2>&1 | tail -15`
+
+server.ts `server` object:
 !`grep -n "authed\|call(" src/client/lib/server.ts | grep -v "//"`
 
 Git diff summary:
@@ -31,19 +34,16 @@ Git diff summary:
 Must show zero errors. If it failed above, fix all errors now before proceeding.
 
 ### 2. Mock parity
-For every function in `api.js`, confirm `server.ts` has:
-- [ ] Real call in `buildServer()`
-- [ ] Mock in `createMock()` with correct output shape
+For every function in `api.js`, confirm:
+- [ ] Entry in the `server` object (`src/client/lib/server.ts`)
+- [ ] Entry in `createMock()` (`src/client/lib/serverMock.ts`) with correct output shape
 
 List any missing. Fix them.
 
 ### 3. Contract sync
-For every function in `ServerFunctions`:
-- [ ] Exists as named function in `api.js`
-- [ ] Has entry in `buildServer()`
-- [ ] Has entry in `createMock()`
-
-List any gaps. Fix them.
+The `verify:contract` output above is authoritative for name-set parity. If it reported drift,
+fix every listed gap so each `ServerFunctions` entry has: a named function in `api.js`, an entry
+in the `server` object, and an entry in `createMock()`.
 
 ### 4. Config completeness
 For any new Sheet tab:

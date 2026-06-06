@@ -1,7 +1,7 @@
 ---
 name: verify-contract
 description: Audit and fix contract drift between types.ts, api.js, and server.ts. Run this whenever RPC functions may be out of sync.
-allowed-tools: "Read Grep Edit Bash(npm run typecheck:all)"
+allowed-tools: "Read Grep Edit Bash(npm run typecheck:all) Bash(npm run verify:contract)"
 ---
 
 # Verify contract
@@ -14,45 +14,38 @@ allowed-tools: "Read Grep Edit Bash(npm run typecheck:all)"
 ### api.js — top-level functions
 !`grep "^function " src/server/api.js`
 
-### server.ts — buildServer keys
-!`grep -A 100 "buildServer" src/client/lib/server.ts | grep -E "^\s+[a-zA-Z]+:" | head -30`
+### server.ts — `server` object keys (real bridge)
+!`grep -A 100 "export const server" src/client/lib/server.ts | grep -E "^\s+[a-zA-Z]+:" | head -40`
 
-### server.ts — createMock keys
-!`grep -A 100 "createMock" src/client/lib/server.ts | grep -E "^\s+[a-zA-Z]+:" | head -30`
+### serverMock.ts — createMock() keys (mock bridge)
+!`grep -A 200 "createMock" src/client/lib/serverMock.ts | grep -E "^\s+[a-zA-Z]+:" | head -40`
 
 ---
 
 ## Instructions
 
-Using the live state above, perform this audit:
+### 1. Run the deterministic name-set check first
+```bash
+npm run verify:contract
+```
+This compares the SET of function names across all four surfaces (`ServerFunctions`,
+`api.js` functions, the `server` object in `server.ts`, `createMock()` in `serverMock.ts`)
+and lists exactly which surface any name is missing from. Fix every gap it reports.
 
-### 1. types.ts → api.js
-Every function in `ServerFunctions` must have a matching top-level named function declaration in `api.js`.
-List any missing from `api.js`.
+> The four contract surfaces: **types.ts** `ServerFunctions` (source of truth) → **api.js**
+> top-level function → **server.ts** `server` object entry (token injected by `authed`) →
+> **serverMock.ts** `createMock()` entry (token is a real first arg, sync return).
 
-### 2. api.js → types.ts
-Every top-level function in `api.js` must have a signature in `ServerFunctions`.
-List any missing from `types.ts`.
-
-### 3. types.ts → buildServer()
-Every function in `ServerFunctions` must have a key in `buildServer()`.
-List any missing from `buildServer()`.
-
-### 4. types.ts → createMock()
-Every function in `ServerFunctions` must have a key in `createMock()`.
-List any missing from `createMock()`.
-
-### 5. Mock shape audit
-For each function in `createMock()`, does its return value match the real service's output shape? Check computed fields:
-- `qtyTotal`, `kyteMatch`, `costTotal` present on InventoryItem mocks?
+### 2. Mock shape audit (what the script can't see)
+The script checks names, `tsc` checks arg/return types. Neither checks *semantic* shape.
+For each `createMock()` entry in `serverMock.ts`, confirm its return value matches the real
+service output:
+- `qtyTotal`, `kyteMatch`, `costTotal` computed on InventoryItem mocks?
 - `updatedAt` always set?
-- No extra fields that don't exist in the type?
+- Same validation/throws as the real service?
 
-### 6. Fix all gaps found
-Add missing functions, fix shapes. Then:
-
+### 3. Fix all gaps, then confirm
 ```bash
 npm run typecheck:all
 ```
-
-Zero errors = contract is in sync.
+Runs both tsc projects **and** `verify:contract`. Zero errors = contract is in sync.

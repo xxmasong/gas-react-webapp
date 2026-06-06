@@ -1,0 +1,6 @@
+interface:
+  display_name: "GAS Contract Audit"
+  short_description: "Audit RPC contract drift safely"
+  default_prompt: "Use $gas-contract-audit to verify RPC contract parity before continuing."
+policy:
+  allow_implicit_invocation: true

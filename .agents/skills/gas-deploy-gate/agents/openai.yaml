@@ -1,0 +1,6 @@
+interface:
+  display_name: "GAS Deploy Gate"
+  short_description: "Run pre-deploy checks for GAS"
+  default_prompt: "Use $gas-deploy-gate to run the pre-deploy gate before a versioned Apps Script deployment."
+policy:
+  allow_implicit_invocation: true

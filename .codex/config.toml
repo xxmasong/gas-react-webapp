@@ -1,0 +1,22 @@
+# Codex project config - GAS Inventory System
+#
+# Repo instructions live in AGENTS.md, which routes to the shared procedures in
+# .claude/skills/*/SKILL.md and layer templates in .claude/rules/*.md (not forked
+# into .agents/skills — single-sourced on purpose). Deterministic checks live in
+# package.json/scripts and are shared by all agents (npm run verify:contract,
+# typecheck:all, and the HEAD-deploy guard in scripts/deploy.mjs).
+
+# AGENTS.md is intentionally compact, but allow room for nested instructions if
+# this repo later adds directory-specific AGENTS.md files.
+project_doc_max_bytes = 65536
+
+# Cached web search is the safer default for project work; use live search only
+# when a task explicitly needs current external facts.
+web_search = "cached"
+
+[features]
+hooks = true
+shell_snapshot = true
+
+[windows]
+sandbox = "elevated"

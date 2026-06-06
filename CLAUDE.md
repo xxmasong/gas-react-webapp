@@ -99,9 +99,10 @@ api.js → service → repository → mapper
 - **Atomic levels**: atoms (no logic, no context) → molecules (local state only) → organisms (may read context) → templates (layout only, no data)
 
 ### Mock Parity
-- **`api.js` changes → `src/client/lib/server.ts` changes in the same commit**
-- Every function needs a real call in `buildServer()` AND a mock branch in `createMock()`
+- **`api.js` changes → `server.ts` + `serverMock.ts` changes in the same commit**
+- Every function needs an entry in the `server` object (`server.ts`) AND in `createMock()` (`serverMock.ts`)
 - Mock must mirror real service: same output shape, same computed fields, same validation
+- `npm run verify:contract` enforces name-set parity across all four surfaces deterministically
 
 ### Deploys
 - **Always `npm run deploy:version`** — never `npm run deploy` (HEAD-only)
@@ -276,7 +277,7 @@ Full copy-paste code templates live in path-scoped rules (auto-loaded when you e
 |---|---|---|
 | api.js function · Repository · Mapper · Service · Validator | `.claude/rules/server.md` | `src/server/**` |
 | Feature hook · atomic levels · routing | `.claude/rules/client.md` | `src/client/**` |
-| RPC bridge entry (`buildServer` + `createMock`) | `.claude/rules/contract.md` | `types.ts` · `server.ts` · `serverMock.ts` |
+| RPC bridge entry (`server` object + `createMock`) | `.claude/rules/contract.md` | `types.ts` · `server.ts` · `serverMock.ts` |
 
 The layer order, business rules, data model, and API surface below remain the always-on contract.
 
@@ -350,7 +351,7 @@ Two TS projects typechecked together:
 3. **`src/server/mappers/<name>Mapper.js`** — `fromRow`/`toRow`. Column order must match `HEADERS`. Handle null cells.
 4. **`src/server/services/<name>Service.js`** — all business rules, computed fields, `AppError` on violations.
 5. **`src/server/api.js`** — named function declaration per operation: auth → validate → delegate → return.
-6. **`src/client/lib/server.ts`** — real call in `buildServer()` + mock in `createMock()`. **Same commit.**
+6. **`src/client/lib/server.ts`** (entry in `server` object) + **`serverMock.ts`** (entry in `createMock()`). **Same commit.**
 
 Then: feature hook → component → route if new page.
 

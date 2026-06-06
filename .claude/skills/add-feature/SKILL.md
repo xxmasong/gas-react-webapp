@@ -72,9 +72,11 @@ api.js + validator templates in `rules/server.md`. One named function declaratio
 
 ---
 
-### Step 7 — `src/client/lib/server.ts` (same commit as api.js)
+### Step 7 — client bridge (same commit as api.js)
 
-server.ts entry template in `.claude/rules/contract.md`. Real calls in `buildServer()` + mocks in `createMock()`; mock returns full shape incl. computed fields, `crypto.randomUUID()` id, `new Date().toISOString()` updatedAt.
+Templates in `.claude/rules/contract.md`.
+- `src/client/lib/server.ts` — add entries to the exported `server` object: `fn: (...args) => authed('fn', ...args)`
+- `src/client/lib/serverMock.ts` — add entries to `createMock()` (token is first arg, sync return); mock returns full shape incl. computed fields, local `uuid()` id, `new Date().toISOString()` updatedAt.
 
 ---
 

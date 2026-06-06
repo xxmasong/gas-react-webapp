@@ -1,0 +1,46 @@
+# Project command policy for Codex.
+# These rules supplement script-level gates. The deploy script itself still
+# blocks HEAD-only deploys unless DEPLOY_ALLOW_HEAD=1.
+
+prefix_rule(
+    pattern = ["npm", "run", "deploy"],
+    decision = "forbidden",
+    justification = "HEAD-only deploys are blocked. Use `npm run deploy:version`.",
+    match = ["npm run deploy"],
+    not_match = ["npm run deploy:version"],
+)
+
+prefix_rule(
+    pattern = ["npm", "run", "push"],
+    decision = "forbidden",
+    justification = "Direct push bypasses build/version gates. Use `npm run deploy:version`.",
+    match = ["npm run push"],
+)
+
+prefix_rule(
+    pattern = ["clasp", "push"],
+    decision = "forbidden",
+    justification = "Bare clasp push bypasses build/version gates. Use `npm run deploy:version`.",
+    match = ["clasp push -f"],
+)
+
+prefix_rule(
+    pattern = ["npx", "clasp", "push"],
+    decision = "forbidden",
+    justification = "Bare clasp push bypasses build/version gates. Use `npm run deploy:version`.",
+    match = ["npx clasp push -f"],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Hard reset can destroy user work. Use targeted restore/stash only when explicitly requested.",
+    match = ["git reset --hard"],
+)
+
+prefix_rule(
+    pattern = ["git", "clean"],
+    decision = "prompt",
+    justification = "git clean can delete untracked user work. Confirm scope before running.",
+    match = ["git clean -fd"],
+)

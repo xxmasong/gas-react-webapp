@@ -85,10 +85,10 @@ var UserRepository = (function () {
     return null;
   };
 
-  var insertUser = (user) => {
+  var insertUser = (user) => Lock.withLock(() => {
     usersSheet().appendRow(userToRow(user));
     return user;
-  };
+  });
 
   var _rowIndexById = (id) => {
     var sheet = usersSheet();
@@ -99,30 +99,30 @@ var UserRepository = (function () {
     return -1;
   };
 
-  var updateUser = (user) => {
+  var updateUser = (user) => Lock.withLock(() => {
     var idx = _rowIndexById(user.id);
     if (idx === -1) throw AppError.notFound('User', user.id);
     usersSheet().getRange(idx, 1, 1, USER_HEADERS.length).setValues([userToRow(user)]);
     return user;
-  };
+  });
 
-  var deleteUser = (id) => {
+  var deleteUser = (id) => Lock.withLock(() => {
     var idx = _rowIndexById(id);
     if (idx === -1) throw AppError.notFound('User', id);
     usersSheet().deleteRow(idx);
     return { id: id };
-  };
+  });
 
   var countUsers = () => allUsers().length;
 
   // ─── Sessions ───────────────────────────────────────────────────────────────
-  var insertSession = (session) => {
+  var insertSession = (session) => Lock.withLock(() => {
     sessSheet().appendRow([
       session.token, session.userId, session.createdAt, session.expiresAt,
       session.lastUsedAt || session.createdAt,
     ]);
     return session;
-  };
+  });
 
   var findSession = (token) => {
     var sheet = sessSheet();
@@ -145,18 +145,18 @@ var UserRepository = (function () {
   };
 
   // Update the sliding "last used" timestamp for a session (idle-timeout reset).
-  var touchSession = (token, isoNow) => {
+  var touchSession = (token, isoNow) => Lock.withLock(() => {
     var s = findSession(token);
     if (s) sessSheet().getRange(s._row, 5, 1, 1).setValues([[isoNow]]);
-  };
+  });
 
-  var deleteSession = (token) => {
+  var deleteSession = (token) => Lock.withLock(() => {
     var s = findSession(token);
     if (s) sessSheet().deleteRow(s._row);
-  };
+  });
 
   // Remove sessions for a user (e.g. on deactivation) and any past-expiry rows.
-  var purgeSessions = (userId) => {
+  var purgeSessions = (userId) => Lock.withLock(() => {
     var sheet = sessSheet();
     var last  = sheet.getLastRow();
     if (last < 2) return;
@@ -168,7 +168,7 @@ var UserRepository = (function () {
       var matches = userId && String(rows[i][1]) === String(userId);
       if (expired || matches) sheet.deleteRow(i + 2);
     }
-  };
+  });
 
   return {
     getWorkbookId: () => props().getProperty(PROP_KEY),

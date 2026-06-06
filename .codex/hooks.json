@@ -1,0 +1,42 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/guard-deploy.cjs",
+            "timeout": 30,
+            "statusMessage": "Checking deploy safety..."
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/guard-destructive.cjs",
+            "timeout": 30,
+            "statusMessage": "Checking destructive command policy..."
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/gate-deploy-typecheck.cjs",
+            "timeout": 150,
+            "statusMessage": "Gating deploy on typecheck:all..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/remind-contract.cjs",
+            "timeout": 30,
+            "statusMessage": "Checking contract sync hints..."
+          }
+        ]
+      }
+    ]
+  }
+}

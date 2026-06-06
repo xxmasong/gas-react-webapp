@@ -16,8 +16,11 @@ ServerFunctions in types.ts:
 api.js functions:
 !`grep -n "^function " src/server/api.js`
 
-server.ts buildServer keys:
+server.ts `server` object keys:
 !`grep -n ":.*authed\|:.*call(" src/client/lib/server.ts`
+
+serverMock.ts createMock keys:
+!`grep -nE "^\s+[a-zA-Z]+:" src/client/lib/serverMock.ts | head -40`
 
 ---
 
@@ -48,8 +51,10 @@ Add `validate.inputName` to `src/server/lib/validate.js` (validator template in 
 ### Step 4 — `src/server/api.js`
 Named function declaration: `auth → validate → delegate → return`. Min role via `_getRole()`.
 
-### Step 5 — `src/client/lib/server.ts` (same commit)
-Real call in `buildServer()` + mock in `createMock()` mirroring real output shape (template in `rules/contract.md`).
+### Step 5 — client bridge (same commit)
+- `src/client/lib/server.ts` — add entry to the exported `server` object: `$fn: (...args) => authed('$fn', ...args)`
+- `src/client/lib/serverMock.ts` — add entry to `createMock()` (token is first arg, sync return), mirroring real output shape
+Template in `rules/contract.md`.
 
 ---
 

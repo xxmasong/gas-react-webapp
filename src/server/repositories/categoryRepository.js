@@ -16,7 +16,7 @@ var CategoryRepository = (function () {
   };
 
   var findAll = () =>
-    Cache.getOrSet(CACHE_KEY, () => {
+    Kernel.Cache.getOrSet(CACHE_KEY, () => {
       var sheet   = getSheet();
       var lastRow = sheet.getLastRow();
       if (lastRow < 2) return [];
@@ -46,9 +46,9 @@ var CategoryRepository = (function () {
   };
 
   var insert = (cat) =>
-    Lock.withLock(() => {
+    Kernel.Lock.withLock(() => {
       getSheet().appendRow(CategoryMapper.toRow(cat));
-      Cache.remove(CACHE_KEY);
+      Kernel.Cache.remove(CACHE_KEY);
       return cat;
     });
 
@@ -60,27 +60,27 @@ var CategoryRepository = (function () {
     var sheet = getSheet();
     var rows  = cats.map(CategoryMapper.toRow);
     sheet.getRange(2, 1, rows.length, HEADERS.length).setValues(rows);
-    Cache.remove(CACHE_KEY);
+    Kernel.Cache.remove(CACHE_KEY);
     return cats;
   };
 
   var update = (cat) =>
-    Lock.withLock(() => {
+    Kernel.Lock.withLock(() => {
       var rowIndex = findRowIndexById(cat.id);
-      if (rowIndex === -1) throw AppError.notFound('Category', cat.id);
+      if (rowIndex === -1) throw Kernel.AppError.notFound('Category', cat.id);
       getSheet()
         .getRange(rowIndex, 1, 1, HEADERS.length)
         .setValues([CategoryMapper.toRow(cat)]);
-      Cache.remove(CACHE_KEY);
+      Kernel.Cache.remove(CACHE_KEY);
       return cat;
     });
 
   var remove = (id) =>
-    Lock.withLock(() => {
+    Kernel.Lock.withLock(() => {
       var rowIndex = findRowIndexById(id);
-      if (rowIndex === -1) throw AppError.notFound('Category', id);
+      if (rowIndex === -1) throw Kernel.AppError.notFound('Category', id);
       getSheet().deleteRow(rowIndex);
-      Cache.remove(CACHE_KEY);
+      Kernel.Cache.remove(CACHE_KEY);
       return { id: id };
     });
 

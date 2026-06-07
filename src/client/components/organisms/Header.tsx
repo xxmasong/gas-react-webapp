@@ -6,7 +6,7 @@ import { useToast, useAuth } from '../../providers';
 import { cleanError } from '../../lib/errors';
 import { ROLE_HEADER_LABEL } from '../../config';
 import { Spinner } from '../atoms';
-import { ThemeToggle } from '../molecules';
+import { ThemeToggle, ActivityIndicator } from '../molecules';
 import { TABS } from './tabs';
 
 export const Header: React.FC = () => {
@@ -47,6 +47,7 @@ export const Header: React.FC = () => {
 
       <header>
         <h1>Inventory</h1>
+        <ActivityIndicator />
         <span className={`badge ${runningInGas ? 'live' : 'mock'}`}>
           {runningInGas ? 'Sheets backend' : 'local mock'}
         </span>

@@ -22,7 +22,7 @@ var InventoryItemRepository = (function () {
   };
 
   var findAll = (categoryId) => {
-    var all = Cache.getOrSet(CACHE_KEY, () => {
+    var all = Kernel.Cache.getOrSet(CACHE_KEY, () => {
       var sheet   = getSheet();
       var lastRow = sheet.getLastRow();
       if (lastRow < 2) return [];
@@ -69,9 +69,9 @@ var InventoryItemRepository = (function () {
   };
 
   var insert = (item) =>
-    Lock.withLock(() => {
+    Kernel.Lock.withLock(() => {
       getSheet().appendRow(InventoryItemMapper.toRow(item));
-      Cache.remove(CACHE_KEY);
+      Kernel.Cache.remove(CACHE_KEY);
       return item;
     });
 
@@ -83,25 +83,25 @@ var InventoryItemRepository = (function () {
     var sheet = getSheet();
     var rows  = items.map(InventoryItemMapper.toRow);
     sheet.getRange(2, 1, rows.length, HEADERS.length).setValues(rows);
-    Cache.remove(CACHE_KEY);
+    Kernel.Cache.remove(CACHE_KEY);
     return items;
   };
 
   var update = (item) =>
-    Lock.withLock(() => {
+    Kernel.Lock.withLock(() => {
       var rowIndex = findRowIndexById(item.id);
-      if (rowIndex === -1) throw AppError.notFound('InventoryItem', item.id);
+      if (rowIndex === -1) throw Kernel.AppError.notFound('InventoryItem', item.id);
       getSheet()
         .getRange(rowIndex, 1, 1, HEADERS.length)
         .setValues([InventoryItemMapper.toRow(item)]);
-      Cache.remove(CACHE_KEY);
+      Kernel.Cache.remove(CACHE_KEY);
       return item;
     });
 
   // Batch-write many items in a single locked pass. Reads the id column once,
-  // then writes each changed row. Cache is cleared once at the end.
+  // then writes each changed row. Kernel.Cache.is cleared once at the end.
   var updateMany = (items) =>
-    Lock.withLock(() => {
+    Kernel.Lock.withLock(() => {
       var sheet   = getSheet();
       var lastRow = sheet.getLastRow();
       if (lastRow < 2) return [];
@@ -114,22 +114,22 @@ var InventoryItemRepository = (function () {
       for (var j = 0; j < items.length; j++) {
         var item     = items[j];
         var rowIndex = rowByid[String(item.id)];
-        if (rowIndex == null) throw AppError.notFound('InventoryItem', item.id);
+        if (rowIndex == null) throw Kernel.AppError.notFound('InventoryItem', item.id);
         sheet
           .getRange(rowIndex, 1, 1, HEADERS.length)
           .setValues([InventoryItemMapper.toRow(item)]);
         written.push(item);
       }
-      Cache.remove(CACHE_KEY);
+      Kernel.Cache.remove(CACHE_KEY);
       return written;
     });
 
   var remove = (id) =>
-    Lock.withLock(() => {
+    Kernel.Lock.withLock(() => {
       var rowIndex = findRowIndexById(id);
-      if (rowIndex === -1) throw AppError.notFound('InventoryItem', id);
+      if (rowIndex === -1) throw Kernel.AppError.notFound('InventoryItem', id);
       getSheet().deleteRow(rowIndex);
-      Cache.remove(CACHE_KEY);
+      Kernel.Cache.remove(CACHE_KEY);
       return { id: id };
     });
 

@@ -34,9 +34,9 @@ function include(filename) {
  */
 function bootstrapFirstAdmin() {
   // Password must be ≥10 chars and include ≥3 of: lower, upper, number, symbol.
-  var result = AuthService.seedFirstAdmin('admin', 'ChangeMe-2026!');
+  var result = Kernel.Auth.seedFirstAdmin('admin', 'ChangeMe-2026!');
   console.log(JSON.stringify(result));
-  console.log('Auth workbook ID: ' + UserRepository.getWorkbookId());
+  console.log('Auth workbook ID: ' + Kernel.Auth.getWorkbookId());
   return result;
 }
 
@@ -47,7 +47,7 @@ function bootstrapFirstAdmin() {
  * After running this, run bootstrapFirstAdmin() again.
  */
 function resetAuthData() {
-  var id = UserRepository.getWorkbookId();
+  var id = Kernel.Auth.getWorkbookId();
   if (!id) { console.log('No auth workbook exists yet.'); return; }
   var ss = SpreadsheetApp.openById(id);
   // GAS forbids removing the last sheet, so park a temp sheet first.
@@ -74,7 +74,7 @@ function reseedUsers() {
     { username: 'supervisor', password: 'Super-2026!', role: Config.ROLES.SUPERVISOR },
     { username: 'staff',      password: 'Staff-2026!', role: Config.ROLES.STAFF      },
   ];
-  var results = AuthService.seedUsers(seeds);
+  var results = Kernel.Auth.seedUsers(seeds);
   console.log('Reseeded users: ' + JSON.stringify(results));
   return results;
 }

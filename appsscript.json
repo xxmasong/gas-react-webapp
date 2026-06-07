@@ -1,6 +1,15 @@
 {
   "timeZone": "America/New_York",
-  "dependencies": {},
+  "dependencies": {
+    "libraries": [
+      {
+        "userSymbol": "Kernel",
+        "libraryId": "1r1EwG0baU5c2_gQIcXf9zrcSAN7AtXnNPPwpZJNROARZL-LUwcqLUBjY",
+        "version": "1",
+        "developmentMode": false
+      }
+    ]
+  },
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8",
   "webapp": {

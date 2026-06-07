@@ -8,7 +8,7 @@
 // them in alphabetical path order (lib → mappers → repositories → services →
 // root api.js/webapp.js).
 
-import { cpSync, mkdirSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { cpSync, mkdirSync, existsSync, readdirSync, statSync, rmSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -17,6 +17,25 @@ const dist   = join(root, 'dist');
 const server = join(root, 'src', 'server');
 
 mkdirSync(dist, { recursive: true });
+
+// Clean stale server files from a previous build so deleted/moved files (e.g.
+// lib code that migrated to the Kernel library) are NOT pushed to GAS. We only
+// remove server .js — index.html and appsscript.json are regenerated separately.
+function cleanServerArtifacts() {
+  for (const entry of readdirSync(dist)) {
+    const p = join(dist, entry);
+    const st = statSync(p);
+    if (st.isDirectory()) {
+      // server subdirs (lib, services, repositories, mappers, migration) — drop entirely
+      rmSync(p, { recursive: true, force: true });
+    } else if (entry.endsWith('.js')) {
+      // root-level server .js (api.js, webapp.js, config.js) — drop; re-copied below
+      rmSync(p, { force: true });
+    }
+    // dist/index.html and dist/appsscript.json are intentionally kept
+  }
+}
+cleanServerArtifacts();
 
 let count = 0;
 

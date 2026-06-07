@@ -1,84 +1,56 @@
-// Depends on AppError (errors.js). Both are always loaded together.
+// Inventory domain validators. Primitives (required/string/number/array/uuid)
+// now live in the Kernel as Kernel.Validate; this file builds the
+// Inventory-specific validators on top of them. Exposed as `validate`.
+//
+// Depends on Kernel.Validate, Kernel.AppError, and the module's own Config.
 
 var validate = (function () {
 
-  var required = (value, name) => {
-    if (value === undefined || value === null)
-      throw AppError.validation(name + ' is required');
-  };
-
-  var string = (value, name) => {
-    required(value, name);
-    if (typeof value !== 'string' || value.trim() === '')
-      throw AppError.validation(name + ' must be a non-empty string');
-  };
-
-  var nonNegativeNumber = (value, name) => {
-    var n = Number(value);
-    if (isNaN(n) || n < 0)
-      throw AppError.validation(name + ' must be a non-negative number');
-  };
-
-  var uuid = (value, name) => {
-    var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!UUID_RE.test(String(value)))
-      throw AppError.validation(name + ' must be a valid UUID');
-  };
-
-  var positiveNumber = (value, name) => {
-    var n = Number(value);
-    if (isNaN(n) || n <= 0)
-      throw AppError.validation(name + ' must be a positive number');
-  };
-
-  var array = (value, name) => {
-    if (!Array.isArray(value))
-      throw AppError.validation(name + ' must be an array');
-  };
-
   var category = (cat) => {
-    required(cat, 'category');
-    string(cat.code, 'code');
+    Kernel.Validate.required(cat, 'category');
+    Kernel.Validate.string(cat.code, 'code');
     if (cat.code.length > 10)
-      throw AppError.validation('code must be 10 characters or fewer');
-    string(cat.name, 'name');
-    nonNegativeNumber(cat.sortOrder, 'sortOrder');
+      throw Kernel.AppError.validation('code must be 10 characters or fewer');
+    Kernel.Validate.string(cat.name, 'name');
+    Kernel.Validate.nonNegativeNumber(cat.sortOrder, 'sortOrder');
   };
 
   var store = (value, name) => {
     var s = String(value == null ? '' : value).toUpperCase();
     if (Config.STORES.indexOf(s) === -1)
-      throw AppError.validation(name + " must be one of: " + Config.STORES.join(', '));
+      throw Kernel.AppError.validation(name + ' must be one of: ' + Config.STORES.join(', '));
   };
 
   var inventoryItem = (item) => {
-    required(item, 'item');
-    string(item.categoryId, 'categoryId');
+    Kernel.Validate.required(item, 'item');
+    Kernel.Validate.string(item.categoryId, 'categoryId');
     store(item.store, 'store');
-    string(item.sku, 'sku');
-    positiveNumber(item.uom, 'uom');
-    nonNegativeNumber(item.qtyGround, 'qtyGround');
-    nonNegativeNumber(item.qtyUpstair, 'qtyUpstair');
-    nonNegativeNumber(item.qtyBox, 'qtyBox');
+    Kernel.Validate.string(item.sku, 'sku');
+    Kernel.Validate.positiveNumber(item.uom, 'uom');
+    Kernel.Validate.nonNegativeNumber(item.qtyGround, 'qtyGround');
+    Kernel.Validate.nonNegativeNumber(item.qtyUpstair, 'qtyUpstair');
+    Kernel.Validate.nonNegativeNumber(item.qtyBox, 'qtyBox');
   };
 
   var stockUpdate = (u) => {
-    required(u, 'update');
-    string(u.id, 'id');
-    nonNegativeNumber(u.qtyGround, 'qtyGround');
-    nonNegativeNumber(u.qtyUpstair, 'qtyUpstair');
-    nonNegativeNumber(u.qtyBox, 'qtyBox');
+    Kernel.Validate.required(u, 'update');
+    Kernel.Validate.string(u.id, 'id');
+    Kernel.Validate.nonNegativeNumber(u.qtyGround, 'qtyGround');
+    Kernel.Validate.nonNegativeNumber(u.qtyUpstair, 'qtyUpstair');
+    Kernel.Validate.nonNegativeNumber(u.qtyBox, 'qtyBox');
   };
 
+  // Re-export the Kernel primitives that api.js calls directly (e.g. validate.array,
+  // validate.string) so existing api.js call sites keep working unchanged.
   return {
-    required: required,
-    string: string,
-    nonNegativeNumber: nonNegativeNumber,
-    positiveNumber: positiveNumber,
-    array: array,
-    uuid: uuid,
-    store: store,
+    required:          (v, n) => Kernel.Validate.required(v, n),
+    string:            (v, n) => Kernel.Validate.string(v, n),
+    nonNegativeNumber: (v, n) => Kernel.Validate.nonNegativeNumber(v, n),
+    positiveNumber:    (v, n) => Kernel.Validate.positiveNumber(v, n),
+    uuid:              (v, n) => Kernel.Validate.uuid(v, n),
+    array:             (v, n) => Kernel.Validate.array(v, n),
     category: category,
+    store: store,
     inventoryItem: inventoryItem,
     stockUpdate: stockUpdate,
   };

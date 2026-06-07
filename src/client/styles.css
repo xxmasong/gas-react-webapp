@@ -341,6 +341,18 @@ tbody + tbody .cat-group-row td { border-top: 2px solid var(--color-border); }
 }
 button .spinner { margin-right: 5px; }
 
+/* ─── Global activity (reading/writing Sheets) indicator ───────────────────── */
+.activity-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.activity-indicator .spinner { color: var(--color-accent); opacity: 1; }
+
 .reseed-label { font-size: 1.05rem; font-weight: 600; margin: 0; color: var(--color-text); }
 .reseed-sub   { font-size: 0.85rem; color: var(--color-text-muted); margin: 0; }
 

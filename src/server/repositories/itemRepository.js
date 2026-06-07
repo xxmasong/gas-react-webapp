@@ -16,7 +16,7 @@ var ItemRepository = (function () {
   };
 
   var findAll = () =>
-    Cache.getOrSet(CACHE_KEY, () => {
+    Kernel.Cache.getOrSet(CACHE_KEY, () => {
       var sheet   = getSheet();
       var lastRow = sheet.getLastRow();
       if (lastRow < 2) return [];
@@ -42,29 +42,29 @@ var ItemRepository = (function () {
   };
 
   var insert = (item) =>
-    Lock.withLock(() => {
+    Kernel.Lock.withLock(() => {
       getSheet().appendRow(ItemMapper.toRow(item));
-      Cache.remove(CACHE_KEY);
+      Kernel.Cache.remove(CACHE_KEY);
       return item;
     });
 
   var update = (item) =>
-    Lock.withLock(() => {
+    Kernel.Lock.withLock(() => {
       var rowIndex = findRowIndexById(item.id);
-      if (rowIndex === -1) throw AppError.notFound('Item', item.id);
+      if (rowIndex === -1) throw Kernel.AppError.notFound('Item', item.id);
       getSheet()
         .getRange(rowIndex, 1, 1, HEADERS.length)
         .setValues([ItemMapper.toRow(item)]);
-      Cache.remove(CACHE_KEY);
+      Kernel.Cache.remove(CACHE_KEY);
       return item;
     });
 
   var remove = (id) =>
-    Lock.withLock(() => {
+    Kernel.Lock.withLock(() => {
       var rowIndex = findRowIndexById(id);
-      if (rowIndex === -1) throw AppError.notFound('Item', id);
+      if (rowIndex === -1) throw Kernel.AppError.notFound('Item', id);
       getSheet().deleteRow(rowIndex);
-      Cache.remove(CACHE_KEY);
+      Kernel.Cache.remove(CACHE_KEY);
       return { id: id };
     });
 

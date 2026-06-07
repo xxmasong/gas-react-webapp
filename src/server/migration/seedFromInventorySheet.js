@@ -135,7 +135,7 @@ function _reseedBatch() {
     return idx == null ? '' : row[idx];
   };
 
-  var now = DateTime.nowIso();
+  var now = Kernel.DateTime.nowIso();
 
   // Pass 1: collect unique (code, catName) pairs in row order.
   var codeOrder = [];
@@ -156,7 +156,7 @@ function _reseedBatch() {
   // Build category objects in memory and write them in one shot.
   var codeToId = {};
   var catRows  = codeOrder.map((code, idx) => {
-    var id  = Uuid.generate();
+    var id  = Kernel.Uuid.generate();
     codeToId[code] = id;
     return {
       id:             id,
@@ -194,7 +194,7 @@ function _reseedBatch() {
     var unitCost    = costPcNew > 0 ? costPcNew : costPcOld;
 
     itemRows.push({
-      id:                    Uuid.generate(),
+      id:                    Kernel.Uuid.generate(),
       categoryId:            catId,
       store:                 _store(pick(row, 'store')),
       sku:                   prod,
@@ -362,7 +362,7 @@ function resetSeededTabs() {
     var sheet = ss.getSheetByName(tab);
     if (sheet) ss.deleteSheet(sheet);
   });
-  Cache.remove('inventory_items_all');
-  Cache.remove('categories_all');
+  Kernel.Cache.remove('inventory_items_all');
+  Kernel.Cache.remove('categories_all');
   console.log('Seeded tabs cleared.');
 }

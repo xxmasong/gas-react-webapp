@@ -3,32 +3,32 @@ var InventoryService = (function () {
   var getItems = () => ItemRepository.findAll();
 
   var addItem = (input) => {
-    if (input.quantity < 0) throw AppError.validation('quantity cannot be negative');
+    if (input.quantity < 0) throw Kernel.AppError.validation('quantity cannot be negative');
     var item = {
-      id:        Uuid.generate(),
+      id:        Kernel.Uuid.generate(),
       name:      String(input.name).trim(),
       quantity:  Number(input.quantity),
-      updatedAt: DateTime.nowIso(),
+      updatedAt: Kernel.DateTime.nowIso(),
     };
     return ItemRepository.insert(item);
   };
 
   var updateItem = (input) => {
     var existing = ItemRepository.findById(input.id);
-    if (!existing) throw AppError.notFound('Item', input.id);
-    if (input.quantity < 0) throw AppError.validation('quantity cannot be negative');
+    if (!existing) throw Kernel.AppError.notFound('Item', input.id);
+    if (input.quantity < 0) throw Kernel.AppError.validation('quantity cannot be negative');
     var updated = {
       id:        existing.id,
       name:      String(input.name).trim(),
       quantity:  Number(input.quantity),
-      updatedAt: DateTime.nowIso(),
+      updatedAt: Kernel.DateTime.nowIso(),
     };
     return ItemRepository.update(updated);
   };
 
   var deleteItem = (id) => {
     var existing = ItemRepository.findById(id);
-    if (!existing) throw AppError.notFound('Item', id);
+    if (!existing) throw Kernel.AppError.notFound('Item', id);
     return ItemRepository.remove(id);
   };
 

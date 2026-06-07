@@ -3,7 +3,7 @@ import type { InventoryItem } from '@shared/types';
 import { formatCurrency, formatQty } from '../../lib/format';
 import { useAuth } from '../../providers';
 import { useStockRow } from '../../features/inventory/hooks/useStockRow';
-import { Spinner, StoreBadge } from '../atoms';
+import { StoreBadge } from '../atoms';
 import { CostDisplay, MismatchBadge, SaveStatusBadge } from '../molecules';
 
 type Props = {
@@ -66,8 +66,7 @@ export const InventoryCard: React.FC<Props> = ({ item, canEdit, onEdit, onDelete
       <div className="inv-card-actions">
         {s.dirty && (
           <button className="primary save" disabled={s.status === 'saving'} onClick={s.save}>
-            {s.status === 'saving' && <Spinner size={14} />}
-            {s.status === 'saving' ? 'Saving…' : 'Save'}
+            Save
           </button>
         )}
         {!s.dirty && canEdit && <button className="ghost" onClick={() => onEdit(item)}>Edit</button>}

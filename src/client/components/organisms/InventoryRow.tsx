@@ -4,7 +4,6 @@ import type { InventoryItem } from '@shared/types';
 import { formatQty } from '../../lib/format';
 import { useAuth } from '../../providers';
 import { useStockRow } from '../../features/inventory/hooks/useStockRow';
-import { Spinner } from '../atoms';
 import { SaveStatusBadge } from '../molecules';
 
 const STOCK_FIELDS = {
@@ -70,8 +69,7 @@ export const InventoryRow: React.FC<Props> = ({ row, canEdit, onEdit, onDelete }
         <td key={cell.id} className="actions">
           {s.dirty && (
             <button className="save" disabled={s.status === 'saving'} onClick={s.save}>
-              {s.status === 'saving' && <Spinner size={12} />}
-              {s.status === 'saving' ? 'Saving' : 'Save'}
+              Save
             </button>
           )}
           {!s.dirty && canEdit && <button onClick={handleEdit}>Edit</button>}

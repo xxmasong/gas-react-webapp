@@ -2,6 +2,9 @@ var CategoryService = (function () {
 
   var getCategories = () => CategoryRepository.findAll();
 
+  // Single category by id (used for audit before-snapshots). Null if absent.
+  var getCategory = (id) => CategoryRepository.findById(id);
+
   var addCategory = (input) => {
     var code = String(input.code).trim();
     if (CategoryRepository.findByCode(code)) {
@@ -50,6 +53,7 @@ var CategoryService = (function () {
 
   return {
     getCategories: getCategories,
+    getCategory: getCategory,
     addCategory: addCategory,
     updateCategory: updateCategory,
     deleteCategory: deleteCategory,

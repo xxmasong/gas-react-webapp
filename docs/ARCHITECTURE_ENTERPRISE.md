@@ -138,7 +138,7 @@ Why a library at all (not one mega-project, not HTTP service): **independent dep
 - **MFA**: enforced at the **Workspace admin** level (not in app code) — this is the *correct*
   place and is genuinely enterprise-grade.
 - **App-level identity** still issues a session token (for public/dealer portal where Workspace
-  login doesn't apply, and to carry app roles). Stored in `EASY_AUDIT_DB.login_logs`.
+  login doesn't apply, and to carry app roles). Stored in `BOSSS_AUDIT_DB.login_logs`.
 - RBAC + ABAC + branch + department: see Authorization (§06-sec). Device/session tracking →
   `Sessions` + `login_logs`.
 
@@ -191,7 +191,7 @@ BranchAccessService · ApprovalAccessService · SecurityLogService`.
 
 **Authorization model (RBAC + ABAC + branch + department):**
 ```
-EASY_MASTER_DB
+BOSSS_MASTER_DB
   users        : id | email | username | passwordHash | systemRole | active | created_by | updated_by | updatedAt
   roles        : roleId | module | name | rank
   permissions  : roleId | action            ← action = 'v1.stockIn' etc (capability list)
@@ -255,23 +255,23 @@ Repository pattern on top of `DBService`:
 ### 10 Data Storage Layer — spreadsheets as "databases", tabs as "tables"
 Each "DB" is a **separate spreadsheet** (isolation, the 10M-cell cap, independent backup/locking):
 ```
-EASY_MASTER_DB       users · roles · permissions · role_grants · branch_access · dept_access ·
+BOSSS_MASTER_DB       users · roles · permissions · role_grants · branch_access · dept_access ·
                      branches · departments · products · suppliers · customers · dealers · settings
-EASY_TRANSACTION_DB  sales_orders · sales_order_items · purchase_orders · purchase_order_items ·
+BOSSS_TRANSACTION_DB  sales_orders · sales_order_items · purchase_orders · purchase_order_items ·
                      purchase_receipts · stock_movements · stock_adjustments · payments · deliveries
-EASY_HR_DB           employees · attendance · leave_requests · violations · payroll_runs · evaluations
-EASY_FINANCE_DB      cash_logs · receivables · payables · expenses · deposits · reconciliations
+BOSSS_HR_DB           employees · attendance · leave_requests · violations · payroll_runs · evaluations
+BOSSS_FINANCE_DB      cash_logs · receivables · payables · expenses · deposits · reconciliations
 BOSSS_OPS_DB         concerns · store_audits · tasks · projects · action_plans · sops · trainings ·
                      meetings · corrective_actions · five_s_checks      ← Operations (improve-the-business)
-EASY_EVENTS          events  (eventual bus — drained by trigger; §0.2)
-EASY_AUDIT_DB        audit_logs · login_logs · api_logs · approval_logs · error_logs · security_logs
-EASY_ARCHIVE_DB      cold rows moved out of hot tabs to stay under cell caps
-EASY_BACKUP_DB       daily snapshots (separate Drive folder, restricted)
-EASY_REPORTING_DB    daily_sales_summary · inventory_summary · profit_summary · stockout_alerts ·
+BOSSS_EVENTS          events  (eventual bus — drained by trigger; §0.2)
+BOSSS_AUDIT_DB        audit_logs · login_logs · api_logs · approval_logs · error_logs · security_logs
+BOSSS_ARCHIVE_DB      cold rows moved out of hot tabs to stay under cell caps
+BOSSS_BACKUP_DB       daily snapshots (separate Drive folder, restricted)
+BOSSS_REPORTING_DB    daily_sales_summary · inventory_summary · profit_summary · stockout_alerts ·
                      fast_slow_moving · branch_kpis
 ```
 **Partitioning rule:** when a transaction tab approaches ~500k rows or the workbook nears the
-10M-cell cap, roll old rows to `EASY_ARCHIVE_DB` by period. This is mandatory, not optional, at
+10M-cell cap, roll old rows to `BOSSS_ARCHIVE_DB` by period. This is mandatory, not optional, at
 ERP volume — call it out in capacity planning.
 
 ### 11 Governance Layer
@@ -283,7 +283,7 @@ ERP volume — call it out in capacity planning.
 - **Owner dashboard**: read model over audit + KPIs.
 
 ### 12 Integration Layer (`EasyCore.IntegrationService`)
-Gmail/Drive/Forms (native), Looker Studio (point at `EASY_REPORTING_DB`), n8n + bank/supplier/
+Gmail/Drive/Forms (native), Looker Studio (point at `BOSSS_REPORTING_DB`), n8n + bank/supplier/
 Kyte via `UrlFetchApp` webhooks/imports, future Postgres/API behind the same `IntegrationService`
 interface so callers don't change when the backend does.
 

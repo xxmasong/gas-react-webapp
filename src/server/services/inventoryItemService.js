@@ -69,6 +69,10 @@ var InventoryItemService = (function () {
   var getInventoryItems = (categoryId) =>
     InventoryItemRepository.findAll(categoryId);
 
+  // Single item by id (used for audit before-snapshots). Returns null if absent.
+  var getInventoryItem = (id) =>
+    InventoryItemRepository.findById(id);
+
   var addInventoryItem = (input) => {
     if (!CategoryRepository.findById(input.categoryId)) {
       throw Kernel.AppError.validation('categoryId does not reference a known category');
@@ -130,6 +134,7 @@ var InventoryItemService = (function () {
 
   return {
     getInventoryItems: getInventoryItems,
+    getInventoryItem: getInventoryItem,
     addInventoryItem: addInventoryItem,
     updateInventoryItem: updateInventoryItem,
     deleteInventoryItem: deleteInventoryItem,

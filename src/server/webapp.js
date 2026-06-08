@@ -78,3 +78,27 @@ function reseedUsers() {
   console.log('Reseeded users: ' + JSON.stringify(results));
   return results;
 }
+
+/**
+ * Clear the login-failure lockout for a username (login throttling stores it in
+ * Script Properties under "login_fail:<username>"). Run from the editor to undo
+ * a "too many attempts" lockout without waiting 15 minutes.
+ *   Set the username below, run unlockLogin(), then log in.
+ */
+function unlockLogin() {
+  // The login throttle runs inside the Kernel library, so the lockout properties
+  // live in the KERNEL's script properties — clear them there. Also clear this
+  // project's own properties as a belt-and-suspenders measure.
+  var kernelResult = Kernel.Auth.clearLockouts();
+
+  var props = PropertiesService.getScriptProperties();
+  var all = props.getProperties();
+  var localCleared = [];
+  Object.keys(all).forEach(function (k) {
+    if (k.indexOf('login_fail:') === 0) { props.deleteProperty(k); localCleared.push(k); }
+  });
+
+  var result = { kernel: kernelResult, inventoryLocal: localCleared };
+  console.log('Cleared login lockouts: ' + JSON.stringify(result, null, 2));
+  return result;
+}

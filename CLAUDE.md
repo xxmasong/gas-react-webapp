@@ -75,20 +75,21 @@ A Google Apps Script web app. React frontend + Google Sheets backend. GAS dictat
 
 ### Backend Layer Order
 ```
-api.js → service → repository → mapper
-                 ↗ lib (reachable from any layer)
+api.js → Kernel.Gateway.handle → service → repository → mapper
+                                ↗ Kernel.* (Cache/Lock/Uuid/AppError/Validate/… reachable from any layer)
 ```
-- `api.js` — thin shim: **auth check → validate → delegate → return**. Zero logic.
+- `api.js` — thin shim: each function is `return Kernel.Gateway.handle(ctx, () => <validate + delegate>)`. The gateway does auth + requestId + audit + error-normalize; the shim's delegate does `validate.* → service`. Zero business logic.
 - `services/` — all business rules, computed fields, cross-entity checks
 - `repositories/` — Sheets I/O only; one file per sheet tab; no business logic
 - `mappers/` — pure functions `row[] ↔ entity`; no I/O; no service calls
 - Never skip or reverse the layer order. Repositories never call services. Mappers never call repositories.
+- **`ctx.audit` present ⇒ mutation (audited); absent ⇒ read. `ctx.role` ⇒ requireRole; absent ⇒ requireUser. `login` bypasses the gateway (unauthenticated).**
 
 ### Sheets I/O
 - **Batch all reads** — one `getRange().getValues()`, filter/map in JS; never cell-by-cell
-- **Every write in `Lock.withLock(fn)`** — no exceptions
-- **`Cache.remove(key)` after every write** — invalidate immediately after mutation
-- **`Cache.getOrSet(key, fn, ttl)`** for hot reads — TTLs: categories 300s, inventoryItems 120s, items 300s
+- **Every write in `Kernel.Lock.withLock(fn)`** — no exceptions
+- **`Kernel.Cache.remove(key)` after every write** — invalidate immediately after mutation
+- **`Kernel.Cache.getOrSet(key, fn, ttl)`** for hot reads — TTLs: categories 300s, inventoryItems 120s, items 300s
 
 ### Frontend
 - **`src/client/lib/server.ts` is the only file** that touches `google.script.run`
@@ -122,9 +123,10 @@ api.js → service → repository → mapper
 | `bulkUpdateStock`/`saveAndVerifyStock` touch **only** the 3 qty columns | `inventoryItemService` |
 | Category delete blocked if it has inventory items | `categoryService.deleteCategory` |
 | Category `code` unique — enforced on add and update | `categoryService` |
-| Login throttled: 5 failures / 15 min → 15 min lockout | `authService` |
-| Password: min 10 chars, 3 of 4 classes (lower/upper/digit/symbol) | `authService` |
-| Cannot deactivate / change role / delete self | `authService` |
+| Login throttled: 5 failures / 15 min → 15 min lockout | `Kernel.Auth` |
+| Password: min 10 chars, 3 of 4 classes (lower/upper/digit/symbol) | `Kernel.Auth` |
+| Cannot deactivate / change role / delete self | `Kernel.Auth` |
+| Every mutation writes an append-only `audit_logs` row (actor, before/after, requestId) | `Kernel.Gateway` + `Kernel.Audit` |
 
 ---
 
@@ -199,7 +201,7 @@ api.js → service → repository → mapper
 
 ## API Surface (26 RPC Functions)
 
-Source of truth: `src/shared/types.ts` `ServerFunctions`. Token injected automatically by `server.ts` — never pass from a component.
+Source of truth: `src/shared/types.ts` `ServerFunctions`. Token injected automatically by `server.ts` — never pass from a component. Server-side, every function routes through `Kernel.Gateway.handle` (auth + requestId + audit-on-mutation); return shapes are unchanged, so the client contract is identical.
 
 Roles: `inventory_staff` (1) · `supervisor` (2) · `admin` (3). `requireRole` checks rank ≥ min.
 
@@ -290,17 +292,28 @@ The layer order, business rules, data model, and API surface below remain the al
 | `src/shared/types.ts` | Master contract — entity types + `ServerFunctions`. **Edit first.** |
 | `src/client/lib/server.ts` | RPC bridge — real `gas-client` vs mock. Only file touching `google.script.run`. |
 | `src/client/lib/serverMock.ts` | Mock implementations — mirrors every real server function. |
-| `src/server/api.js` | 26 top-level named functions — thin shims only. |
-| `src/server/config.js` | Sheet names, cache TTLs, roles, stores, auth policy. |
-| `src/server/lib/validate.js` | All input validators. |
-| `src/server/lib/errors.js` | `AppError.validation/notFound/conflict/auth(msg)` |
-| `src/server/lib/lock.js` | `Lock.withLock(fn, timeoutMs?)` |
-| `src/server/lib/cache.js` | `Cache.getOrSet(key, fn, ttl)`, `Cache.remove(key)` |
-| `src/server/lib/uuid.js` | `Uuid.generate()` |
-| `src/server/lib/datetime.js` | `DateTime.nowIso()` |
-| `src/server/lib/crypto.js` | `Crypto.hashPassword`, `Crypto.verifyPassword`, `Crypto.randomToken` |
+| `src/server/api.js` | 26 top-level named functions — thin shims, each routes through `Kernel.Gateway.handle`. |
+| `src/server/config.js` | Inventory config: sheet names, cache TTLs, stores. (`Config.ROLES` aliases `Kernel.Config.ROLES`.) |
+| `src/server/lib/validate.js` | Inventory **domain** validators (`category`, `inventoryItem`, `store`, `stockUpdate`) built on `Kernel.Validate` primitives. |
 | `src/client/routes/paths.ts` | All route path constants — always use these. |
 | `src/client/routes/guards.tsx` | `RequireAuth`, `RequireGuest`, `RequireRole` |
+
+### BOSSS Kernel (shared Apps Script library — separate project at `d:\kernel`, repo `bosss-kernel`)
+Cross-cutting logic lives in the Kernel, called in-process as `Kernel.<Name>`. Pinned per-module by version (see `appsscript.json`). **Public surface = the Kernel's top-level globals** (a namespace-object wrapper is bypassed by GAS's cross-library proxy — name globals to match).
+
+| `Kernel.X` | Role |
+|---|---|
+| `Kernel.Gateway.handle(ctx, fn)` | Wraps every RPC: requestId · auth (requireRole/requireUser) · run · audit-on-mutation · error-normalize. Returns the delegate value unchanged. |
+| `Kernel.Audit.record(...)` | Append-only `audit_logs` writer (`BOSSS_AUDIT_DB`); best-effort, never fails the op. |
+| `Kernel.Auth` | login/logout/me, requireUser/requireRole, user mgmt, `clearLockouts` |
+| `Kernel.Cache` · `Kernel.Lock` · `Kernel.Uuid` · `Kernel.DateTime` · `Kernel.Crypto` | primitives (was `src/server/lib/*`) |
+| `Kernel.AppError` | `validation/notFound/conflict/unauthorized` |
+| `Kernel.Validate` | primitives: `required/string/number/array/uuid/enumOf` |
+| `Kernel.Sheets` | spreadsheet registry: `open(handle)` / `sheet(handle,tab,headers)` (handles AUTH/MASTER/DATA/AUDIT) |
+| `Kernel.Repo` | base row helpers (opt-in; Inventory repos not yet migrated) |
+| `Kernel.Config` | `ROLES`, `AUTH` policy, auth workbook coords |
+
+**Kernel rules:** (1) consumers call `Kernel.<globalName>` — public IIFE globals named to match; (2) no load-time reads of other globals — all cross-file access lazy (accessors at call time); (3) `PropertiesService.getScriptProperties()` inside the Kernel = the **Kernel** project's properties (so `AUTH_SPREADSHEET_ID`/`AUDIT_SPREADSHEET_ID` + login-lockout live there); (4) deployed web apps need a **pinned** Kernel version (dev-mode doesn't resolve for end users). Kernel editor functions: `bootstrapAuditDb()`, `clearLoginLockouts()`.
 
 ---
 
@@ -349,8 +362,8 @@ Two TS projects typechecked together:
 1. **`src/shared/types.ts`** — entity `type` + `New<Entity>` input type + `ServerFunctions` entries. Run `typecheck`.
 2. **`src/server/repositories/<name>Repository.js`** — `SHEET_NAME`, `HEADERS`, `findAll/findById/insert/update/remove`. Add to `config.js` SHEETS/CACHE_TTL/CACHE_KEYS.
 3. **`src/server/mappers/<name>Mapper.js`** — `fromRow`/`toRow`. Column order must match `HEADERS`. Handle null cells.
-4. **`src/server/services/<name>Service.js`** — all business rules, computed fields, `AppError` on violations.
-5. **`src/server/api.js`** — named function declaration per operation: auth → validate → delegate → return.
+4. **`src/server/services/<name>Service.js`** — all business rules, computed fields, `Kernel.AppError` on violations; add singular `getX(id)` for audit before-snapshots.
+5. **`src/server/api.js`** — named function per operation, each `return Kernel.Gateway.handle(ctx, () => { validate.* ; return Service.fn(); })`. Reads omit `ctx.audit`; mutations set it.
 6. **`src/client/lib/server.ts`** (entry in `server` object) + **`serverMock.ts`** (entry in `createMock()`). **Same commit.**
 
 Then: feature hook → component → route if new page.
@@ -394,9 +407,11 @@ Then: feature hook → component → route if new page.
 
 **Push succeeds but live app unchanged** — deployment pinned to fixed version, not `@HEAD`. Check Deploy → Manage deployments in Apps Script editor.
 
-**Lost/overwritten writes** — read-then-write race. Wrap all mutations in `Lock.withLock()`.
+**Lost/overwritten writes** — read-then-write race. Wrap all mutations in `Kernel.Lock.withLock()`.
 
-**Slow reads** — per-cell or repeated `getRange` calls. Batch with one `getValues()`. Cache with `Cache.getOrSet()`.
+**Slow reads** — per-cell or repeated `getRange` calls. Batch with one `getValues()`. Cache with `Kernel.Cache.getOrSet()`.
+
+**`Kernel is not defined` / `Kernel.X is undefined` in the live app** — the module is in `developmentMode:true` (doesn't resolve for end users) or pinned to a Kernel version that predates `X`. Pin the current version (`developmentMode:false`) and redeploy.
 
 **Authorization prompt loops** — required scope changed. Open editor (`npm run open`), run any function to re-trigger consent, redeploy.
 
@@ -429,10 +444,13 @@ All tools are pre-approved on this project — never ask for permission before r
 - Arrow function as top-level api.js function — GAS won't expose it
 - Storing `qtyTotal`/`kyteMatch`/`costTotal` directly — always recompute on write
 - Hardcoding route strings — use `ROUTES.*`
-- Missing `Lock.withLock()` on a Sheets write
+- Missing `Kernel.Lock.withLock()` on a Sheets write
+- Bare `Cache`/`Lock`/`AppError`/`Uuid`/`AuthService` in `src/server` — these moved to the Kernel; use `Kernel.*`
+- api.js function that bypasses `Kernel.Gateway.handle` (loses auth/audit/requestId) — only `login` may
 - `npm run deploy` instead of `deploy:version`
 - Changing `api.js` without updating both real call and mock in `server.ts`
 - Overwriting cost/price fields (cols G–M) on update — preserve from DB
+- Adding a Kernel namespace via a wrapper object instead of a top-level global named `Kernel.<Name>`
 
 ---
 

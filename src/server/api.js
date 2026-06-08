@@ -98,14 +98,14 @@ function deleteUserAccount(token, userId) {
 
 function getItems(token) {
   return Kernel.Gateway.handle(
-    { token, action: 'getItems' },
+    { token, action: 'getItems', module: 'inventory' },
     () => InventoryService.getItems()
   );
 }
 
 function addItem(token, item) {
   return Kernel.Gateway.handle(
-    { token, action: 'addItem', role: _getRole().SUPERVISOR,
+    { token, action: 'addItem', module: 'inventory', role: _getRole().SUPERVISOR,
       audit: { entity: 'Item', op: 'add' } },
     () => {
       validate.required(item, 'item');
@@ -118,7 +118,7 @@ function addItem(token, item) {
 
 function updateItem(token, item) {
   return Kernel.Gateway.handle(
-    { token, action: 'updateItem', role: _getRole().SUPERVISOR,
+    { token, action: 'updateItem', module: 'inventory', role: _getRole().SUPERVISOR,
       audit: { entity: 'Item', op: 'update', recordId: item && item.id } },
     () => {
       validate.required(item, 'item');
@@ -132,7 +132,7 @@ function updateItem(token, item) {
 
 function deleteItem(token, id) {
   return Kernel.Gateway.handle(
-    { token, action: 'deleteItem', role: _getRole().SUPERVISOR,
+    { token, action: 'deleteItem', module: 'inventory', role: _getRole().SUPERVISOR,
       audit: { entity: 'Item', op: 'delete', recordId: id } },
     () => { validate.string(id, 'id'); return InventoryService.deleteItem(id); }
   );
@@ -142,14 +142,14 @@ function deleteItem(token, id) {
 
 function getCategories(token) {
   return Kernel.Gateway.handle(
-    { token, action: 'getCategories' },
+    { token, action: 'getCategories', module: 'inventory' },
     () => CategoryService.getCategories()
   );
 }
 
 function addCategory(token, cat) {
   return Kernel.Gateway.handle(
-    { token, action: 'addCategory', role: _getRole().SUPERVISOR,
+    { token, action: 'addCategory', module: 'inventory', role: _getRole().SUPERVISOR,
       audit: { entity: 'Category', op: 'add' } },
     () => { validate.category(cat); return CategoryService.addCategory(cat); }
   );
@@ -157,7 +157,7 @@ function addCategory(token, cat) {
 
 function updateCategory(token, cat) {
   return Kernel.Gateway.handle(
-    { token, action: 'updateCategory', role: _getRole().SUPERVISOR,
+    { token, action: 'updateCategory', module: 'inventory', role: _getRole().SUPERVISOR,
       audit: { entity: 'Category', op: 'update', recordId: cat && cat.id,
                before: () => CategoryService.getCategory(cat.id) } },
     () => {
@@ -170,7 +170,7 @@ function updateCategory(token, cat) {
 
 function deleteCategory(token, id) {
   return Kernel.Gateway.handle(
-    { token, action: 'deleteCategory', role: _getRole().SUPERVISOR,
+    { token, action: 'deleteCategory', module: 'inventory', role: _getRole().SUPERVISOR,
       audit: { entity: 'Category', op: 'delete', recordId: id,
                before: () => CategoryService.getCategory(id) } },
     () => { validate.string(id, 'id'); return CategoryService.deleteCategory(id); }
@@ -181,14 +181,14 @@ function deleteCategory(token, id) {
 
 function getInventoryItems(token, categoryId) {
   return Kernel.Gateway.handle(
-    { token, action: 'getInventoryItems' },
+    { token, action: 'getInventoryItems', module: 'inventory' },
     () => InventoryItemService.getInventoryItems(categoryId)
   );
 }
 
 function addInventoryItem(token, item) {
   return Kernel.Gateway.handle(
-    { token, action: 'addInventoryItem', role: _getRole().SUPERVISOR,
+    { token, action: 'addInventoryItem', module: 'inventory', role: _getRole().SUPERVISOR,
       audit: { entity: 'InventoryItem', op: 'add' } },
     () => { validate.inventoryItem(item); return InventoryItemService.addInventoryItem(item); }
   );
@@ -196,7 +196,7 @@ function addInventoryItem(token, item) {
 
 function updateInventoryItem(token, item) {
   return Kernel.Gateway.handle(
-    { token, action: 'updateInventoryItem', role: _getRole().SUPERVISOR,
+    { token, action: 'updateInventoryItem', module: 'inventory', role: _getRole().SUPERVISOR,
       audit: { entity: 'InventoryItem', op: 'update', recordId: item && item.id,
                before: () => InventoryItemService.getInventoryItem(item.id) } },
     () => {
@@ -209,7 +209,7 @@ function updateInventoryItem(token, item) {
 
 function deleteInventoryItem(token, id) {
   return Kernel.Gateway.handle(
-    { token, action: 'deleteInventoryItem', role: _getRole().SUPERVISOR,
+    { token, action: 'deleteInventoryItem', module: 'inventory', role: _getRole().SUPERVISOR,
       audit: { entity: 'InventoryItem', op: 'delete', recordId: id,
                before: () => InventoryItemService.getInventoryItem(id) } },
     () => { validate.string(id, 'id'); return InventoryItemService.deleteInventoryItem(id); }
@@ -219,7 +219,7 @@ function deleteInventoryItem(token, id) {
 /** Stock-count updates — inventory_staff and above. Bulk: log the set + count. */
 function bulkUpdateStock(token, updates) {
   return Kernel.Gateway.handle(
-    { token, action: 'bulkUpdateStock', role: _getRole().STAFF,
+    { token, action: 'bulkUpdateStock', module: 'inventory', role: _getRole().STAFF,
       audit: { entity: 'InventoryItem', op: 'stock-bulk',
                after: (result) => ({ count: (result || []).length, updates: updates }) } },
     () => {
@@ -233,7 +233,7 @@ function bulkUpdateStock(token, updates) {
 /** Save one stock row + verify against the sheet — inventory_staff and above. */
 function saveAndVerifyStock(token, update) {
   return Kernel.Gateway.handle(
-    { token, action: 'saveAndVerifyStock', role: _getRole().STAFF,
+    { token, action: 'saveAndVerifyStock', module: 'inventory', role: _getRole().STAFF,
       audit: { entity: 'InventoryItem', op: 'stock', recordId: update && update.id,
                before: () => InventoryItemService.getInventoryItem(update.id) } },
     () => { validate.stockUpdate(update); return InventoryItemService.saveAndVerifyStock(update); }
@@ -244,7 +244,7 @@ function saveAndVerifyStock(token, update) {
 
 function reseedInventory(token) {
   return Kernel.Gateway.handle(
-    { token, action: 'reseedInventory', role: _getRole().SUPERVISOR,
+    { token, action: 'reseedInventory', module: 'inventory', role: _getRole().SUPERVISOR,
       audit: { entity: 'Inventory', op: 'reseed' } },
     () => _reseedBatch()
   );
@@ -254,14 +254,14 @@ function reseedInventory(token) {
 
 function getInventorySummary(token) {
   return Kernel.Gateway.handle(
-    { token, action: 'getInventorySummary' },
+    { token, action: 'getInventorySummary', module: 'inventory' },
     () => SummaryService.getInventorySummary()
   );
 }
 
 function getCategoryTotals(token) {
   return Kernel.Gateway.handle(
-    { token, action: 'getCategoryTotals' },
+    { token, action: 'getCategoryTotals', module: 'inventory' },
     () => SummaryService.getCategoryTotals()
   );
 }
